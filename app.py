@@ -5,28 +5,25 @@ from datetime import datetime
 # Configuração da página
 st.set_page_config(page_title="Karaokê Coopers Portugal", layout="centered", page_icon="🎤")
 
-# --- FUNÇÕES DE CARREGAMENTO ---
+# --- CONEXÃO COM GOOGLE SHEETS ---
+# Para funcionar, você precisa conectar no painel do Streamlit Cloud depois!
+from streamlit_gsheets import GSheetsConnection
+conn = st.connection("gsheets", type=GSheetsConnection)
+
 @st.cache_data
 def carregar_catalogo():
     try:
         df = pd.read_csv('karafuncatalog.csv', encoding='latin1', sep=None, engine='python')
-        df.columns = df.columns.str.strip()
-        
-        # Mapeamento para evitar erros de acento (KeyError)
-        col_map = {}
-        for col in df.columns:
-            c = col.lower()
-            if 'mús' in c or 'mus' in c: col_map['musica'] = col
-            if 'art' in c: col_map['artista'] = col
-            if 'cód' in c or 'cod' in c: col_map['codigo'] = col
-        return df, col_map
+        # Limpa nomes de colunas de qualquer espaço invisível
+        df.columns = [str(c).strip() for c in df.columns]
+        return df
     except Exception as e:
         st.error(f"Erro ao carregar catálogo: {e}")
-        return None, None
+        return None
 
-df_catalogo, col_map = carregar_catalogo()
+df_catalogo = carregar_catalogo()
 
-# --- DICIONÁRIO DE TRADUÇÃO COMPLETO ---
+# --- DICIONÁRIO DE TRADUÇÃO ---
 idiomas_dict = {
     "Português 🇧🇷🇵🇹": {
         "label": "Digite o nome da música ou artista:",
@@ -34,7 +31,7 @@ idiomas_dict = {
         "confirmar": "Confirmar Música ✅",
         "cancelar": "Voltar / Trocar ❌",
         "posicao": "Sua posição na fila:",
-        "aviso_fila": "⚠️ Esta música já foi pedida por outra pessoa!"
+        "sucesso": "✅ Música enviada com sucesso!"
     },
     "English 🇺🇸🇬🇧": {
         "label": "Type the song or artist name:",
@@ -42,7 +39,7 @@ idiomas_dict = {
         "confirmar": "Confirm Song ✅",
         "cancelar": "Go Back / Change ❌",
         "posicao": "Your position in queue:",
-        "aviso_fila": "⚠️ This song is already in the queue!"
+        "sucesso": "✅ Song sent successfully!"
     },
     "Español 🇪🇸": {
         "label": "Escribe el nombre de la canción o artista:",
@@ -50,7 +47,7 @@ idiomas_dict = {
         "confirmar": "Confirmar Canción ✅",
         "cancelar": "Volver / Cambiar ❌",
         "posicao": "Tu posición en la lista:",
-        "aviso_fila": "⚠️ ¡Esta canción ya está en la lista!"
+        "sucesso": "✅ ¡Canción enviada!"
     },
     "Français 🇫🇷": {
         "label": "Tapez le nom de la chanson ou de l'artiste :",
@@ -58,52 +55,62 @@ idiomas_dict = {
         "confirmar": "Confirmer ✅",
         "cancelar": "Retour / Changer ❌",
         "posicao": "Votre position dans la file :",
-        "aviso_fila": "⚠️ Cette chanson est déjà dans la file !"
+        "sucesso": "✅ Chanson envoyée !"
     }
 }
 
 # --- INTERFACE ---
 st.title("🎤 Karaokê Coopers")
 
-# Seleção por "Bolinhas" (st.radio)
 idioma_escolhido = st.radio("Escolha o idioma / Select language:", list(idiomas_dict.keys()), horizontal=True)
 textos = idiomas_dict[idioma_escolhido]
 
 if df_catalogo is not None:
-    # Estado do App
     if 'musica_escolhida' not in st.session_state:
         st.session_state.musica_escolhida = None
 
     if st.session_state.musica_escolhida is None:
-        # TELA DE BUSCA
         busca = st.text_input(textos["label"]).strip().lower()
         if busca:
-            c_mus = col_map.get('musica')
-            c_art = col_map.get('artista')
-            c_cod = col_map.get('codigo')
-
+            # Busca por posição das colunas para evitar KeyError
+            col_cod, col_mus, col_art = df_catalogo.columns[0], df_catalogo.columns[1], df_catalogo.columns[2]
+            
             res = df_catalogo[
-                df_catalogo[c_mus].astype(str).str.lower().str.contains(busca, na=False) |
-                df_catalogo[c_art].astype(str).str.lower().str.contains(busca, na=False)
+                df_catalogo[col_mus].astype(str).str.lower().str.contains(busca, na=False) |
+                df_catalogo[col_art].astype(str).str.lower().str.contains(busca, na=False)
             ].head(10)
 
             for i, row in res.iterrows():
-                if st.button(f"🎶 {row[c_cod]} - {row[c_mus]} - {row[c_art]}", key=f"btn_{i}"):
+                if st.button(f"🎶 {row[col_cod]} - {row[col_mus]} - {row[col_art]}", key=f"btn_{i}"):
                     st.session_state.musica_escolhida = row
                     st.rerun()
     else:
-        # TELA DE CONFIRMAÇÃO
         m = st.session_state.musica_escolhida
-        c_mus = col_map.get('musica')
-        st.success(f"{textos['selecionado']}: {m[c_mus]}")
+        col_mus = df_catalogo.columns[1]
+        st.success(f"{textos['selecionado']}: {m[col_mus]}")
         
         col1, col2 = st.columns(2)
         with col1:
             if st.button(textos["confirmar"], type="primary"):
-                # AQUI ENTRA A GRAVAÇÃO NA PLANILHA (VIA SECRETS)
-                st.balloons()
-                st.info(f"✅ {textos['posicao']} #4") # Exemplo
-                if st.button("Fazer novo pedido"):
+                try:
+                    # Tenta salvar na planilha do Google
+                    fila_atual = conn.read(spreadsheet=st.secrets["connections"]["gsheets"]["spreadsheet"])
+                    nova_musica = pd.DataFrame([{
+                        "Data": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+                        "Codigo": m[df_catalogo.columns[0]],
+                        "Musica": m[df_catalogo.columns[1]],
+                        "Artista": m[df_catalogo.columns[2]],
+                        "Status": "Aguardando"
+                    }])
+                    fila_atual = pd.concat([fila_atual, nova_musica], ignore_index=True)
+                    conn.update(spreadsheet=st.secrets["connections"]["gsheets"]["spreadsheet"], data=fila_atual)
+                    
+                    st.balloons()
+                    st.info(f"{textos['sucesso']} {textos['posicao']} #{len(fila_atual)}")
+                except:
+                    st.error("Erro de conexão com a planilha. Verifique os Secrets.")
+                
+                if st.button("Novo pedido"):
                     st.session_state.musica_escolhida = None
                     st.rerun()
         with col2:
