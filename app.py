@@ -110,10 +110,27 @@ if df_catalogo is not None:
                 except:
                     st.error("Erro de conexão com a planilha. Verifique os Secrets.")
                 
-                if st.button("Novo pedido"):
-                    st.session_state.musica_escolhida = None
-                    st.rerun()
-        with col2:
-            if st.button(textos["cancelar"]):
-                st.session_state.musica_escolhida = None
-                st.rerun()
+                with col1:
+            if st.button(t["conf"], type="primary"):
+                try:
+                    # Tenta ler a fila (limpando o cache para garantir que lê o que está no Google)
+                    fila = conn.read(ttl=0) 
+                    
+                    # Cria a nova linha
+                    nova = pd.DataFrame([{
+                        "Data": datetime.now().strftime("%H:%M"),
+                        "Codigo": str(m.iloc[0]),
+                        "Musica": str(m.iloc[1]),
+                        "Artista": str(m.iloc[2]),
+                        "Status": "Aguardando"
+                    }])
+                    
+                    # Junta e faz o update
+                    fila_atualizada = pd.concat([fila, nova], ignore_index=True)
+                    conn.update(data=fila_atualizada)
+                    
+                    st.balloons()
+                    st.success(f"{t['sucesso']} {t['pos']} #{len(fila_atualizada)}")
+                except Exception as e:
+                    st.error(f"Erro de Conexão: Verifique se a Planilha está como EDITOR e se os Secrets estão em uma linha só.")
+                    st.info(f"Detalhe técnico: {e}") # Isso vai nos dizer exatamente o que está errado
