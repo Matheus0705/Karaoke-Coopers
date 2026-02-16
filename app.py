@@ -1,20 +1,18 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
+from streamlit_gsheets import GSheetsConnection
 
 # Configuração da página
 st.set_page_config(page_title="Karaokê Coopers Portugal", layout="centered", page_icon="🎤")
 
-# --- CONEXÃO COM GOOGLE SHEETS ---
-# Para funcionar, você precisa conectar no painel do Streamlit Cloud depois!
-from streamlit_gsheets import GSheetsConnection
+# Conexão com Google Sheets
 conn = st.connection("gsheets", type=GSheetsConnection)
 
 @st.cache_data
 def carregar_catalogo():
     try:
         df = pd.read_csv('karafuncatalog.csv', encoding='latin1', sep=None, engine='python')
-        # Limpa nomes de colunas de qualquer espaço invisível
         df.columns = [str(c).strip() for c in df.columns]
         return df
     except Exception as e:
@@ -23,100 +21,45 @@ def carregar_catalogo():
 
 df_catalogo = carregar_catalogo()
 
-# --- DICIONÁRIO DE TRADUÇÃO ---
+# Dicionário de Tradução
 idiomas_dict = {
-    "Português 🇧🇷🇵🇹": {
-        "label": "Digite o nome da música ou artista:",
-        "selecionado": "Selecionado",
-        "confirmar": "Confirmar Música ✅",
-        "cancelar": "Voltar / Trocar ❌",
-        "posicao": "Sua posição na fila:",
-        "sucesso": "✅ Música enviada com sucesso!"
-    },
-    "English 🇺🇸🇬🇧": {
-        "label": "Type the song or artist name:",
-        "selecionado": "Selected",
-        "confirmar": "Confirm Song ✅",
-        "cancelar": "Go Back / Change ❌",
-        "posicao": "Your position in queue:",
-        "sucesso": "✅ Song sent successfully!"
-    },
-    "Español 🇪🇸": {
-        "label": "Escribe el nombre de la canción o artista:",
-        "selecionado": "Seleccionado",
-        "confirmar": "Confirmar Canción ✅",
-        "cancelar": "Volver / Cambiar ❌",
-        "posicao": "Tu posición en la lista:",
-        "sucesso": "✅ ¡Canción enviada!"
-    },
-    "Français 🇫🇷": {
-        "label": "Tapez le nom de la chanson ou de l'artiste :",
-        "selecionado": "Sélectionné",
-        "confirmar": "Confirmer ✅",
-        "cancelar": "Retour / Changer ❌",
-        "posicao": "Votre position dans la file :",
-        "sucesso": "✅ Chanson envoyée !"
-    }
+    "Português 🇧🇷🇵🇹": {"label": "Pesquisar...", "sel": "Selecionado", "conf": "Confirmar ✅", "canc": "Voltar ❌", "pos": "Fila:", "sucesso": "Enviado!"},
+    "English 🇺🇸🇬🇧": {"label": "Search...", "sel": "Selected", "conf": "Confirm ✅", "canc": "Back ❌", "pos": "Queue:", "sucesso": "Sent!"},
+    "Español 🇪🇸": {"label": "Buscar...", "sel": "Seleccionado", "conf": "Confirmar ✅", "canc": "Volver ❌", "pos": "Lista:", "sucesso": "¡Enviado!"},
+    "Français 🇫🇷": {"label": "Chercher...", "sel": "Sélectionné", "conf": "Confirmer ✅", "canc": "Retour ❌", "pos": "File:", "sucesso": "Envoyé!"}
 }
 
-# --- INTERFACE ---
+# Interface
 st.title("🎤 Karaokê Coopers")
 
-idioma_escolhido = st.radio("Escolha o idioma / Select language:", list(idiomas_dict.keys()), horizontal=True)
-textos = idiomas_dict[idioma_escolhido]
+# Menu Lateral para Admin
+menu = st.sidebar.selectbox("Menu", ["Catálogo", "Administrador"])
 
-if df_catalogo is not None:
+if menu == "Catálogo":
+    idioma = st.radio("Idioma", list(idiomas_dict.keys()), horizontal=True)
+    t = idiomas_dict[idioma]
+
     if 'musica_escolhida' not in st.session_state:
         st.session_state.musica_escolhida = None
 
     if st.session_state.musica_escolhida is None:
-        busca = st.text_input(textos["label"]).strip().lower()
+        busca = st.text_input(t["label"]).strip().lower()
         if busca:
-            # Busca por posição das colunas para evitar KeyError
-            col_cod, col_mus, col_art = df_catalogo.columns[0], df_catalogo.columns[1], df_catalogo.columns[2]
-            
-            res = df_catalogo[
-                df_catalogo[col_mus].astype(str).str.lower().str.contains(busca, na=False) |
-                df_catalogo[col_art].astype(str).str.lower().str.contains(busca, na=False)
-            ].head(10)
-
+            res = df_catalogo[df_catalogo.iloc[:, 1].str.lower().str.contains(busca, na=False) | 
+                              df_catalogo.iloc[:, 2].str.lower().str.contains(busca, na=False)].head(10)
             for i, row in res.iterrows():
-                if st.button(f"🎶 {row[col_cod]} - {row[col_mus]} - {row[col_art]}", key=f"btn_{i}"):
+                if st.button(f"🎶 {row.iloc[0]} - {row.iloc[1]} - {row.iloc[2]}", key=f"b_{i}"):
                     st.session_state.musica_escolhida = row
                     st.rerun()
     else:
         m = st.session_state.musica_escolhida
-        col_mus = df_catalogo.columns[1]
-        st.success(f"{textos['selecionado']}: {m[col_mus]}")
-        
+        st.success(f"{t['sel']}: {m.iloc[1]}")
         col1, col2 = st.columns(2)
         with col1:
-            if st.button(textos["confirmar"], type="primary"):
-                try:
-                    # Tenta salvar na planilha do Google
-                    fila_atual = conn.read(spreadsheet=st.secrets["connections"]["gsheets"]["spreadsheet"])
-                    nova_musica = pd.DataFrame([{
-                        "Data": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-                        "Codigo": m[df_catalogo.columns[0]],
-                        "Musica": m[df_catalogo.columns[1]],
-                        "Artista": m[df_catalogo.columns[2]],
-                        "Status": "Aguardando"
-                    }])
-                    fila_atual = pd.concat([fila_atual, nova_musica], ignore_index=True)
-                    conn.update(spreadsheet=st.secrets["connections"]["gsheets"]["spreadsheet"], data=fila_atual)
-                    
-                    st.balloons()
-                    st.info(f"{textos['sucesso']} {textos['posicao']} #{len(fila_atual)}")
-                except:
-                    st.error("Erro de conexão com a planilha. Verifique os Secrets.")
-                
-                with col1:
             if st.button(t["conf"], type="primary"):
                 try:
-                    # Tenta ler a fila (limpando o cache para garantir que lê o que está no Google)
-                    fila = conn.read(ttl=0) 
-                    
-                    # Cria a nova linha
+                    # Tenta ler a fila (sem cache para pegar o dado real)
+                    fila = conn.read(ttl=0)
                     nova = pd.DataFrame([{
                         "Data": datetime.now().strftime("%H:%M"),
                         "Codigo": str(m.iloc[0]),
@@ -124,13 +67,24 @@ if df_catalogo is not None:
                         "Artista": str(m.iloc[2]),
                         "Status": "Aguardando"
                     }])
-                    
-                    # Junta e faz o update
                     fila_atualizada = pd.concat([fila, nova], ignore_index=True)
                     conn.update(data=fila_atualizada)
-                    
                     st.balloons()
                     st.success(f"{t['sucesso']} {t['pos']} #{len(fila_atualizada)}")
                 except Exception as e:
-                    st.error(f"Erro de Conexão: Verifique se a Planilha está como EDITOR e se os Secrets estão em uma linha só.")
-                    st.info(f"Detalhe técnico: {e}") # Isso vai nos dizer exatamente o que está errado
+                    st.error("Erro de conexão. Verifique se a planilha está como EDITOR.")
+                    st.info(f"Detalhe: {e}")
+        with col2:
+            if st.button(t["canc"]):
+                st.session_state.musica_escolhida = None
+                st.rerun()
+
+elif menu == "Administrador":
+    senha = st.text_input("Senha", type="password")
+    if senha == "coopers123":
+        st.subheader("Fila de Espera")
+        df_fila = conn.read(ttl=0)
+        st.dataframe(df_fila)
+        if st.button("Limpar Fila"):
+            conn.update(data=pd.DataFrame(columns=["Data", "Codigo", "Musica", "Artista", "Status"]))
+            st.rerun()
