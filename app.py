@@ -9,7 +9,7 @@ st.set_page_config(page_title="Karaokê Coopers", layout="centered", page_icon="
 @st.cache_data
 def carregar_catalogo():
     try:
-        # Carrega o catálogo local
+        # Tenta ler o catálogo local que está na pasta do seu GitHub
         df = pd.read_csv('karafuncatalog.csv', encoding='latin1', sep=None, engine='python')
         df.columns = [str(c).strip() for c in df.columns]
         return df
@@ -34,7 +34,7 @@ t = idiomas_dict[idioma]
 if 'musica_escolhida' not in st.session_state:
     st.session_state.musica_escolhida = None
 
-# Fluxo de Busca
+# Interface de Busca
 if st.session_state.musica_escolhida is None:
     busca = st.text_input(t["label"]).strip().lower()
     if busca:
@@ -51,11 +51,11 @@ else:
     col1, col2 = st.columns(2)
     with col1:
         if st.button(t["conf"], type="primary"):
-            # URL de submissão do SEU formulário
-            url = "https://docs.google.com/forms/d/e/1FAIpQLSd8SRNim_Uz3KlxdkWzBTdO7zSKSIvQMfiS3flDi6HRKWggYQ/formResponse"
+            # O LINK DE ENVIO DO SEU FORMULÁRIO (ID extraído do seu link)
+            url_form = "https://docs.google.com/forms/d/e/1FAIpQLSd8SRNim_Uz3KlxdkWzBTdO7zSKSIvQMfiS3flDi6HRKWggYQ/formResponse"
             
-            # Dados mapeados com os seus IDs reais
-            dados_form = {
+            # OS IDs DAS PERGUNTAS (Extraídos do link que você me mandou)
+            dados = {
                 "entry.1213556115": datetime.now().strftime("%H:%M"), # DATA
                 "entry.1947522889": str(m.iloc[0]),                   # CODIGO
                 "entry.1660854967": str(m.iloc[1]),                   # MUSICA
@@ -63,15 +63,16 @@ else:
             }
             
             try:
-                # Envia para o Google Forms de forma invisível
-                requests.post(url, data=dados_form)
+                # Manda a música para o formulário
+                requests.post(url_form, data=dados)
                 st.balloons()
                 st.success(t["sucesso"])
+                # Botão para o cliente voltar à busca
                 if st.button("Pedir outra música 🎤"):
                     st.session_state.musica_escolhida = None
                     st.rerun()
             except:
-                st.error("Erro de conexão. Verifique a internet.")
+                st.error("Erro ao enviar. Tente novamente.")
     with col2:
         if st.button(t["canc"]):
             st.session_state.musica_escolhida = None
