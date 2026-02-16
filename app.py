@@ -9,7 +9,7 @@ st.set_page_config(page_title="Karaokê Coopers", layout="centered", page_icon="
 @st.cache_data
 def carregar_catalogo():
     try:
-        # Tenta ler o catálogo local que está na pasta do seu GitHub
+        # Carrega o arquivo CSV que você subiu no GitHub
         df = pd.read_csv('karafuncatalog.csv', encoding='latin1', sep=None, engine='python')
         df.columns = [str(c).strip() for c in df.columns]
         return df
@@ -51,10 +51,10 @@ else:
     col1, col2 = st.columns(2)
     with col1:
         if st.button(t["conf"], type="primary"):
-            # O LINK DE ENVIO DO SEU FORMULÁRIO (ID extraído do seu link)
+            # URL de submissão do seu formulário
             url_form = "https://docs.google.com/forms/d/e/1FAIpQLSd8SRNim_Uz3KlxdkWzBTdO7zSKSIvQMfiS3flDi6HRKWggYQ/formResponse"
             
-            # OS IDs DAS PERGUNTAS (Extraídos do link que você me mandou)
+            # Dados mapeados com os IDs que extraímos do seu link
             dados = {
                 "entry.1213556115": datetime.now().strftime("%H:%M"), # DATA
                 "entry.1947522889": str(m.iloc[0]),                   # CODIGO
@@ -63,16 +63,16 @@ else:
             }
             
             try:
-                # Manda a música para o formulário
+                # Faz o envio para o Google Forms
                 requests.post(url_form, data=dados)
                 st.balloons()
                 st.success(t["sucesso"])
-                # Botão para o cliente voltar à busca
+                # Botão para limpar a seleção e permitir nova busca
                 if st.button("Pedir outra música 🎤"):
                     st.session_state.musica_escolhida = None
                     st.rerun()
             except:
-                st.error("Erro ao enviar. Tente novamente.")
+                st.error("Erro de conexão ao enviar o pedido.")
     with col2:
         if st.button(t["canc"]):
             st.session_state.musica_escolhida = None
