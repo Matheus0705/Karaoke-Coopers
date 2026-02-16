@@ -9,6 +9,7 @@ st.set_page_config(page_title="Karaokê Coopers", layout="centered", page_icon="
 @st.cache_data
 def carregar_catalogo():
     try:
+        # Carrega o catálogo local
         df = pd.read_csv('karafuncatalog.csv', encoding='latin1', sep=None, engine='python')
         df.columns = [str(c).strip() for c in df.columns]
         return df
@@ -20,10 +21,10 @@ df_catalogo = carregar_catalogo()
 
 # Dicionário de Tradução
 idiomas_dict = {
-    "Português 🇧🇷🇵🇹": {"label": "Pesquisar...", "sel": "Selecionado", "conf": "Confirmar ✅", "canc": "Voltar ❌", "sucesso": "Pedido Enviado! 🕺🏻"},
-    "English 🇺🇸🇬🇧": {"label": "Search...", "sel": "Selected", "conf": "Confirm ✅", "canc": "Back ❌", "sucesso": "Sent! 🕺🏻"},
-    "Español 🇪🇸": {"label": "Buscar...", "sel": "Seleccionado", "conf": "Confirmar ✅", "canc": "Volver ❌", "sucesso": "¡Enviado! 🕺🏻"},
-    "Français 🇫🇷": {"label": "Chercher...", "sel": "Sélectionné", "conf": "Confirmer ✅", "canc": "Retour ❌", "sucesso": "Envoyé ! 🕺🏻"}
+    "Português 🇧🇷🇵🇹": {"label": "Pesquisar música ou artista...", "sel": "Selecionado", "conf": "Confirmar ✅", "canc": "Voltar ❌", "sucesso": "Pedido Enviado! 🕺🏻"},
+    "English 🇺🇸🇬🇧": {"label": "Search song or artist...", "sel": "Selected", "conf": "Confirm ✅", "canc": "Back ❌", "sucesso": "Request Sent! 🕺🏻"},
+    "Español 🇪🇸": {"label": "Buscar música o artista...", "sel": "Seleccionado", "conf": "Confirmar ✅", "canc": "Volver ❌", "sucesso": "¡Enviado! 🕺🏻"},
+    "Français 🇫🇷": {"label": "Chercher chanson ou artiste...", "sel": "Sélectionné", "conf": "Confirmer ✅", "canc": "Retour ❌", "sucesso": "Envoyé ! 🕺🏻"}
 }
 
 st.title("🎤 Karaokê Coopers")
@@ -33,6 +34,7 @@ t = idiomas_dict[idioma]
 if 'musica_escolhida' not in st.session_state:
     st.session_state.musica_escolhida = None
 
+# Fluxo de Busca
 if st.session_state.musica_escolhida is None:
     busca = st.text_input(t["label"]).strip().lower()
     if busca:
@@ -49,10 +51,10 @@ else:
     col1, col2 = st.columns(2)
     with col1:
         if st.button(t["conf"], type="primary"):
-            # URL de submissão do formulário
+            # URL de submissão do SEU formulário
             url = "https://docs.google.com/forms/d/e/1FAIpQLSd8SRNim_Uz3KlxdkWzBTdO7zSKSIvQMfiS3flDi6HRKWggYQ/formResponse"
             
-            # Dados mapeados com os IDs que me enviaste
+            # Dados mapeados com os seus IDs reais
             dados_form = {
                 "entry.1213556115": datetime.now().strftime("%H:%M"), # DATA
                 "entry.1947522889": str(m.iloc[0]),                   # CODIGO
@@ -61,6 +63,7 @@ else:
             }
             
             try:
+                # Envia para o Google Forms de forma invisível
                 requests.post(url, data=dados_form)
                 st.balloons()
                 st.success(t["sucesso"])
@@ -68,7 +71,7 @@ else:
                     st.session_state.musica_escolhida = None
                     st.rerun()
             except:
-                st.error("Erro ao enviar. Tente novamente.")
+                st.error("Erro de conexão. Verifique a internet.")
     with col2:
         if st.button(t["canc"]):
             st.session_state.musica_escolhida = None
