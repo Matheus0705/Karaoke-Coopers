@@ -5,7 +5,7 @@ import pandas as pd # Você precisará instalar: pip install pandas openpyxl
 @st.cache_data # Isso faz o app carregar o arquivo apenas uma vez para ser rápido
 def carregar_musicas():
     # Substitua 'lista_karaoke.xlsx' pelo nome real do seu arquivo
-    df = pd.read_excel('lista_karaoke.xlsx')
+    df = pd.read_csv('karafuncatalog.csv')
     
     # Vamos supor que a coluna com os nomes das músicas se chame 'Nome' ou 'Titulo'
     # Vamos criar uma lista combinando Código + Música + Artista
