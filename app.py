@@ -6,14 +6,15 @@ import time
 import random
 import string
 
-# Configuração da página
+# 1. Configuração de Página e Estética
 st.set_page_config(page_title="Karaokê Coopers", layout="centered", page_icon="🎤")
 
-# --- FUNÇÕES CORE ---
+# 2. Funções de Suporte (Geradores e Leitores)
 def gerar_senha():
     return ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
 
 def carregar_fila():
+    # O timestamp evita que o Google entregue uma versão "velha" (cache) da planilha
     timestamp = int(time.time())
     url_dados = f"https://docs.google.com/spreadsheets/d/1FAIpQLSd8SRNim_Uz3KlxdkWzBTdO7zSKSIvQMfiS3flDi6HRKWggYQ/export?format=csv&cachebust={timestamp}"
     try:
@@ -23,7 +24,7 @@ def carregar_fila():
     except:
         return pd.DataFrame()
 
-@st.cache_data
+@st.cache_data(ttl=60) # Atualiza o catálogo a cada 60 segundos se houver mudança
 def carregar_catalogo():
     try:
         df = pd.read_csv('karafuncatalog.csv', encoding='latin1', sep=None, engine='python')
@@ -32,7 +33,7 @@ def carregar_catalogo():
     except:
         return pd.DataFrame()
 
-# --- ESTADO DA SESSÃO ---
+# 3. Gerenciamento de Estado (Memória do App)
 if 'minhas_senhas' not in st.session_state:
     st.session_state.minhas_senhas = []
 if 'musica_escolhida' not in st.session_state:
@@ -40,70 +41,65 @@ if 'musica_escolhida' not in st.session_state:
 if 'reset_busca' not in st.session_state:
     st.session_state.reset_busca = 0
 
-# --- INTERFACE (CORREÇÃO DO ERRO DO TÍTULO) ---
+# 4. Interface - Título com Microfone (Correção definitiva do erro de HTML)
 st.markdown("<h1 style='text-align: center;'>🎤 Karaokê Coopers</h1>", unsafe_allow_html=True)
 
-# --- TRADUÇÕES ---
+# 5. Dicionário de Idiomas (Super Completo)
 idiomas = {
     "Português BR": {
         "busca": "PESQUISE SUA MÚSICA OU ARTISTA", 
         "fila": "Acompanhe sua vez aqui!", 
         "vazio": "Aguardando o primeiro pedido da noite...", 
         "sucesso": "SUA SENHA:",
-        "col_pos": "Posição", "col_mus": "Música", "col_art": "Artista", "col_sen": "Senha"
+        "col_pos": "Posição", "col_sen": "Senha", "col_mus": "Música", "col_art": "Artista",
+        "btn_conf": "CONFIRMAR ✅", "btn_canc": "CANCELAR ❌", "sel": "Selecionada:", "pos_fila": "Sua posição na fila será:"
     },
     "English us": {
         "busca": "SEARCH YOUR SONG OR ARTIST", 
         "fila": "Follow your turn here!", 
         "vazio": "Waiting for the first request...", 
         "sucesso": "YOUR TOKEN:",
-        "col_pos": "Position", "col_mus": "Song", "col_art": "Artist", "col_sen": "Token"
+        "col_pos": "Position", "col_sen": "Token", "col_mus": "Song", "col_art": "Artist",
+        "btn_conf": "CONFIRM ✅", "btn_canc": "CANCEL_CANCEL ❌", "sel": "Selected:", "pos_fila": "Your position will be:"
     },
     "Español EA": {
         "busca": "BUSQUE SUA MÚSICA...", 
         "fila": "¡Sigue tu turno aquí!", 
         "vazio": "¡Lista vacía!", 
         "sucesso": "TU CÓDIGO:",
-        "col_pos": "Posición", "col_mus": "Música", "col_art": "Artista", "col_sen": "Código"
-    },
-    "Français FR": {
-        "busca": "CHERCHEZ VOTRE MUSIQUE...", 
-        "fila": "Suivez votre tour aqui!", 
-        "vazio": "File d'attente vide!", 
-        "sucesso": "VOTRE CODE:",
-        "col_pos": "Position", "col_mus": "Musique", "col_art": "Artiste", "col_sen": "Code"
+        "col_pos": "Posición", "col_sen": "Código", "col_mus": "Música", "col_art": "Artista",
+        "btn_conf": "CONFIRMAR ✅", "btn_canc": "CANCELAR ❌", "sel": "Seleccionada:", "pos_fila": "Tu posición será:"
     }
 }
-escolha = st.radio("Idioma:", list(idiomas.keys()), horizontal=True, label_visibility="collapsed")
+
+escolha = st.radio("Selecione o idioma:", list(idiomas.keys()), horizontal=True, label_visibility="collapsed")
 t = idiomas[escolha]
 
-# --- BOX DE SENHAS DO CLIENTE ---
+# 6. Box de Pedidos do Cliente (Fixo no topo)
 if st.session_state.minhas_senhas:
-    with st.expander("🎫 Meus Pedidos (Mostre ao DJ)", expanded=True):
+    with st.expander("🎫 MEUS PEDIDOS / MY REQUESTS", expanded=True):
         for s in st.session_state.minhas_senhas:
             st.info(f"🎵 {s['musica']} | 🔑 {t['sucesso']} {s['senha']}")
 
 st.divider()
 
-# --- FILA DE ESPERA (POSIÇÃO À ESQUERDA) ---
+# 7. Exibição da Fila (Estética de Tabela Profissional)
 st.subheader(t["fila"])
 df_atual = carregar_fila()
 
 if not df_atual.empty:
     try:
-        # Pega Senha (5), Música (3) e Artista (4) da planilha
+        # Pega Senha (5), Música (3) e Artista (4)
         fila_visual = df_atual.iloc[:, [5, 3, 4]].copy()
         
-        # Cria a lista de posições (1º, 2º...)
+        # Insere a coluna Posição à esquerda (Posição 0)
         posicoes = [f"{i+1}º" for i in range(len(fila_visual))]
-        
-        # Insere a coluna de Posição na primeira posição (índice 0)
         fila_visual.insert(0, t["col_pos"], posicoes)
         
-        # Renomeia os cabeçalhos para o idioma atual
+        # Aplica nomes traduzidos
         fila_visual.columns = [t["col_pos"], t["col_sen"], t["col_mus"], t["col_art"]]
         
-        # Exibe a tabela sem o índice lateral numérico do pandas
+        # Renderiza a tabela limpa
         st.table(fila_visual)
     except:
         st.write(t["vazio"])
@@ -112,32 +108,38 @@ else:
 
 st.divider()
 
-# --- BUSCA E PEDIDO ---
+# 8. Sistema de Busca e Pedido
 if st.session_state.musica_escolhida is None:
-    busca = st.text_input(t["busca"], key=f"in_{st.session_state.reset_busca}").strip().upper()
+    # O reset_busca limpa o campo após o pedido ser feito
+    busca = st.text_input(t["busca"], key=f"input_{st.session_state.reset_busca}").strip().upper()
+    
     if busca:
         df_cat = carregar_catalogo()
         if not df_cat.empty:
+            # Filtra por música ou artista
             res = df_cat[df_cat.iloc[:, 1].str.contains(busca, case=False, na=False) | 
                          df_cat.iloc[:, 2].str.contains(busca, case=False, na=False)].head(10)
             
             if not res.empty:
                 for i, row in res.iterrows():
-                    if st.button(f"🎶 {row.iloc[1]} - {row.iloc[2]}", key=f"m_{i}"):
+                    if st.button(f"🎶 {row.iloc[1]} - {row.iloc[2]}", key=f"song_{i}"):
                         st.session_state.musica_escolhida = row
                         st.rerun()
+            else:
+                st.error("Música não encontrada / Song not found")
 else:
+    # Tela de Confirmação (Estética colorida original)
     m = st.session_state.musica_escolhida
-    st.success(f"Selecionada: {m.iloc[1]}")
-    st.info(f"Sua posição na fila será: {len(df_atual)+1}º")
+    st.success(f"{t['sel']} {m.iloc[1]}")
+    st.info(f"{t['pos_fila']} {len(df_atual)+1}º")
     
     col_c1, col_c2 = st.columns(2)
     with col_c1:
-        if st.button("CONFIRMAR ✅", type="primary", use_container_width=True):
+        if st.button(t["btn_conf"], type="primary", use_container_width=True):
             nova_senha = gerar_senha()
             url_form = "https://docs.google.com/forms/d/e/1FAIpQLSd8SRNim_Uz3KlxdkWzBTdO7zSKSIvQMfiS3flDi6HRKWggYQ/formResponse"
             
-            # --- VERIFIQUE SE ESTE ID ESTÁ CORRETO ---
+            # --- ATENÇÃO: SUBSTITUA O ID ABAIXO PELO SEU ID DA SENHA ---
             id_da_senha = "entry.18065" 
             
             dados = {
@@ -150,16 +152,19 @@ else:
             
             try:
                 requests.post(url_form, data=dados, timeout=5)
+                # Salva na memória local do navegador para o cliente ver
                 st.session_state.minhas_senhas.append({"musica": m.iloc[1], "senha": nova_senha})
-                st.balloons()
+                st.balloons() # Balões ativados!
+                
+                # Reseta estados para nova busca
                 st.session_state.musica_escolhida = None
                 st.session_state.reset_busca += 1
                 time.sleep(1)
                 st.rerun()
             except:
-                st.error("Erro ao enviar. Tente novamente.")
+                st.error("Erro de conexão. Tente novamente!")
             
     with col_c2:
-        if st.button("CANCELAR ❌", use_container_width=True):
+        if st.button(t["btn_canc"], use_container_width=True):
             st.session_state.musica_escolhida = None
             st.rerun()
