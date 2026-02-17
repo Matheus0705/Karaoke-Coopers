@@ -9,25 +9,31 @@ import string
 # 1. Configuração de Página
 st.set_page_config(page_title="Karaokê Coopers", layout="centered", page_icon="🎤")
 
-# 2. Funções Core
+# 2. Funções Core com Blindagem de Cache e Linhas Vazias
 def gerar_senha():
     return ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
 
 def carregar_fila():
-    timestamp = int(time.time())
+    # Timestamp agressivo para evitar cache do Google
+    timestamp = int(time.time() * 1000)
     url_dados = f"https://docs.google.com/spreadsheets/d/1FAIpQLSd8SRNim_Uz3KlxdkWzBTdO7zSKSIvQMfiS3flDi6HRKWggYQ/export?format=csv&gid=403883912&cachebust={timestamp}"
     try:
-        df = pd.read_csv(url_dados)
-        df.columns = [str(c).strip() for c in df.columns]
+        # Carrega os dados
+        df = pd.read_csv(url_dados, storage_options={'Cache-Control': 'no-cache'})
+        
+        # BLINDAGEM: Remove linhas totalmente vazias ou sem o nome da música (coluna 3)
+        # Isso garante que a posição (1º, 2º...) mude assim que o DJ apagar os dados
+        if not df.empty:
+            df = df.dropna(subset=[df.columns[3]])
+            df = df[df.iloc[:, 3].str.strip() != ""]
         return df
-    except:
+    except Exception as e:
         return pd.DataFrame()
 
-@st.cache_data(ttl=30)
+@st.cache_data(ttl=10)
 def carregar_catalogo():
     try:
         df = pd.read_csv('karafuncatalog.csv', encoding='latin1', sep=None, engine='python')
-        df.columns = [str(c).strip() for c in df.columns]
         return df
     except:
         return pd.DataFrame()
@@ -43,38 +49,38 @@ if 'reset_busca' not in st.session_state:
 # 4. Título
 st.title("🎤 Karaokê Coopers")
 
-# 5. Dicionário de Idiomas
+# 5. Dicionário de Idiomas (Regras e Avisos Oficiais)
 idiomas = {
     "Português BR": {
         "busca": "PESQUISE SUA MÚSICA OU ARTISTA", "fila": "Acompanhe sua vez aqui!", 
-        "vazio": "Aguardando pedidos...", "sucesso": "SUA SENHA:",
+        "vazio": "Aguardando pedidos na fila...", "sucesso": "SUA SENHA:",
         "btn_conf": "CONFIRMAR ✅", "btn_canc": "CANCELAR ❌", "sel": "Selecionada:",
-        "aviso_fila": "ℹ️ A fila atualiza automaticamente a cada 30 segundos.",
-        "processando": "DJ salvando seu pedido... Aguarde!",
+        "aviso_fila": "ℹ️ A fila atualiza automaticamente.",
+        "processando": "DJ salvando seu pedido...",
         "alerta_confirm": "⚠️ Ao confirmar, sua música entrará na fila oficial."
     },
     "English us": {
         "busca": "SEARCH YOUR SONG OR ARTIST", "fila": "Follow your turn here!", 
         "vazio": "Waiting for requests...", "sucesso": "YOUR TOKEN:",
         "btn_conf": "CONFIRM ✅", "btn_canc": "CANCEL ❌", "sel": "Selected:",
-        "aviso_fila": "ℹ️ The queue updates automatically every 30 seconds.",
-        "processando": "DJ saving your request... Please wait!",
+        "aviso_fila": "ℹ️ The queue updates automatically.",
+        "processando": "DJ saving your request...",
         "alerta_confirm": "⚠️ By confirming, your song will enter the official queue."
     },
     "Español EA": {
         "busca": "BUSCAR MÚSICA O ARTISTA", "fila": "¡Sigue tu turno aquí!", 
         "vazio": "Esperando pedidos...", "sucesso": "TU CÓDIGO:",
         "btn_conf": "CONFIRMAR ✅", "btn_canc": "CANCELAR ❌", "sel": "Seleccionada:",
-        "aviso_fila": "La fila se actualiza cada 30 segundos.",
-        "processando": "¡DJ guardando su pedido! ¡Espere!",
+        "aviso_fila": "La fila se actualiza automáticamente.",
+        "processando": "¡DJ guardando su pedido!",
         "alerta_confirm": "⚠️ Al confirmar, tu canción entrará en la fila oficial."
     },
     "Français FR": {
         "busca": "CHERCHER MUSIQUE OU ARTISTE", "fila": "Suivez votre tour ici!", 
         "vazio": "En attente de demandes...", "sucesso": "VOTRE CODE:",
         "btn_conf": "CONFIRMER ✅", "btn_canc": "ANNULER ❌", "sel": "Sélectionnée:",
-        "aviso_fila": "La file d'attente s'actualise toutes les 30 secondes.",
-        "processando": "DJ enregistre votre demanda... Attendez!",
+        "aviso_fila": "La file d'attente s'actualise automatiquement.",
+        "processando": "DJ enregistre votre demande...",
         "alerta_confirm": "⚠️ En confirmant, votre chanson entrera dans la file officielle."
     }
 }
@@ -82,7 +88,14 @@ idiomas = {
 escolha = st.radio("Idioma:", list(idiomas.keys()), horizontal=True, label_visibility="collapsed")
 t = idiomas[escolha]
 
-# 6. Box de Meus Pedidos
+# 6. Auto-Refresh automático (30 segundos)
+if "last_refresh" not in st.session_state:
+    st.session_state.last_refresh = time.time()
+if time.time() - st.session_state.last_refresh > 30:
+    st.session_state.last_refresh = time.time()
+    st.rerun()
+
+# 7. Box de Meus Pedidos
 if st.session_state.minhas_senhas:
     with st.expander("🎫 MEUS PEDIDOS / MY REQUESTS", expanded=True):
         for s in st.session_state.minhas_senhas:
@@ -90,29 +103,28 @@ if st.session_state.minhas_senhas:
 
 st.divider()
 
-# 7. FILA DE ESPERA EM CARDS (PARTE RECUPERADA)
+# 8. Fila de Espera em Cards (Lógica de Reordenamento Automático)
 st.subheader(t["fila"])
 df_fila = carregar_fila()
 
 if not df_fila.empty:
     for i in range(len(df_fila)):
         try:
-            # Puxando as colunas 3 (Música), 4 (Artista) e 5 (Senha)
+            # Colunas: 3=Música, 4=Artista, 5=Senha
             m_f = df_fila.iloc[i, 3]
             a_f = df_fila.iloc[i, 4]
             s_f = df_fila.iloc[i, 5]
             
-            # Formato de Card Visual
             st.success(f"**{i+1}º** — 🎵 **{m_f}** ({a_f})  \n🔑 {t['sucesso']} **{s_f}**")
         except:
             continue
     st.caption(t["aviso_fila"])
 else:
-    st.info(t["vazio"])
+    st.warning(t["vazio"])
 
 st.divider()
 
-# 8. Busca e Confirmação
+# 9. Busca e Confirmação
 if st.session_state.musica_escolhida is None:
     busca = st.text_input(t["busca"], key=f"in_{st.session_state.reset_busca}", placeholder="Ex: Queen, Evidências...").strip().upper()
     if busca:
@@ -150,7 +162,7 @@ else:
                     st.balloons()
                     st.session_state.musica_escolhida = None
                     st.session_state.reset_busca += 1
-                    time.sleep(1)
+                    time.sleep(2) # Tempo para o Google processar
                     st.rerun()
                 except:
                     st.error("Erro ao enviar pedido.")
