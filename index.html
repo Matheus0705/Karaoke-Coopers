@@ -12,19 +12,19 @@
         
         .logo-img { max-width: 140px; height: auto; border-radius: 15px; cursor: pointer; margin-bottom: 10px; }
         
-        /* Seletor de Idiomas com Emojis */
-        .lang-bar { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; padding: 10px; background: #f8f9fa; border-radius: 15px; }
-        .lang-item { font-size: 24px; cursor: pointer; transition: 0.2s; filter: grayscale(100%); opacity: 0.5; }
-        .lang-item.active { filter: grayscale(0%); opacity: 1; transform: scale(1.2); }
+        /* Seletor de Idiomas com as TUAS Imagens */
+        .lang-bar { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; padding: 10px; background: #f8f9fa; border-radius: 15px; }
+        .lang-item { width: 45px; height: 30px; cursor: pointer; transition: 0.2s; filter: grayscale(100%); opacity: 0.5; object-fit: cover; border-radius: 4px; border: 1px solid #ddd; }
+        .lang-item.active { filter: grayscale(0%); opacity: 1; transform: scale(1.1); border-color: var(--primary); box-shadow: 0 0 5px rgba(0,0,0,0.2); }
 
-        /* Senhas Fixas */
+        /* Senhas Fixas do Cliente */
         .card { padding: 12px; border-radius: 15px; margin-bottom: 10px; font-weight: bold; position: relative; animation: fadeIn 0.5s; }
         .card-info { background: var(--primary); color: white; }
-        .remove-btn { position: absolute; right: 10px; top: 8px; cursor: pointer; background: rgba(0,0,0,0.2); border-radius: 50%; width: 20px; height: 20px; line-height: 18px; }
+        .remove-btn { position: absolute; right: 10px; top: 8px; cursor: pointer; background: rgba(0,0,0,0.2); border-radius: 50%; width: 20px; height: 20px; line-height: 18px; color: white; }
 
         /* Fila */
         .queue-table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 10px; }
-        .queue-table th { background: #eee; padding: 10px; text-align: left; border-radius: 5px; }
+        .queue-table th { background: #eee; padding: 10px; text-align: left; }
         .queue-table td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
 
         /* Busca */
@@ -46,16 +46,16 @@
     <h2 id="app-title">Karaokê Coopers</h2>
 
     <div class="lang-bar">
-        <span class="lang-item active" onclick="setLang('pt')">🇧🇷</span>
-        <span class="lang-item" onclick="setLang('en')">🇺🇸</span>
-        <span class="lang-item" onclick="setLang('es')">🇪🇸</span>
-        <span class="lang-item" onclick="setLang('fr')">🇫🇷</span>
+        <img src="portugal-e-brasil-realçam-duas-bandeiras-juntas-d-ilustração-283267433.webp" class="lang-item active" onclick="setLang('pt')" title="Português">
+        <img src="usa-flag-stars-stripes-uk-260nw-2630619109.webp" class="lang-item" onclick="setLang('en')" title="English">
+        <img src="bandeira-da-espanha-balancando-ao-vento_2227-2338.avif" class="lang-item" onclick="setLang('es')" title="Español">
+        <img src="34921756-nacional-bandeira-do-franca-3d-ilustracao-vetor.jpg" class="lang-item" onclick="setLang('fr')" title="Français">
     </div>
     
     <div id="myOrders"></div>
 
     <div id="queueSection">
-        <h4 id="txt-fila" style="margin: 5px 0;">Aguardando pedidos...</h4>
+        <h4 id="txt-fila" style="margin: 5px 0;">Acompanhe sua vez:</h4>
         <table class="queue-table">
             <thead>
                 <tr><th id="txt-pos">Pos</th><th id="txt-senha">Senha</th><th>Música</th></tr>
@@ -85,6 +85,7 @@
 
     let currentLang = 'pt';
     let catalog = [];
+    let selectedSong = null;
     let logoClicks = 0;
     const SHEET_CSV = "https://docs.google.com/spreadsheets/d/1FAIpQLSd8SRNim_Uz3KlxdkWzBTdO7zSKSIvQMfiS3flDi6HRKWggYQ/export?format=csv";
 
@@ -92,7 +93,6 @@
         renderMyOrders();
         loadQueue();
         fetch('karafuncatalog.csv').then(r => r.text()).then(data => {
-            // Separa tratando aspas e múltiplos separadores
             catalog = data.split('\n').map(line => line.replace(/"/g, '').split(/[;,]/));
         });
         setInterval(loadQueue, 20000);
@@ -101,7 +101,10 @@
             logoClicks++;
             if(logoClicks === 5) {
                 const pass = prompt("Senha do DJ:");
-                if(pass === "coopersdj26") alert("Modo DJ em breve!");
+                if(pass === "coopersdj26") {
+                    // Aqui abrimos a fila do DJ se necessário
+                    alert("Acesso DJ Confirmado");
+                }
                 logoClicks = 0;
             }
         };
@@ -109,10 +112,10 @@
 
     function setLang(lang) {
         currentLang = lang;
-        const items = document.querySelectorAll('.lang-item');
-        items.forEach((it, idx) => {
-            const langs = ['pt', 'en', 'es', 'fr'];
-            it.classList.toggle('active', langs[idx] === lang);
+        const imgs = document.querySelectorAll('.lang-item');
+        const langs = ['pt', 'en', 'es', 'fr'];
+        imgs.forEach((img, idx) => {
+            img.classList.toggle('active', langs[idx] === lang);
         });
         document.getElementById('searchInput').placeholder = translations[lang].busca;
         document.getElementById('txt-fila').innerText = translations[lang].fila;
