@@ -26,6 +26,8 @@
 </head>
 <body>
 
+<iframe name="google_submit_frame" style="display:none;"></iframe>
+
 <div class="container">
     <img src="9d8daa_198ec12882054dceb6d49d760eba30f0~mv2.jpg" alt="Logo" class="logo-img">
     <h2 id="app-title">Karaokê Coopers</h2>
@@ -50,15 +52,24 @@
     </div>
 
     <input type="text" id="searchInput" oninput="searchSongs()">
+    
+    <form id="realForm" action="https://docs.google.com/forms/d/e/1bCm6owXX36OTdAaeUKTRrz18LsuHOBTbtbl35Zieato/formResponse" method="POST" target="google_submit_frame" style="display:none;">
+        <input type="hidden" name="entry.1995948109" id="form_hora">
+        <input type="hidden" name="entry.105234855" id="form_codigo">
+        <input type="hidden" name="entry.1830320650" id="form_musica">
+        <input type="hidden" name="entry.730937896" id="form_artista">
+        <input type="hidden" name="entry.1210617554" id="form_senha">
+    </form>
+
     <div id="results"></div>
 </div>
 
 <script>
     const translations = {
-        pt: { title: "Karaokê Coopers", busca: "PESQUISE MÚSICA OU ARTISTA", filaLabel: "Acompanhe sua vez:", thPos: "Pos", thSenha: "Senha", thMusica: "Música", tokenLabel: "SENHA GERADA:", filaVazia: "Fila vazia!", alert: "✅ PEDIDO ENVIADO COM SUCESSO!" },
-        en: { title: "Coopers Karaoke", busca: "SEARCH SONG OR ARTIST", filaLabel: "Current Queue:", thPos: "Pos", thSenha: "Code", thMusica: "Song", tokenLabel: "GENERATED CODE:", filaVazia: "Queue is empty!", alert: "✅ ORDER SENT SUCCESSFULLY!" },
-        es: { title: "Karaoke Coopers", busca: "BUSCAR MÚSICA O ARTISTA", filaLabel: "Lista de espera:", thPos: "Pos", thSenha: "Cód", thMusica: "Música", tokenLabel: "CÓDIGO GENERADO:", filaVazia: "¡Lista vazía!", alert: "✅ ¡PEDIDO ENVIADO COM ÉXITO!" },
-        fr: { title: "Karaoké Coopers", busca: "RECHERCHER CHANSON", filaLabel: "File d'attente:", thPos: "Pos", thSenha: "Code", thMusica: "Chanson", tokenLabel: "CODE GÉNÉRÉ:", filaVazia: "File vide!", alert: "✅ COMMANDE ENVOYÉE AVEC SUCCÈS!" }
+        pt: { title: "Karaokê Coopers", busca: "PESQUISE MÚSICA OU ARTISTA", filaLabel: "Acompanhe sua vez:", thPos: "Pos", thSenha: "Senha", thMusica: "Música", tokenLabel: "SENHA GERADA:", filaVazia: "Fila vazia!", alert: "✅ PEDIDO ENVIADO!" },
+        en: { title: "Coopers Karaoke", busca: "SEARCH SONG OR ARTIST", filaLabel: "Current Queue:", thPos: "Pos", thSenha: "Code", thMusica: "Song", tokenLabel: "GENERATED CODE:", filaVazia: "Queue is empty!", alert: "✅ ORDER SENT!" },
+        es: { title: "Karaoke Coopers", busca: "BUSCAR MÚSICA O ARTISTA", filaLabel: "Lista de espera:", thPos: "Pos", thSenha: "Cód", thMusica: "Música", tokenLabel: "CÓDIGO GENERADO:", filaVazia: "¡Lista vazía!", alert: "✅ ¡PEDIDO ENVIADO!" },
+        fr: { title: "Karaoké Coopers", busca: "RECHERCHER CHANSON", filaLabel: "File d'attente:", thPos: "Pos", thSenha: "Code", thMusica: "Chanson", tokenLabel: "CODE GÉNÉRÉ:", filaVazia: "File vide!", alert: "✅ COMMANDE ENVOYÉE!" }
     };
 
     let currentLang = 'pt';
@@ -121,26 +132,49 @@
 
     function sendOrderDirect(id, title, artist) {
         const senha = Math.random().toString(36).substring(2, 6).toUpperCase();
-        const params = new URLSearchParams();
         
-        params.append('entry.1995948109', new Date().toLocaleTimeString());
-        params.append('entry.105234855', id);
-        params.append('entry.1830320650', title);
-        params.append('entry.730937896', artist);
-        params.append('entry.1210617554', senha);
+        // 1. Preenche o formulário oculto
+        document.getElementById('form_hora').value = new Date().toLocaleTimeString();
+        document.getElementById('form_codigo').value = id;
+        document.getElementById('form_musica').value = title;
+        document.getElementById('form_artista').value = artist;
+        document.getElementById('form_senha').value = senha;
 
-        const formAction = "https://docs.google.com/forms/d/e/1bCm6owXX36OTdAaeUKTRrz18LsuHOBTbtbl35Zieato/formResponse";
+        // 2. Envia o formulário REAL (Garante o envio independente da internet)
+        document.getElementById('realForm').submit();
 
-        // ENVIO
-        fetch(formAction, { method: 'POST', body: params, mode: 'no-cors' });
-
-        // SALVA LOCALMENTE
+        // 3. Salva a senha local
         let saved = JSON.parse(localStorage.getItem('myKaraokeOrders') || '[]');
         saved.push({ senha, musica: title });
         localStorage.setItem('myKaraokeOrders', JSON.stringify(saved));
         
-        // POPUP REATIVADO (Isso trava a tela e obriga o navegador a terminar o envio)
+        // 4. O POPUP (Obrigatório)
         alert(translations[currentLang].alert);
 
-        // Confetes após o OK do popup
-        confetti({ particleCount: 150, spread: 70
+        // 5. Confete e limpeza
+        confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+        renderMyOrders();
+        document.getElementById('searchInput').value = '';
+        document.getElementById('results').innerHTML = '';
+        setTimeout(loadQueue, 1500);
+    }
+
+    function renderMyOrders() {
+        const orders = JSON.parse(localStorage.getItem('myKaraokeOrders') || '[]');
+        const area = document.getElementById('myOrders');
+        area.innerHTML = orders.map((o, idx) => `
+            <div class="card card-info">
+                <span class="remove-btn" onclick="removeMyOrder(${idx})">×</span>
+                🔑 ${translations[currentLang].tokenLabel} ${o.senha}<br><small>${o.musica}</small>
+            </div>`).join('');
+    }
+
+    function removeMyOrder(idx) {
+        let saved = JSON.parse(localStorage.getItem('myKaraokeOrders') || '[]');
+        saved.splice(idx, 1);
+        localStorage.setItem('myKaraokeOrders', JSON.stringify(saved));
+        renderMyOrders();
+    }
+</script>
+</body>
+</html>
