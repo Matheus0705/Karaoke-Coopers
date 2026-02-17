@@ -15,7 +15,6 @@ def gerar_senha():
 
 def carregar_fila():
     timestamp = int(time.time())
-    # Link da planilha publicada como CSV
     url_dados = f"https://docs.google.com/spreadsheets/d/1FAIpQLSd8SRNim_Uz3KlxdkWzBTdO7zSKSIvQMfiS3flDi6HRKWggYQ/export?format=csv&cachebust={timestamp}"
     try:
         df = pd.read_csv(url_dados)
@@ -41,8 +40,8 @@ if 'musica_escolhida' not in st.session_state:
 if 'reset_busca' not in st.session_state:
     st.session_state.reset_busca = 0
 
-# --- INTERFACE (TÍTULO CORRIGIDO) ---
-st.markdown("<h1 style='text-align: center;'>🎤 Karaokê Coopers</h1>", unsafe_content_html=True)
+# --- INTERFACE (CORREÇÃO DO ERRO DO TÍTULO) ---
+st.markdown("<h1 style='text-align: center;'>🎤 Karaokê Coopers</h1>", unsafe_allow_html=True)
 
 # --- TRADUÇÕES ---
 idiomas = {
@@ -78,7 +77,7 @@ idiomas = {
 escolha = st.radio("Idioma:", list(idiomas.keys()), horizontal=True, label_visibility="collapsed")
 t = idiomas[escolha]
 
-# --- BOX DE SENHAS DO CLIENTE (FIXO NO TOPO) ---
+# --- BOX DE SENHAS DO CLIENTE ---
 if st.session_state.minhas_senhas:
     with st.expander("🎫 Meus Pedidos (Mostre ao DJ)", expanded=True):
         for s in st.session_state.minhas_senhas:
@@ -86,23 +85,25 @@ if st.session_state.minhas_senhas:
 
 st.divider()
 
-# --- FILA DE ESPERA (ESTÉTICA PEDIDA) ---
+# --- FILA DE ESPERA (POSIÇÃO À ESQUERDA) ---
 st.subheader(t["fila"])
 df_atual = carregar_fila()
 
 if not df_atual.empty:
     try:
-        # Pega Senha (5), Música (3) e Artista (4)
+        # Pega Senha (5), Música (3) e Artista (4) da planilha
         fila_visual = df_atual.iloc[:, [5, 3, 4]].copy()
         
-        # Cria a coluna "Posição" à esquerda
+        # Cria a lista de posições (1º, 2º...)
         posicoes = [f"{i+1}º" for i in range(len(fila_visual))]
+        
+        # Insere a coluna de Posição na primeira posição (índice 0)
         fila_visual.insert(0, t["col_pos"], posicoes)
         
-        # Nomeia as colunas conforme o idioma
+        # Renomeia os cabeçalhos para o idioma atual
         fila_visual.columns = [t["col_pos"], t["col_sen"], t["col_mus"], t["col_art"]]
         
-        # Exibe a tabela sem o índice lateral do pandas
+        # Exibe a tabela sem o índice lateral numérico do pandas
         st.table(fila_visual)
     except:
         st.write(t["vazio"])
@@ -136,7 +137,7 @@ else:
             nova_senha = gerar_senha()
             url_form = "https://docs.google.com/forms/d/e/1FAIpQLSd8SRNim_Uz3KlxdkWzBTdO7zSKSIvQMfiS3flDi6HRKWggYQ/formResponse"
             
-            # --- LEMBRE-SE DE CONFERIR ESTE ID ---
+            # --- VERIFIQUE SE ESTE ID ESTÁ CORRETO ---
             id_da_senha = "entry.18065" 
             
             dados = {
@@ -156,7 +157,7 @@ else:
                 time.sleep(1)
                 st.rerun()
             except:
-                st.error("Erro na conexão.")
+                st.error("Erro ao enviar. Tente novamente.")
             
     with col_c2:
         if st.button("CANCELAR ❌", use_container_width=True):
