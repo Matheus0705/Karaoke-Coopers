@@ -1,4 +1,0 @@
-streamlit
-streamlit-local-storage
-pandas
-requests
