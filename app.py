@@ -9,7 +9,7 @@ st.set_page_config(page_title="Karaokê Coopers", layout="centered", page_icon="
 @st.cache_data
 def carregar_catalogo():
     try:
-        # Carrega o arquivo CSV que você subiu no GitHub
+        # Carrega o catálogo local
         df = pd.read_csv('karafuncatalog.csv', encoding='latin1', sep=None, engine='python')
         df.columns = [str(c).strip() for c in df.columns]
         return df
@@ -51,30 +51,31 @@ else:
     col1, col2 = st.columns(2)
     with col1:
         if st.button(t["conf"], type="primary"):
-            # URL de submissão do seu formulário
             url_form = "https://docs.google.com/forms/d/e/1FAIpQLSd8SRNim_Uz3KlxdkWzBTdO7zSKSIvQMfiS3flDi6HRKWggYQ/formResponse"
             
-            # Dados mapeados com os IDs que extraímos do seu link
             dados = {
-                "entry.1213556115": datetime.now().strftime("%H:%M"), # DATA
-                "entry.1947522889": str(m.iloc[0]),                   # CODIGO
-                "entry.1660854967": str(m.iloc[1]),                   # MUSICA
-                "entry.700923343": str(m.iloc[2])                     # ARTISTA
+                "entry.1213556115": datetime.now().strftime("%H:%M"), 
+                "entry.1947522889": str(m.iloc[0]),                   
+                "entry.1660854967": str(m.iloc[1]),                   
+                "entry.700923343": str(m.iloc[2])                     
             }
             
-           try:
-                # Faz o envio e guarda a resposta
+            try:
+                # Faz o envio e guarda a resposta para diagnóstico
                 resposta = requests.post(url_form, data=dados)
                 
                 if resposta.status_code == 200:
                     st.balloons()
                     st.success(t["sucesso"])
-                    st.info("Verifique a planilha agora!")
+                    st.info("💡 Verifique a sua Planilha Google agora!")
                 else:
                     st.error(f"Erro do Google: Código {resposta.status_code}")
+                    st.warning("Verifique se o formulário aceita respostas de qualquer pessoa.")
                     
             except Exception as e:
-                st.error(f"Erro técnico: {e}")
+                st.error(f"Erro técnico no envio: {e}")
+                st.info("Verifique se 'requests' está no requirements.txt")
+
     with col2:
         if st.button(t["canc"]):
             st.session_state.musica_escolhida = None
