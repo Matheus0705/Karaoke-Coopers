@@ -6,75 +6,135 @@
     <title>Karaokê Coopers</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <style>
-        :root { --primary: #0077b6; --success: #90be6d; --bg: #f0f2f5; }
+        :root { --primary: #0077b6; --success: #90be6d; --bg: #f0f2f5; --danger: #d62828; --dj: #4a4e69; }
         body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); margin: 0; padding: 15px; }
-        .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); min-height: 400px; }
-        .logo-container { text-align: center; margin-bottom: 20px; }
-        .logo-img { max-width: 150px; height: auto; border-radius: 10px; }
-        h1 { margin: 10px 0; font-size: 24px; text-align: center; }
-        .token-card { background: var(--primary); color: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; display: none; text-align: center; font-weight: bold; }
-        input[type="text"] { width: 100%; padding: 15px; border: 2px solid #ddd; border-radius: 12px; font-size: 16px; box-sizing: border-box; }
-        .song-item { background: #fff; border: 1px solid #eee; padding: 14px; margin: 10px 0; border-radius: 12px; cursor: pointer; text-align: left; }
-        .queue-table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 10px; }
-        .queue-table th { background: #f8f9fa; padding: 10px; text-align: left; }
-        .queue-table td { padding: 10px; border-bottom: 1px solid #f5f5f5; }
-        .btn-confirm { background: var(--success); color: white; border: none; padding: 18px; border-radius: 12px; font-size: 18px; cursor: pointer; width: 100%; font-weight: bold; }
-        .btn-cancel { background: #6c757d; color: white; border: none; padding: 12px; border-radius: 12px; width: 100%; margin-top: 10px; cursor: pointer; }
+        .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); min-height: 500px; position: relative; }
+        
+        .logo-container { text-align: center; margin-bottom: 15px; }
+        .logo-img { max-width: 140px; height: auto; border-radius: 15px; cursor: pointer; }
+        h1 { margin: 10px 0; font-size: 26px; text-align: center; color: #1a1a1a; }
+
+        /* Idiomas */
+        .lang-bar { display: flex; justify-content: center; gap: 8px; margin-bottom: 20px; }
+        .lang-btn { border: 1px solid #ddd; background: white; padding: 6px 12px; border-radius: 20px; cursor: pointer; font-size: 12px; }
+        .lang-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        /* Senhas Fixas do Cliente */
+        #myOrders { margin-bottom: 20px; }
+        .card { padding: 12px; border-radius: 15px; margin-bottom: 8px; text-align: center; font-weight: bold; animation: fadeIn 0.5s; position: relative; }
+        .card-info { background: var(--primary); color: white; font-size: 0.9em; }
+        .remove-my-order { position: absolute; right: 10px; top: 10px; cursor: pointer; font-size: 12px; opacity: 0.7; }
+
+        /* Busca */
+        input[type="text"] { width: 100%; padding: 16px; border: 2px solid #eee; border-radius: 15px; font-size: 16px; box-sizing: border-box; outline: none; }
+        .song-item { background: #fff; border: 1px solid #eee; padding: 15px; margin: 10px 0; border-radius: 15px; cursor: pointer; border-left: 5px solid var(--primary); }
+
+        /* Tabela Fila */
+        .queue-table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 10px; border-radius: 12px; overflow: hidden; }
+        .queue-table th { background: #f8f9fa; padding: 12px; text-align: left; }
+        .queue-table td { padding: 12px; border-bottom: 1px solid #f5f5f5; }
+
+        /* Botões */
+        .btn-confirm { background: var(--success); color: white; border: none; padding: 18px; border-radius: 15px; font-size: 18px; cursor: pointer; width: 100%; font-weight: bold; }
+        .btn-cancel { background: #6c757d; color: white; border: none; padding: 12px; border-radius: 15px; width: 100%; margin-top: 10px; cursor: pointer; }
+
+        /* Painel DJ */
+        #djPanel { display: none; background: #fff; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 999; padding: 20px; box-sizing: border-box; overflow-y: auto; }
+        .dj-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--dj); margin-bottom: 20px; padding-bottom: 10px; }
+        .btn-call { background: var(--success); color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; }
+
         .hidden { display: none; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="logo-container">
-        <img src="9d8daa_198ec12882054dceb6d49d760eba30f0~mv2.jpg" alt="Logo Coopers" class="logo-img" onerror="this.style.display='none'">
-        <h1>🎤 Karaokê Coopers</h1>
+        <img src="9d8daa_198ec12882054dceb6d49d760eba30f0~mv2.jpg" alt="Logo Coopers" class="logo-img" id="mainLogo">
+        <h1>Karaokê Coopers</h1>
+    </div>
+
+    <div class="lang-bar">
+        <button class="lang-btn active" onclick="setLang('pt')">PT 🇧🇷</button>
+        <button class="lang-btn" onclick="setLang('en')">EN 🇺🇸</button>
+        <button class="lang-btn" onclick="setLang('es')">ES 🇪🇸</button>
     </div>
     
-    <div id="tokenCard" class="token-card"></div>
+    <div id="myOrders"></div>
 
     <div id="queueArea">
-        <h3 style="margin:0">Fila de Espera</h3>
+        <h3 id="txt-fila" style="margin:0">Fila de Espera</h3>
         <table class="queue-table">
-            <thead><tr><th>Pos</th><th>Senha</th><th>Música</th></tr></thead>
-            <tbody id="queueBody"><tr><td colspan="3">Carregando fila...</td></tr></tbody>
+            <thead><tr><th id="txt-pos">Pos</th><th id="txt-senha">Senha</th><th>Música</th></tr></thead>
+            <tbody id="queueBody"></tbody>
         </table>
     </div>
 
-    <hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
+    <hr style="border:0; border-top:1px solid #eee; margin:25px 0;">
 
     <div id="searchArea">
-        <input type="text" id="searchInput" placeholder="DIGITE O NOME DA MÚSICA" oninput="searchSongs()">
+        <input type="text" id="searchInput" placeholder="PESQUISE MÚSICA OU ARTISTA" oninput="searchSongs()">
         <div id="results" style="margin-top:10px;"></div>
     </div>
 
     <div id="confirmArea" class="hidden">
-        <div id="songDetails" style="background: #f8f9fa; padding: 20px; border-radius: 12px; margin-bottom: 15px;"></div>
-        <button class="btn-confirm" onclick="sendOrder()">CONFIRMAR PEDIDO ✅</button>
-        <button class="btn-cancel" onclick="cancelOrder()">VOLTAR ❌</button>
+        <div id="songDetails" class="card card-info" style="background: #f8f9fa; color: #333; border: 1px solid #ddd;"></div>
+        <button id="btn-conf" class="btn-confirm" onclick="sendOrder()">CONFIRMAR ✅</button>
+        <button id="btn-canc" class="btn-cancel" onclick="cancelOrder()">CANCELAR ❌</button>
     </div>
 </div>
 
+<div id="djPanel">
+    <div class="dj-header">
+        <h2>🎧 Painel do DJ</h2>
+        <button onclick="closeDJ()" style="background:none; border:1px solid #333; padding:5px; border-radius:5px;">Sair</button>
+    </div>
+    <div id="djQueue"></div>
+</div>
+
 <script>
+    const translations = {
+        pt: { busca: "PESQUISE MÚSICA OU ARTISTA", fila: "Acompanhe sua vez:", pos: "Pos", senha: "Senha", confirm: "CONFIRMAR ✅", cancel: "CANCELAR ❌", sucesso: "SENHA ATIVA:" },
+        en: { busca: "SEARCH SONG OR ARTIST", fila: "Current Queue:", pos: "Pos", senha: "Code", confirm: "CONFIRM ✅", cancel: "CANCEL ❌", sucesso: "ACTIVE CODE:" },
+        es: { busca: "BUSCAR MÚSICA O ARTISTA", fila: "Lista de Espera:", pos: "Pos", senha: "Cód", confirm: "CONFIRMAR ✅", cancel: "CANCELAR ❌", sucesso: "CÓDIGO ACTIVO:" }
+    };
+
+    let currentLang = 'pt';
     let catalog = [];
     let selectedSong = null;
+    let logoClicks = 0;
     const SHEET_CSV = "https://docs.google.com/spreadsheets/d/1FAIpQLSd8SRNim_Uz3KlxdkWzBTdO7zSKSIvQMfiS3flDi6HRKWggYQ/export?format=csv";
 
     window.onload = () => {
-        const lastToken = localStorage.getItem('karaokeToken');
-        if(lastToken) showToken(lastToken, localStorage.getItem('karaokeSong'));
-        
+        renderMyOrders();
         loadQueue();
-        // Carrega o catálogo limpando aspas e tratando ponto e vírgula
-        fetch('karafuncatalog.csv')
-            .then(r => r.text())
-            .then(data => {
-                catalog = data.split('\n').map(line => {
-                    return line.replace(/"/g, '').split(/[;,]/);
-                });
-            });
-        setInterval(loadQueue, 30000); 
+        fetch('karafuncatalog.csv').then(r => r.text()).then(data => {
+            catalog = data.split('\n').map(line => line.replace(/"/g, '').split(/[;,]/));
+        });
+        setInterval(loadQueue, 20000);
+
+        // Segredo do DJ: Clique 5 vezes na logo
+        document.getElementById('mainLogo').onclick = () => {
+            logoClicks++;
+            if(logoClicks === 5) {
+                const pass = prompt("Senha do DJ:");
+                if(pass === "coopersdj26") {
+                    document.getElementById('djPanel').style.display = 'block';
+                    renderDJQueue();
+                }
+                logoClicks = 0;
+            }
+        };
     };
+
+    function setLang(lang) {
+        currentLang = lang;
+        document.getElementById('searchInput').placeholder = translations[lang].busca;
+        document.getElementById('txt-fila').innerText = translations[lang].fila;
+        document.getElementById('btn-conf').innerText = translations[lang].confirm;
+        renderMyOrders();
+    }
 
     async function loadQueue() {
         try {
@@ -83,33 +143,25 @@
             const rows = text.split('\n').slice(1);
             let html = '';
             rows.forEach((row, i) => {
-                const cols = row.split(','); // Planilha Google sempre usa vírgula
+                const cols = row.split(',');
                 if(cols.length > 5 && cols[5].trim() !== "") {
-                    // Limpa possíveis aspas que o Google coloca em nomes com vírgula
-                    const senha = cols[5].replace(/"/g, '');
-                    const musica = cols[3].replace(/"/g, '');
-                    html += `<tr><td>${i+1}º</td><td><strong>${senha}</strong></td><td>${musica}</td></tr>`;
+                    html += `<tr><td>${i+1}º</td><td><strong>${cols[5].replace(/"/g,'')}</strong></td><td>${cols[3].replace(/"/g,'')}</td></tr>`;
                 }
             });
-            document.getElementById('queueBody').innerHTML = html || '<tr><td colspan="3">Fila vazia!</td></tr>';
-        } catch(e) { document.getElementById('queueBody').innerHTML = '<tr><td colspan="3">Erro ao carregar fila</td></tr>'; }
+            document.getElementById('queueBody').innerHTML = html || '<tr><td colspan="3">Fila vazia</td></tr>';
+        } catch(e) { console.log("Erro fila"); }
     }
 
     function searchSongs() {
         const query = document.getElementById('searchInput').value.toLowerCase().trim();
-        const resultsDiv = document.getElementById('results');
-        if(query.length < 2) { resultsDiv.innerHTML = ''; return; }
-        
-        const filtered = catalog.filter(s => 
-            (s[1] && s[1].toLowerCase().includes(query)) || 
-            (s[2] && s[2].toLowerCase().includes(query))
-        ).slice(0, 10);
-        
+        const resDiv = document.getElementById('results');
+        if(query.length < 2) { resDiv.innerHTML = ''; return; }
+        const filtered = catalog.filter(s => (s[1] && s[1].toLowerCase().includes(query)) || (s[2] && s[2].toLowerCase().includes(query))).slice(0, 10);
         let html = '';
         filtered.forEach(s => {
             html += `<div class="song-item" onclick="selectSong('${s[0]}','${s[1]}','${s[2]}')">🎶 <strong>${s[1]}</strong><br><small>${s[2]}</small></div>`;
         });
-        resultsDiv.innerHTML = html;
+        resDiv.innerHTML = html;
     }
 
     function selectSong(id, title, artist) {
@@ -129,33 +181,67 @@
 
     function sendOrder() {
         const senha = Math.random().toString(36).substring(2, 6).toUpperCase();
-        const now = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        
         const params = new URLSearchParams();
-        params.append('entry.1213556115', now);
+        params.append('entry.1213556115', new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}));
         params.append('entry.1947522889', selectedSong.id);
         params.append('entry.1660854967', selectedSong.title);
         params.append('entry.700923343', selectedSong.artist);
         params.append('entry.694761068', senha); 
 
-        fetch("https://docs.google.com/forms/d/e/1FAIpQLSd8SRNim_Uz3KlxdkWzBTdO7zSKSIvQMfiS3flDi6HRKWggYQ/formResponse", { 
-            method: 'POST', body: params, mode: 'no-cors' 
-        });
-
-        confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-        localStorage.setItem('karaokeToken', senha);
-        localStorage.setItem('karaokeSong', selectedSong.title);
-        showToken(senha, selectedSong.title);
+        fetch("https://docs.google.com/forms/d/e/1FAIpQLSd8SRNim_Uz3KlxdkWzBTdO7zSKSIvQMfiS3flDi6HRKWggYQ/formResponse", { method: 'POST', body: params, mode: 'no-cors' });
         
-        alert("Pedido enviado! Senha: " + senha);
+        // SALVA NA LISTA (LocalStorage)
+        let saved = JSON.parse(localStorage.getItem('myKaraokeOrders') || '[]');
+        saved.push({ senha, musica: selectedSong.title });
+        localStorage.setItem('myKaraokeOrders', JSON.stringify(saved));
+        
+        confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+        renderMyOrders();
+        alert(translations[currentLang].sucesso + " " + senha);
         cancelOrder();
         setTimeout(loadQueue, 2000);
     }
 
-    function showToken(token, song) {
-        const card = document.getElementById('tokenCard');
-        card.style.display = 'block';
-        card.innerHTML = `🔑 SENHA ATIVA: ${token}<br><small>${song}</small>`;
+    function renderMyOrders() {
+        const orders = JSON.parse(localStorage.getItem('myKaraokeOrders') || '[]');
+        const area = document.getElementById('myOrders');
+        area.innerHTML = '';
+        orders.forEach((o, index) => {
+            area.innerHTML += `
+                <div class="card card-info">
+                    <span class="remove-my-order" onclick="removeMyOrder(${index})">X</span>
+                    🔑 ${translations[currentLang].sucesso} ${o.senha}<br><small>${o.musica}</small>
+                </div>`;
+        });
+    }
+
+    function removeMyOrder(index) {
+        let saved = JSON.parse(localStorage.getItem('myKaraokeOrders') || '[]');
+        saved.splice(index, 1);
+        localStorage.setItem('myKaraokeOrders', JSON.stringify(saved));
+        renderMyOrders();
+    }
+
+    // FUNÇÕES DO DJ
+    function closeDJ() { document.getElementById('djPanel').style.display = 'none'; }
+    
+    async function renderDJQueue() {
+        const resp = await fetch(SHEET_CSV + "&cache=" + Date.now());
+        const text = await resp.text();
+        const rows = text.split('\n').slice(1);
+        let html = '<table class="queue-table"><thead><tr><th>Senha</th><th>Música</th><th>Ação</th></tr></thead><tbody>';
+        rows.forEach((row, i) => {
+            const cols = row.split(',');
+            if(cols[5]) {
+                html += `<tr>
+                    <td>${cols[5]}</td>
+                    <td>${cols[3]}</td>
+                    <td><button class="btn-call" onclick="alert('Cantor chamado!')">Chamar</button></td>
+                </tr>`;
+            }
+        });
+        html += '</tbody></table>';
+        document.getElementById('djQueue').innerHTML = html;
     }
 </script>
 </body>
