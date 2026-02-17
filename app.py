@@ -5,11 +5,18 @@ import requests
 import time
 import random
 import string
+import unicodedata
 
 # 1. Configuração de Página
 st.set_page_config(page_title="Karaokê Coopers", layout="centered", page_icon="🎤")
 
-# 2. Funções Core
+# --- FUNÇÕES DE APOIO ---
+
+def remover_acentos(texto):
+    """Melhoria: Busca por aproximação (ignora acentos e maiúsculas)"""
+    return ''.join(c for c in unicodedata.normalize('NFD', str(texto))
+                  if unicodedata.category(c) != 'Mn').lower()
+
 def gerar_senha():
     return ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
 
@@ -23,7 +30,7 @@ def carregar_fila():
     except:
         return pd.DataFrame()
 
-@st.cache_data(ttl=30)
+@st.cache_data(ttl=60)
 def carregar_catalogo():
     try:
         df = pd.read_csv('karafuncatalog.csv', encoding='latin1', sep=None, engine='python')
@@ -32,7 +39,7 @@ def carregar_catalogo():
     except:
         return pd.DataFrame()
 
-# 3. Estado da Sessão
+# --- ESTADO DA SESSÃO ---
 if 'minhas_senhas' not in st.session_state:
     st.session_state.minhas_senhas = []
 if 'musica_escolhida' not in st.session_state:
@@ -40,10 +47,16 @@ if 'musica_escolhida' not in st.session_state:
 if 'reset_busca' not in st.session_state:
     st.session_state.reset_busca = 0
 
-# 4. Interface - Título com Logo/Microfone
-st.markdown("<h1 style='text-align: center;'>🎤 Karaokê Coopers</h1>", unsafe_allow_html=True)
+# --- INTERFACE (LOGO + TÍTULO HARMÔNICO) ---
+# Adicionando sua logo do GitHub redimensionada
+col_l1, col_l2, col_l3 = st.columns([1, 2, 1])
+with col_l2:
+    logo_url = "https://raw.githubusercontent.com/MatheusS77/Coopers/main/9d8daa_198ec12882054dceb6d49d760eba30f0~mv2.jpg"
+    st.image(logo_url, use_container_width=True)
 
-# 5. Dicionário de Idiomas (OS 4 IDIOMAS RESTAURADOS)
+st.markdown("<h1 style='text-align: center; margin-top: -20px;'>🎤 Karaokê Coopers</h1>", unsafe_allow_html=True)
+
+# --- TRADUÇÕES ---
 idiomas = {
     "Português BR": {
         "busca": "PESQUISE SUA MÚSICA OU ARTISTA", "fila": "Acompanhe sua vez aqui!", 
@@ -74,7 +87,16 @@ idiomas = {
 escolha = st.radio("Idioma:", list(idiomas.keys()), horizontal=True, label_visibility="collapsed")
 t = idiomas[escolha]
 
-# 6. Box de Pedidos do Cliente (Senha Falsa/Fixa)
+# 1. AUTO-REFRESH DA FILA (Melhoria 1)
+# Atualiza a página silenciosamente a cada 30 segundos
+st.empty() 
+if "last_refresh" not in st.session_state:
+    st.session_state.last_refresh = time.time()
+if time.time() - st.session_state.last_refresh > 30:
+    st.session_state.last_refresh = time.time()
+    st.rerun()
+
+# --- BOX DE PEDIDOS DO CLIENTE ---
 if st.session_state.minhas_senhas:
     with st.expander("🎫 MEUS PEDIDOS / MY REQUESTS", expanded=True):
         for s in st.session_state.minhas_senhas:
@@ -82,20 +104,15 @@ if st.session_state.minhas_senhas:
 
 st.divider()
 
-# 7. Tabela de Fila (RESTAURADA E TRADUZIDA)
+# --- FILA DE ESPERA ---
 st.subheader(t["fila"])
 df_atual = carregar_fila()
 
 if not df_atual.empty:
     try:
-        # Pega Senha (5), Música (3) e Artista (4)
         fila_visual = df_atual.iloc[:, [5, 3, 4]].copy()
-        
-        # Insere a coluna Posição à esquerda
         posicoes = [f"{i+1}º" for i in range(len(fila_visual))]
         fila_visual.insert(0, t["col_pos"], posicoes)
-        
-        # Traduz cabeçalhos
         fila_visual.columns = [t["col_pos"], t["col_sen"], t["col_mus"], t["col_art"]]
         st.table(fila_visual)
     except:
@@ -105,14 +122,19 @@ else:
 
 st.divider()
 
-# 8. Busca e Confirmação (GERADOR DE SENHA ATIVO)
+# --- BUSCA COM FILTRO FUZZY (Melhoria 3) ---
 if st.session_state.musica_escolhida is None:
-    busca = st.text_input(t["busca"], key=f"in_{st.session_state.reset_busca}").strip().upper()
-    if busca:
+    input_usuario = st.text_input(t["busca"], key=f"in_{st.session_state.reset_busca}").strip()
+    
+    if input_usuario:
+        busca_limpa = remover_acentos(input_usuario)
         df_cat = carregar_catalogo()
+        
         if not df_cat.empty:
-            res = df_cat[df_cat.iloc[:, 1].str.contains(busca, case=False, na=False) | 
-                         df_cat.iloc[:, 2].str.contains(busca, case=False, na=False)].head(10)
+            # Filtro inteligente que ignora acentos no catálogo e na busca
+            res = df_cat[df_cat.iloc[:, 1].apply(lambda x: busca_limpa in remover_acentos(x)) | 
+                         df_cat.iloc[:, 2].apply(lambda x: busca_limpa in remover_acentos(x))].head(10)
+            
             for i, row in res.iterrows():
                 if st.button(f"🎶 {row.iloc[1]} - {row.iloc[2]}", key=f"s_{i}"):
                     st.session_state.musica_escolhida = row
@@ -123,29 +145,33 @@ else:
     
     col1, col2 = st.columns(2)
     with col1:
+        # Melhoria 2: Feedback visual com Spinner
         if st.button(t["btn_conf"], type="primary", use_container_width=True):
-            nova_senha = gerar_senha() # GERAÇÃO DA SENHA AQUI
-            url_form = "https://docs.google.com/forms/d/e/1FAIpQLSd8SRNim_Uz3KlxdkWzBTdO7zSKSIvQMfiS3flDi6HRKWggYQ/formResponse"
-            
-            # --- ATENÇÃO: COLOQUE SEU ID AQUI ---
-            id_da_senha = "entry.18065" 
-            
-            dados = {
-                "entry.1213556115": datetime.now().strftime("%H:%M"),
-                "entry.1947522889": str(m.iloc[0]),
-                "entry.1660854967": str(m.iloc[1]),
-                "entry.700923343": str(m.iloc[2]),
-                id_da_senha: nova_senha
-            }
-            
-            requests.post(url_form, data=dados)
-            st.session_state.minhas_senhas.append({"musica": m.iloc[1], "senha": nova_senha})
-            st.balloons()
-            
-            st.session_state.musica_escolhida = None
-            st.session_state.reset_busca += 1
-            time.sleep(1)
-            st.rerun()
+            with st.spinner("Enviando ao DJ..."):
+                nova_senha = gerar_senha()
+                url_form = "https://docs.google.com/forms/d/e/1FAIpQLSd8SRNim_Uz3KlxdkWzBTdO7zSKSIvQMfiS3flDi6HRKWggYQ/formResponse"
+                
+                # --- ID DA SENHA CORRIGIDO CONFORME SUA SOLICITAÇÃO ---
+                id_da_senha = "entry.694761068" 
+                
+                dados = {
+                    "entry.1213556115": datetime.now().strftime("%H:%M"),
+                    "entry.1947522889": str(m.iloc[0]),
+                    "entry.1660854967": str(m.iloc[1]),
+                    "entry.700923343": str(m.iloc[2]),
+                    id_da_senha: nova_senha
+                }
+                
+                try:
+                    requests.post(url_form, data=dados, timeout=5)
+                    st.session_state.minhas_senhas.append({"musica": m.iloc[1], "senha": nova_senha})
+                    st.balloons()
+                    st.session_state.musica_escolhida = None
+                    st.session_state.reset_busca += 1
+                    time.sleep(1)
+                    st.rerun()
+                except:
+                    st.error("Erro na conexão. Tente novamente!")
     with col2:
         if st.button(t["btn_canc"], use_container_width=True):
             st.session_state.musica_escolhida = None
