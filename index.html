@@ -21,18 +21,10 @@
         .queue-table td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
         input[type="text"] { width: 100%; padding: 16px; border: 2px solid #ddd; border-radius: 15px; font-size: 16px; box-sizing: border-box; outline: none; margin-top: 15px; }
         .song-item { background: #fff; border: 1px solid #eee; padding: 12px; margin: 8px 0; border-radius: 12px; cursor: pointer; border-left: 5px solid var(--primary); text-align: left; }
-        
-        /* Notificação Suave */
-        #toast { visibility: hidden; min-width: 200px; background-color: var(--success); color: white; text-align: center; border-radius: 15px; padding: 16px; position: fixed; z-index: 99; left: 50%; bottom: 30px; transform: translateX(-50%); font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
-        #toast.show { visibility: visible; animation: fadeinout 2.5s; }
-
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes fadeinout { 0% { bottom: 0; opacity: 0; } 20% { bottom: 30px; opacity: 1; } 80% { bottom: 30px; opacity: 1; } 100% { bottom: 0; opacity: 0; } }
     </style>
 </head>
 <body>
-
-<div id="toast">✅ PEDIDO ENVIADO!</div>
 
 <div class="container">
     <img src="9d8daa_198ec12882054dceb6d49d760eba30f0~mv2.jpg" alt="Logo" class="logo-img">
@@ -63,10 +55,10 @@
 
 <script>
     const translations = {
-        pt: { title: "Karaokê Coopers", busca: "PESQUISE MÚSICA OU ARTISTA", filaLabel: "Acompanhe sua vez:", thPos: "Pos", thSenha: "Senha", thMusica: "Música", tokenLabel: "SENHA GERADA:", filaVazia: "Fila vazia!", toast: "✅ PEDIDO ENVIADO!" },
-        en: { title: "Coopers Karaoke", busca: "SEARCH SONG OR ARTIST", filaLabel: "Current Queue:", thPos: "Pos", thSenha: "Code", thMusica: "Song", tokenLabel: "GENERATED CODE:", filaVazia: "Queue is empty!", toast: "✅ ORDER SENT!" },
-        es: { title: "Karaoke Coopers", busca: "BUSCAR MÚSICA O ARTISTA", filaLabel: "Lista de espera:", thPos: "Pos", thSenha: "Cód", thMusica: "Música", tokenLabel: "CÓDIGO GENERADO:", filaVazia: "¡Lista vazía!", toast: "✅ ¡PEDIDO ENVIADO!" },
-        fr: { title: "Karaoké Coopers", busca: "RECHERCHER CHANSON", filaLabel: "File d'attente:", thPos: "Pos", thSenha: "Code", thMusica: "Chanson", tokenLabel: "CODE GÉNÉRÉ:", filaVazia: "File vide!", toast: "✅ COMMANDE ENVOYÉE!" }
+        pt: { title: "Karaokê Coopers", busca: "PESQUISE MÚSICA OU ARTISTA", filaLabel: "Acompanhe sua vez:", thPos: "Pos", thSenha: "Senha", thMusica: "Música", tokenLabel: "SENHA GERADA:", filaVazia: "Fila vazia!", alert: "✅ PEDIDO ENVIADO COM SUCESSO!" },
+        en: { title: "Coopers Karaoke", busca: "SEARCH SONG OR ARTIST", filaLabel: "Current Queue:", thPos: "Pos", thSenha: "Code", thMusica: "Song", tokenLabel: "GENERATED CODE:", filaVazia: "Queue is empty!", alert: "✅ ORDER SENT SUCCESSFULLY!" },
+        es: { title: "Karaoke Coopers", busca: "BUSCAR MÚSICA O ARTISTA", filaLabel: "Lista de espera:", thPos: "Pos", thSenha: "Cód", thMusica: "Música", tokenLabel: "CÓDIGO GENERADO:", filaVazia: "¡Lista vazía!", alert: "✅ ¡PEDIDO ENVIADO COM ÉXITO!" },
+        fr: { title: "Karaoké Coopers", busca: "RECHERCHER CHANSON", filaLabel: "File d'attente:", thPos: "Pos", thSenha: "Code", thMusica: "Chanson", tokenLabel: "CODE GÉNÉRÉ:", filaVazia: "File vide!", alert: "✅ COMMANDE ENVOYÉE AVEC SUCCÈS!" }
     };
 
     let currentLang = 'pt';
@@ -96,7 +88,6 @@
         document.getElementById('th-pos').innerText = t.thPos;
         document.getElementById('th-senha').innerText = t.thSenha;
         document.getElementById('th-musica').innerText = t.thMusica;
-        document.getElementById('toast').innerText = t.toast;
         loadQueue();
         renderMyOrders();
     }
@@ -128,60 +119,28 @@
             </div>`).join('');
     }
 
-    // AQUI ESTÁ A FUNÇÃO QUE UNIU O ÚTIL AO AGRADÁVEL
     function sendOrderDirect(id, title, artist) {
         const senha = Math.random().toString(36).substring(2, 6).toUpperCase();
         const params = new URLSearchParams();
         
-        // IDs que funcionaram no seu forms
         params.append('entry.1995948109', new Date().toLocaleTimeString());
         params.append('entry.105234855', id);
         params.append('entry.1830320650', title);
         params.append('entry.730937896', artist);
         params.append('entry.1210617554', senha);
 
-        // O Link que você confirmou que é o correto
         const formAction = "https://docs.google.com/forms/d/e/1bCm6owXX36OTdAaeUKTRrz18LsuHOBTbtbl35Zieato/formResponse";
 
-        // ENVIO SILENCIOSO (Sem pop-up de alerta)
+        // ENVIO
         fetch(formAction, { method: 'POST', body: params, mode: 'no-cors' });
 
-        // SALVA LOCALMENTE PARA O USUÁRIO VER A SENHA DELE
+        // SALVA LOCALMENTE
         let saved = JSON.parse(localStorage.getItem('myKaraokeOrders') || '[]');
         saved.push({ senha, musica: title });
         localStorage.setItem('myKaraokeOrders', JSON.stringify(saved));
         
-        // EFEITOS VISUAIS (Confete + Toast)
-        confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-        const toast = document.getElementById("toast");
-        toast.className = "show";
-        setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 2500);
+        // POPUP REATIVADO (Isso trava a tela e obriga o navegador a terminar o envio)
+        alert(translations[currentLang].alert);
 
-        // DELAY PARA GARANTIR O ENVIO ANTES DE LIMPAR A BUSCA
-        setTimeout(() => {
-            renderMyOrders();
-            document.getElementById('searchInput').value = '';
-            document.getElementById('results').innerHTML = '';
-            loadQueue();
-        }, 500);
-    }
-
-    function renderMyOrders() {
-        const orders = JSON.parse(localStorage.getItem('myKaraokeOrders') || '[]');
-        const area = document.getElementById('myOrders');
-        area.innerHTML = orders.map((o, idx) => `
-            <div class="card card-info">
-                <span class="remove-btn" onclick="removeMyOrder(${idx})">×</span>
-                🔑 ${translations[currentLang].tokenLabel} ${o.senha}<br><small>${o.musica}</small>
-            </div>`).join('');
-    }
-
-    function removeMyOrder(idx) {
-        let saved = JSON.parse(localStorage.getItem('myKaraokeOrders') || '[]');
-        saved.splice(idx, 1);
-        localStorage.setItem('myKaraokeOrders', JSON.stringify(saved));
-        renderMyOrders();
-    }
-</script>
-</body>
-</html>
+        // Confetes após o OK do popup
+        confetti({ particleCount: 150, spread: 70
