@@ -9,25 +9,20 @@ import string
 # 1. Configuração de Página
 st.set_page_config(page_title="Karaokê Coopers", layout="centered", page_icon="🎤")
 
-# 2. Funções Core com Blindagem de Cache e Linhas Vazias
+# 2. Funções Core
 def gerar_senha():
     return ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
 
 def carregar_fila():
-    # Timestamp agressivo para evitar cache do Google
     timestamp = int(time.time() * 1000)
     url_dados = f"https://docs.google.com/spreadsheets/d/1FAIpQLSd8SRNim_Uz3KlxdkWzBTdO7zSKSIvQMfiS3flDi6HRKWggYQ/export?format=csv&gid=403883912&cachebust={timestamp}"
     try:
-        # Carrega os dados
         df = pd.read_csv(url_dados, storage_options={'Cache-Control': 'no-cache'})
-        
-        # BLINDAGEM: Remove linhas totalmente vazias ou sem o nome da música (coluna 3)
-        # Isso garante que a posição (1º, 2º...) mude assim que o DJ apagar os dados
         if not df.empty:
             df = df.dropna(subset=[df.columns[3]])
             df = df[df.iloc[:, 3].str.strip() != ""]
         return df
-    except Exception as e:
+    except:
         return pd.DataFrame()
 
 @st.cache_data(ttl=10)
@@ -49,7 +44,7 @@ if 'reset_busca' not in st.session_state:
 # 4. Título
 st.title("🎤 Karaokê Coopers")
 
-# 5. Dicionário de Idiomas (Regras e Avisos Oficiais)
+# 5. Dicionário de Idiomas
 idiomas = {
     "Português BR": {
         "busca": "PESQUISE SUA MÚSICA OU ARTISTA", "fila": "Acompanhe sua vez aqui!", 
@@ -95,7 +90,7 @@ if time.time() - st.session_state.last_refresh > 30:
     st.session_state.last_refresh = time.time()
     st.rerun()
 
-# 7. Box de Meus Pedidos
+# 7. Meus Pedidos
 if st.session_state.minhas_senhas:
     with st.expander("🎫 MEUS PEDIDOS / MY REQUESTS", expanded=True):
         for s in st.session_state.minhas_senhas:
@@ -103,18 +98,16 @@ if st.session_state.minhas_senhas:
 
 st.divider()
 
-# 8. Fila de Espera em Cards (Lógica de Reordenamento Automático)
+# 8. Fila de Espera
 st.subheader(t["fila"])
 df_fila = carregar_fila()
 
 if not df_fila.empty:
     for i in range(len(df_fila)):
         try:
-            # Colunas: 3=Música, 4=Artista, 5=Senha
             m_f = df_fila.iloc[i, 3]
             a_f = df_fila.iloc[i, 4]
             s_f = df_fila.iloc[i, 5]
-            
             st.success(f"**{i+1}º** — 🎵 **{m_f}** ({a_f})  \n🔑 {t['sucesso']} **{s_f}**")
         except:
             continue
@@ -126,7 +119,8 @@ st.divider()
 
 # 9. Busca e Confirmação
 if st.session_state.musica_escolhida is None:
-    busca = st.text_input(t["busca"], key=f"in_{st.session_state.reset_busca}", placeholder="Ex: Queen, Evidências...").strip().upper()
+    # Usei o reset_busca para limpar o campo após o envio
+    busca = st.text_input(t["busca"], key=f"in_{st.session_state.reset_busca}", placeholder="Ex: Queen...").strip().upper()
     if busca:
         df_cat = carregar_catalogo()
         if not df_cat.empty:
@@ -143,29 +137,31 @@ else:
     
     col1, col2 = st.columns(2)
     with col1:
+        # Mudança principal: O botão dispara uma função direta
         if st.button(t["btn_conf"], type="primary", use_container_width=True):
-            with st.spinner(t["processando"]):
-                nova_senha = gerar_senha()
-                url_form = "https://docs.google.com/forms/d/e/1FAIpQLSd8SRNim_Uz3KlxdkWzBTdO7zSKSIvQMfiS3flDi6HRKWggYQ/formResponse"
-                
-                dados = {
-                    "entry.1213556115": datetime.now().strftime("%H:%M"),
-                    "entry.1947522889": str(m.iloc[0]),
-                    "entry.1660854967": str(m.iloc[1]),
-                    "entry.700923343": str(m.iloc[2]),
-                    "entry.694761068": nova_senha
-                }
-                
-                try:
-                    requests.post(url_form, data=dados, timeout=5)
-                    st.session_state.minhas_senhas.append({"musica": m.iloc[1], "senha": nova_senha})
-                    st.balloons()
-                    st.session_state.musica_escolhida = None
-                    st.session_state.reset_busca += 1
-                    time.sleep(2) # Tempo para o Google processar
-                    st.rerun()
-                except:
-                    st.error("Erro ao enviar pedido.")
+            nova_senha = gerar_senha()
+            url_form = "https://docs.google.com/forms/d/e/1FAIpQLSd8SRNim_Uz3KlxdkWzBTdO7zSKSIvQMfiS3flDi6HRKWggYQ/formResponse"
+            
+            dados = {
+                "entry.1213556115": datetime.now().strftime("%H:%M"),
+                "entry.1947522889": str(m.iloc[0]),
+                "entry.1660854967": str(m.iloc[1]),
+                "entry.700923343": str(m.iloc[2]),
+                "entry.694761068": nova_senha
+            }
+            
+            try:
+                # Post sem spinner travando o rerun
+                requests.post(url_form, data=dados, timeout=5)
+                st.session_state.minhas_senhas.append({"musica": m.iloc[1], "senha": nova_senha})
+                # Reseta os estados ANTES do rerun
+                st.session_state.musica_escolhida = None
+                st.session_state.reset_busca += 1
+                st.balloons()
+                time.sleep(0.5) # Pausa mínima só para o balão começar
+                st.rerun()
+            except:
+                st.error("Erro ao enviar.")
     with col2:
         if st.button(t["btn_canc"], use_container_width=True):
             st.session_state.musica_escolhida = None
