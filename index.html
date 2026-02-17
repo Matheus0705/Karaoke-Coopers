@@ -14,34 +14,37 @@
         .logo-img { max-width: 140px; height: auto; border-radius: 15px; cursor: pointer; }
         h1 { margin: 10px 0; font-size: 26px; text-align: center; color: #1a1a1a; }
 
-        /* Idiomas */
-        .lang-bar { display: flex; justify-content: center; gap: 8px; margin-bottom: 20px; }
-        .lang-btn { border: 1px solid #ddd; background: white; padding: 6px 12px; border-radius: 20px; cursor: pointer; font-size: 12px; }
-        .lang-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        /* Seletor de Idiomas com Bandeiras */
+        .lang-bar { display: flex; justify-content: center; gap: 15px; margin-bottom: 25px; }
+        .lang-flag { font-size: 28px; cursor: pointer; transition: transform 0.2s; filter: grayscale(80%); border: 2px solid transparent; border-radius: 50%; padding: 5px; line-height: 1; }
+        .lang-flag.active { filter: grayscale(0%); transform: scale(1.2); border-color: var(--primary); }
 
         /* Senhas Fixas do Cliente */
         #myOrders { margin-bottom: 20px; }
         .card { padding: 12px; border-radius: 15px; margin-bottom: 8px; text-align: center; font-weight: bold; animation: fadeIn 0.5s; position: relative; }
         .card-info { background: var(--primary); color: white; font-size: 0.9em; }
-        .remove-my-order { position: absolute; right: 10px; top: 10px; cursor: pointer; font-size: 12px; opacity: 0.7; }
+        .remove-my-order { position: absolute; right: 10px; top: 10px; cursor: pointer; font-size: 14px; color: white; background: rgba(0,0,0,0.2); border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; }
 
         /* Busca */
-        input[type="text"] { width: 100%; padding: 16px; border: 2px solid #eee; border-radius: 15px; font-size: 16px; box-sizing: border-box; outline: none; }
-        .song-item { background: #fff; border: 1px solid #eee; padding: 15px; margin: 10px 0; border-radius: 15px; cursor: pointer; border-left: 5px solid var(--primary); }
+        input[type="text"] { width: 100%; padding: 16px; border: 2px solid #eee; border-radius: 15px; font-size: 16px; box-sizing: border-box; outline: none; transition: 0.3s; }
+        input[type="text"]:focus { border-color: var(--primary); }
+        .song-item { background: #fff; border: 1px solid #eee; padding: 15px; margin: 10px 0; border-radius: 15px; cursor: pointer; border-left: 5px solid var(--primary); text-align: left; }
 
         /* Tabela Fila */
         .queue-table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 10px; border-radius: 12px; overflow: hidden; }
         .queue-table th { background: #f8f9fa; padding: 12px; text-align: left; }
-        .queue-table td { padding: 12px; border-bottom: 1px solid #f5f5f5; }
+        .queue-table td { padding: 12px; border-bottom: 1px solid #f5f5f5; text-align: left; }
 
         /* Botões */
         .btn-confirm { background: var(--success); color: white; border: none; padding: 18px; border-radius: 15px; font-size: 18px; cursor: pointer; width: 100%; font-weight: bold; }
         .btn-cancel { background: #6c757d; color: white; border: none; padding: 12px; border-radius: 15px; width: 100%; margin-top: 10px; cursor: pointer; }
 
+        /* Erro DJ */
+        .error-dj { background: #fff3f3; color: var(--danger); padding: 15px; border-radius: 15px; border-left: 5px solid var(--danger); margin-top: 15px; font-size: 14px; line-height: 1.4; display: none; text-align: left; }
+
         /* Painel DJ */
         #djPanel { display: none; background: #fff; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 999; padding: 20px; box-sizing: border-box; overflow-y: auto; }
         .dj-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--dj); margin-bottom: 20px; padding-bottom: 10px; }
-        .btn-call { background: var(--success); color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; }
 
         .hidden { display: none; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
@@ -56,9 +59,10 @@
     </div>
 
     <div class="lang-bar">
-        <button class="lang-btn active" onclick="setLang('pt')">PT 🇧🇷</button>
-        <button class="lang-btn" onclick="setLang('en')">EN 🇺🇸</button>
-        <button class="lang-btn" onclick="setLang('es')">ES 🇪🇸</button>
+        <span class="lang-flag active" id="flag-pt" onclick="setLang('pt')">🇧🇷</span>
+        <span class="lang-flag" id="flag-en" onclick="setLang('en')">🇺🇸</span>
+        <span class="lang-flag" id="flag-es" onclick="setLang('es')">🇪🇸</span>
+        <span class="lang-flag" id="flag-fr" onclick="setLang('fr')">🇫🇷</span>
     </div>
     
     <div id="myOrders"></div>
@@ -75,6 +79,7 @@
 
     <div id="searchArea">
         <input type="text" id="searchInput" placeholder="PESQUISE MÚSICA OU ARTISTA" oninput="searchSongs()">
+        <div id="errorDJ" class="error-dj"></div>
         <div id="results" style="margin-top:10px;"></div>
     </div>
 
@@ -88,16 +93,17 @@
 <div id="djPanel">
     <div class="dj-header">
         <h2>🎧 Painel do DJ</h2>
-        <button onclick="closeDJ()" style="background:none; border:1px solid #333; padding:5px; border-radius:5px;">Sair</button>
+        <button onclick="closeDJ()" style="padding:10px; border-radius:10px;">Sair</button>
     </div>
     <div id="djQueue"></div>
 </div>
 
 <script>
     const translations = {
-        pt: { busca: "PESQUISE MÚSICA OU ARTISTA", fila: "Acompanhe sua vez:", pos: "Pos", senha: "Senha", confirm: "CONFIRMAR ✅", cancel: "CANCELAR ❌", sucesso: "SENHA ATIVA:" },
-        en: { busca: "SEARCH SONG OR ARTIST", fila: "Current Queue:", pos: "Pos", senha: "Code", confirm: "CONFIRM ✅", cancel: "CANCEL ❌", sucesso: "ACTIVE CODE:" },
-        es: { busca: "BUSCAR MÚSICA O ARTISTA", fila: "Lista de Espera:", pos: "Pos", senha: "Cód", confirm: "CONFIRMAR ✅", cancel: "CANCELAR ❌", sucesso: "CÓDIGO ACTIVO:" }
+        pt: { busca: "PESQUISE MÚSICA OU ARTISTA", fila: "Acompanhe sua vez:", pos: "Pos", senha: "Senha", confirm: "CONFIRMAR ✅", cancel: "CANCELAR ❌", sucesso: "SENHA ATIVA:", dj_msg: "Desculpe, no momento não temos essa música. Cheque com o DJ!" },
+        en: { busca: "SEARCH SONG OR ARTIST", fila: "Current Queue:", pos: "Pos", senha: "Code", confirm: "CONFIRM ✅", cancel: "CANCEL ❌", sucesso: "ACTIVE CODE:", dj_msg: "Sorry, we don't have this song. Check with the DJ!" },
+        es: { busca: "BUSCAR MÚSICA O ARTISTA", fila: "Lista de Espera:", pos: "Pos", senha: "Cód", confirm: "CONFIRMAR ✅", cancel: "CANCELAR ❌", sucesso: "CÓDIGO ACTIVO:", dj_msg: "Lo sentimos, no tenemos esta música. ¡Consulta con el DJ!" },
+        fr: { busca: "CHERCHER UNE CHANSON", fila: "File d'attente:", pos: "Pos", senha: "Code", confirm: "CONFIRMER ✅", cancel: "ANNULER ❌", sucesso: "CODE ACTIF:", dj_msg: "Désolé, nous n'avons pas cette chanson. Vérifiez avec le DJ!" }
     };
 
     let currentLang = 'pt';
@@ -114,7 +120,6 @@
         });
         setInterval(loadQueue, 20000);
 
-        // Segredo do DJ: Clique 5 vezes na logo
         document.getElementById('mainLogo').onclick = () => {
             logoClicks++;
             if(logoClicks === 5) {
@@ -130,9 +135,15 @@
 
     function setLang(lang) {
         currentLang = lang;
+        document.querySelectorAll('.lang-flag').forEach(f => f.classList.remove('active'));
+        document.getElementById('flag-' + lang).classList.add('active');
+        
         document.getElementById('searchInput').placeholder = translations[lang].busca;
         document.getElementById('txt-fila').innerText = translations[lang].fila;
+        document.getElementById('txt-pos').innerText = translations[lang].pos;
+        document.getElementById('txt-senha').innerText = translations[lang].senha;
         document.getElementById('btn-conf').innerText = translations[lang].confirm;
+        document.getElementById('btn-canc').innerText = translations[lang].cancel;
         renderMyOrders();
     }
 
@@ -155,13 +166,23 @@
     function searchSongs() {
         const query = document.getElementById('searchInput').value.toLowerCase().trim();
         const resDiv = document.getElementById('results');
-        if(query.length < 2) { resDiv.innerHTML = ''; return; }
+        const errDiv = document.getElementById('errorDJ');
+        if(query.length < 2) { resDiv.innerHTML = ''; errDiv.style.display = 'none'; return; }
+        
         const filtered = catalog.filter(s => (s[1] && s[1].toLowerCase().includes(query)) || (s[2] && s[2].toLowerCase().includes(query))).slice(0, 10);
-        let html = '';
-        filtered.forEach(s => {
-            html += `<div class="song-item" onclick="selectSong('${s[0]}','${s[1]}','${s[2]}')">🎶 <strong>${s[1]}</strong><br><small>${s[2]}</small></div>`;
-        });
-        resDiv.innerHTML = html;
+        
+        if(filtered.length === 0) {
+            errDiv.innerText = translations[currentLang].dj_msg;
+            errDiv.style.display = 'block';
+            resDiv.innerHTML = '';
+        } else {
+            errDiv.style.display = 'none';
+            let html = '';
+            filtered.forEach(s => {
+                html += `<div class="song-item" onclick="selectSong('${s[0]}','${s[1]}','${s[2]}')">🎶 <strong>${s[1]}</strong><br><small>${s[2]}</small></div>`;
+            });
+            resDiv.innerHTML = html;
+        }
     }
 
     function selectSong(id, title, artist) {
@@ -190,7 +211,6 @@
 
         fetch("https://docs.google.com/forms/d/e/1FAIpQLSd8SRNim_Uz3KlxdkWzBTdO7zSKSIvQMfiS3flDi6HRKWggYQ/formResponse", { method: 'POST', body: params, mode: 'no-cors' });
         
-        // SALVA NA LISTA (LocalStorage)
         let saved = JSON.parse(localStorage.getItem('myKaraokeOrders') || '[]');
         saved.push({ senha, musica: selectedSong.title });
         localStorage.setItem('myKaraokeOrders', JSON.stringify(saved));
@@ -201,48 +221,3 @@
         cancelOrder();
         setTimeout(loadQueue, 2000);
     }
-
-    function renderMyOrders() {
-        const orders = JSON.parse(localStorage.getItem('myKaraokeOrders') || '[]');
-        const area = document.getElementById('myOrders');
-        area.innerHTML = '';
-        orders.forEach((o, index) => {
-            area.innerHTML += `
-                <div class="card card-info">
-                    <span class="remove-my-order" onclick="removeMyOrder(${index})">X</span>
-                    🔑 ${translations[currentLang].sucesso} ${o.senha}<br><small>${o.musica}</small>
-                </div>`;
-        });
-    }
-
-    function removeMyOrder(index) {
-        let saved = JSON.parse(localStorage.getItem('myKaraokeOrders') || '[]');
-        saved.splice(index, 1);
-        localStorage.setItem('myKaraokeOrders', JSON.stringify(saved));
-        renderMyOrders();
-    }
-
-    // FUNÇÕES DO DJ
-    function closeDJ() { document.getElementById('djPanel').style.display = 'none'; }
-    
-    async function renderDJQueue() {
-        const resp = await fetch(SHEET_CSV + "&cache=" + Date.now());
-        const text = await resp.text();
-        const rows = text.split('\n').slice(1);
-        let html = '<table class="queue-table"><thead><tr><th>Senha</th><th>Música</th><th>Ação</th></tr></thead><tbody>';
-        rows.forEach((row, i) => {
-            const cols = row.split(',');
-            if(cols[5]) {
-                html += `<tr>
-                    <td>${cols[5]}</td>
-                    <td>${cols[3]}</td>
-                    <td><button class="btn-call" onclick="alert('Cantor chamado!')">Chamar</button></td>
-                </tr>`;
-            }
-        });
-        html += '</tbody></table>';
-        document.getElementById('djQueue').innerHTML = html;
-    }
-</script>
-</body>
-</html>
