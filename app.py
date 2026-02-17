@@ -15,7 +15,7 @@ def gerar_senha():
 
 def carregar_fila():
     timestamp = int(time.time())
-    # Certifique-se de que a planilha está PUBLICADA NA WEB (Arquivo > Compartilhar > Publicar na Web)
+    # Link da planilha publicada como CSV
     url_dados = f"https://docs.google.com/spreadsheets/d/1FAIpQLSd8SRNim_Uz3KlxdkWzBTdO7zSKSIvQMfiS3flDi6HRKWggYQ/export?format=csv&cachebust={timestamp}"
     try:
         df = pd.read_csv(url_dados)
@@ -27,7 +27,6 @@ def carregar_fila():
 @st.cache_data
 def carregar_catalogo():
     try:
-        # Carrega o catálogo local
         df = pd.read_csv('karafuncatalog.csv', encoding='latin1', sep=None, engine='python')
         df.columns = [str(c).strip() for c in df.columns]
         return df
@@ -42,7 +41,7 @@ if 'musica_escolhida' not in st.session_state:
 if 'reset_busca' not in st.session_state:
     st.session_state.reset_busca = 0
 
-# --- INTERFACE (LOGO + TÍTULO) ---
+# --- INTERFACE (TÍTULO CORRIGIDO) ---
 st.markdown("<h1 style='text-align: center;'>🎤 Karaokê Coopers</h1>", unsafe_content_html=True)
 
 # --- TRADUÇÕES ---
@@ -52,34 +51,34 @@ idiomas = {
         "fila": "Acompanhe sua vez aqui!", 
         "vazio": "Aguardando o primeiro pedido da noite...", 
         "sucesso": "SUA SENHA:",
-        "col_pos": "Posição", "col_sen": "Senha", "col_mus": "Música", "col_art": "Artista"
+        "col_pos": "Posição", "col_mus": "Música", "col_art": "Artista", "col_sen": "Senha"
     },
     "English us": {
         "busca": "SEARCH YOUR SONG OR ARTIST", 
         "fila": "Follow your turn here!", 
         "vazio": "Waiting for the first request...", 
         "sucesso": "YOUR TOKEN:",
-        "col_pos": "Position", "col_sen": "Token", "col_mus": "Song", "col_art": "Artist"
+        "col_pos": "Position", "col_mus": "Song", "col_art": "Artist", "col_sen": "Token"
     },
     "Español EA": {
         "busca": "BUSQUE SUA MÚSICA...", 
         "fila": "¡Sigue tu turno aquí!", 
         "vazio": "¡Lista vacía!", 
         "sucesso": "TU CÓDIGO:",
-        "col_pos": "Posición", "col_sen": "Código", "col_mus": "Música", "col_art": "Artista"
+        "col_pos": "Posición", "col_mus": "Música", "col_art": "Artista", "col_sen": "Código"
     },
     "Français FR": {
         "busca": "CHERCHEZ VOTRE MUSIQUE...", 
-        "fila": "Suivez votre tour ici!", 
+        "fila": "Suivez votre tour aqui!", 
         "vazio": "File d'attente vide!", 
         "sucesso": "VOTRE CODE:",
-        "col_pos": "Position", "col_sen": "Code", "col_mus": "Musique", "col_art": "Artiste"
+        "col_pos": "Position", "col_mus": "Musique", "col_art": "Artiste", "col_sen": "Code"
     }
 }
 escolha = st.radio("Idioma:", list(idiomas.keys()), horizontal=True, label_visibility="collapsed")
 t = idiomas[escolha]
 
-# --- BOX DE SENHAS DO CLIENTE ---
+# --- BOX DE SENHAS DO CLIENTE (FIXO NO TOPO) ---
 if st.session_state.minhas_senhas:
     with st.expander("🎫 Meus Pedidos (Mostre ao DJ)", expanded=True):
         for s in st.session_state.minhas_senhas:
@@ -87,35 +86,33 @@ if st.session_state.minhas_senhas:
 
 st.divider()
 
-# --- FILA DE ESPERA ---
+# --- FILA DE ESPERA (ESTÉTICA PEDIDA) ---
 st.subheader(t["fila"])
 df_atual = carregar_fila()
 
 if not df_atual.empty:
     try:
-        # Seleciona: Coluna 5 (Senha), 3 (Música), 4 (Artista)
-        # Nota: iloc usa índice 0, então 5 é a 6ª coluna (F)
+        # Pega Senha (5), Música (3) e Artista (4)
         fila_visual = df_atual.iloc[:, [5, 3, 4]].copy()
         
-        # Cria a coluna de Posição como primeira coluna
+        # Cria a coluna "Posição" à esquerda
         posicoes = [f"{i+1}º" for i in range(len(fila_visual))]
         fila_visual.insert(0, t["col_pos"], posicoes)
         
-        # Nomeia as colunas conforme idioma
+        # Nomeia as colunas conforme o idioma
         fila_visual.columns = [t["col_pos"], t["col_sen"], t["col_mus"], t["col_art"]]
         
-        # Mostra a tabela sem o índice padrão do pandas (fica mais limpo)
+        # Exibe a tabela sem o índice lateral do pandas
         st.table(fila_visual)
-    except Exception as e:
+    except:
         st.write(t["vazio"])
 else:
     st.write(t["vazio"])
 
 st.divider()
 
-# --- BUSCA E SELEÇÃO ---
+# --- BUSCA E PEDIDO ---
 if st.session_state.musica_escolhida is None:
-    # Key dinâmico garante que o campo limpe após o reset_busca mudar
     busca = st.text_input(t["busca"], key=f"in_{st.session_state.reset_busca}").strip().upper()
     if busca:
         df_cat = carregar_catalogo()
@@ -128,12 +125,9 @@ if st.session_state.musica_escolhida is None:
                     if st.button(f"🎶 {row.iloc[1]} - {row.iloc[2]}", key=f"m_{i}"):
                         st.session_state.musica_escolhida = row
                         st.rerun()
-            else:
-                st.error("Música não encontrada. Tente outro termo!")
 else:
     m = st.session_state.musica_escolhida
     st.success(f"Selecionada: {m.iloc[1]}")
-    # Cálculo da posição futura
     st.info(f"Sua posição na fila será: {len(df_atual)+1}º")
     
     col_c1, col_c2 = st.columns(2)
@@ -142,8 +136,8 @@ else:
             nova_senha = gerar_senha()
             url_form = "https://docs.google.com/forms/d/e/1FAIpQLSd8SRNim_Uz3KlxdkWzBTdO7zSKSIvQMfiS3flDi6HRKWggYQ/formResponse"
             
-            # --- ATENÇÃO: Verifique este ID da Senha ---
-            id_da_senha = "entry.18065" # Verifique se este é o número correto
+            # --- LEMBRE-SE DE CONFERIR ESTE ID ---
+            id_da_senha = "entry.18065" 
             
             dados = {
                 "entry.1213556115": datetime.now().strftime("%H:%M"),
@@ -157,14 +151,12 @@ else:
                 requests.post(url_form, data=dados, timeout=5)
                 st.session_state.minhas_senhas.append({"musica": m.iloc[1], "senha": nova_senha})
                 st.balloons()
-                
-                # Reseta estados
                 st.session_state.musica_escolhida = None
                 st.session_state.reset_busca += 1
                 time.sleep(1)
                 st.rerun()
             except:
-                st.error("Erro ao enviar pedido. Verifique sua conexão.")
+                st.error("Erro na conexão.")
             
     with col_c2:
         if st.button("CANCELAR ❌", use_container_width=True):
