@@ -20,7 +20,6 @@ def gerar_senha():
 
 def carregar_fila():
     timestamp = int(time.time())
-    # URL ATUALIZADA COM O SEU GID: 403883912
     url_dados = f"https://docs.google.com/spreadsheets/d/1FAIpQLSd8SRNim_Uz3KlxdkWzBTdO7zSKSIvQMfiS3flDi6HRKWggYQ/export?format=csv&gid=403883912&cachebust={timestamp}"
     try:
         df = pd.read_csv(url_dados)
@@ -32,6 +31,7 @@ def carregar_fila():
 @st.cache_data(ttl=60)
 def carregar_catalogo():
     try:
+        # Carrega o catálogo (karafuncatalog.csv)
         df = pd.read_csv('karafuncatalog.csv', encoding='latin1', sep=None, engine='python')
         df.columns = [str(c).strip() for c in df.columns]
         return df
@@ -46,14 +46,8 @@ if 'musica_escolhida' not in st.session_state:
 if 'reset_busca' not in st.session_state:
     st.session_state.reset_busca = 0
 
-# --- INTERFACE (LOGO + TÍTULO) ---
-col_l1, col_l2, col_l3 = st.columns([1, 1.5, 1])
-with col_l2:
-    # Link direto (RAW) para a logo no seu GitHub
-    logo_url = "https://raw.githubusercontent.com/MatheusS77/Coopers/main/9d8daa_198ec12882054dceb6d49d760eba30f0~mv2.jpg"
-    st.image(logo_url, width=250)
-
-st.markdown("<h1 style='text-align: center; margin-top: -10px;'>🎤 Karaokê Coopers</h1>", unsafe_allow_html=True)
+# --- TÍTULO ---
+st.markdown("<h1 style='text-align: center;'>🎤 Karaokê Coopers</h1>", unsafe_allow_html=True)
 
 # --- TRADUÇÕES ---
 idiomas = {
@@ -73,7 +67,7 @@ idiomas = {
         "btn_conf": "CONFIRMAR ✅", "btn_canc": "CANCELAR ❌", "sel": "Seleccionada:"
     },
     "Français FR": {
-        "busca": "CHERCHER MUSIQUE OU ARTISTE", "fila": "Suivez votre tour aqui!", 
+        "busca": "CHERCHER MUSIQUE OU ARTISTE", "fila": "Suivez votre tour ici!", 
         "vazio": "En attente de demandes...", "sucesso": "VOTRE CODE:",
         "btn_conf": "CONFIRMER ✅", "btn_canc": "ANNULER ❌", "sel": "Sélectionnée:"
     }
@@ -88,7 +82,7 @@ if time.time() - st.session_state.last_refresh > 30:
     st.session_state.last_refresh = time.time()
     st.rerun()
 
-# --- SEÇÃO: MEUS PEDIDOS ---
+# --- MEUS PEDIDOS ---
 if st.session_state.minhas_senhas:
     with st.expander("🎫 MEUS PEDIDOS / MY REQUESTS", expanded=True):
         for s in st.session_state.minhas_senhas:
@@ -96,18 +90,16 @@ if st.session_state.minhas_senhas:
 
 st.divider()
 
-# --- SEÇÃO: FILA DE ESPERA (ESTILO CARDS) ---
+# --- FILA DE ESPERA ---
 st.subheader(f"🎤 {t['fila']}")
 df_fila = carregar_fila()
 
 if not df_fila.empty:
-    for i, row in df_fila.iterrows():
+    for i in range(len(df_fila)):
         try:
-            # Mapeamento conforme sua planilha: D(3)=Música, E(4)=Artista, F(5)=Senha
-            musica_f = row.iloc[3]
-            artista_f = row.iloc[4]
-            senha_f = row.iloc[5]
-            
+            musica_f = df_fila.iloc[i, 3]
+            artista_f = df_fila.iloc[i, 4]
+            senha_f = df_fila.iloc[i, 5]
             st.success(f"**{i+1}º** — 🎵 **{musica_f}** ({artista_f})  \n🔑 {t['sucesso']} **{senha_f}**")
         except:
             continue
@@ -116,24 +108,31 @@ else:
 
 st.divider()
 
-# --- BUSCA E PEDIDO ---
+# --- BUSCA AUTOMÁTICA (MÉTODO SEM ENTER) ---
 if st.session_state.musica_escolhida is None:
+    # O Streamlit atualiza a cada tecla digitada se não houver um formulário travando
     input_usuario = st.text_input(t["busca"], key=f"in_{st.session_state.reset_busca}").strip()
     
-    if input_usuario:
+    if len(input_usuario) >= 2:  # Começa a buscar a partir de 2 letras para não travar
         busca_limpa = remover_acentos(input_usuario)
         df_cat = carregar_catalogo()
         
         if not df_cat.empty:
+            # Filtro em tempo real
             res = df_cat[df_cat.apply(lambda x: busca_limpa in remover_acentos(x.iloc[1]) or busca_limpa in remover_acentos(x.iloc[2]), axis=1)].head(10)
             
-            for i, row in res.iterrows():
-                if st.button(f"🎶 {row.iloc[1]} - {row.iloc[2]}", key=f"s_{i}"):
-                    st.session_state.musica_escolhida = row
-                    st.rerun()
+            if not res.empty:
+                st.write("---") # Pequena separação visual
+                for i, row in res.iterrows():
+                    # Botão para selecionar a música encontrada
+                    if st.button(f"🎶 {row.iloc[1]} - {row.iloc[2]}", key=f"s_{i}", use_container_width=True):
+                        st.session_state.musica_escolhida = row
+                        st.rerun()
+            else:
+                st.caption("Nenhuma música encontrada...")
 else:
+    # Tela de Confirmação
     m = st.session_state.musica_escolhida
-    # Texto 'Selecionada' agora traduz corretamente
     st.info(f"✨ **{t['sel']}** {m.iloc[1]} - {m.iloc[2]}")
     
     col1, col2 = st.columns(2)
