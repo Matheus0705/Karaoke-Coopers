@@ -20,8 +20,8 @@ def gerar_senha():
 
 def carregar_fila():
     timestamp = int(time.time())
-    # URL da sua planilha publicada como CSV
-    url_dados = f"https://docs.google.com/spreadsheets/d/1FAIpQLSd8SRNim_Uz3KlxdkWzBTdO7zSKSIvQMfiS3flDi6HRKWggYQ/export?format=csv&cachebust={timestamp}"
+    # URL ATUALIZADA COM O SEU GID: 403883912
+    url_dados = f"https://docs.google.com/spreadsheets/d/1FAIpQLSd8SRNim_Uz3KlxdkWzBTdO7zSKSIvQMfiS3flDi6HRKWggYQ/export?format=csv&gid=403883912&cachebust={timestamp}"
     try:
         df = pd.read_csv(url_dados)
         df.columns = [str(c).strip() for c in df.columns]
@@ -46,16 +46,16 @@ if 'musica_escolhida' not in st.session_state:
 if 'reset_busca' not in st.session_state:
     st.session_state.reset_busca = 0
 
-# --- INTERFACE (LOGO RAW CORRIGIDA) ---
+# --- INTERFACE (LOGO + TÍTULO) ---
 col_l1, col_l2, col_l3 = st.columns([1, 1.5, 1])
 with col_l2:
-    # Usando o link RAW para garantir que a imagem apareça
+    # Link direto (RAW) para a logo no seu GitHub
     logo_url = "https://raw.githubusercontent.com/MatheusS77/Coopers/main/9d8daa_198ec12882054dceb6d49d760eba30f0~mv2.jpg"
     st.image(logo_url, width=250)
 
 st.markdown("<h1 style='text-align: center; margin-top: -10px;'>🎤 Karaokê Coopers</h1>", unsafe_allow_html=True)
 
-# --- TRADUÇÕES (ADICIONADO 'SELECIONADA') ---
+# --- TRADUÇÕES ---
 idiomas = {
     "Português BR": {
         "busca": "PESQUISE SUA MÚSICA OU ARTISTA", "fila": "Acompanhe sua vez aqui!", 
@@ -103,18 +103,15 @@ df_fila = carregar_fila()
 if not df_fila.empty:
     for i, row in df_fila.iterrows():
         try:
-            # Tentativa de pegar as colunas pelo nome ou índice para evitar fila vazia
-            # Ajuste os números [5, 3, 4] se a ordem na sua planilha mudar
-            senha_f = row.iloc[5]
+            # Mapeamento conforme sua planilha: D(3)=Música, E(4)=Artista, F(5)=Senha
             musica_f = row.iloc[3]
             artista_f = row.iloc[4]
+            senha_f = row.iloc[5]
             
-            # Card estilo 'Meus Pedidos' para a fila geral
             st.success(f"**{i+1}º** — 🎵 **{musica_f}** ({artista_f})  \n🔑 {t['sucesso']} **{senha_f}**")
-        except Exception as e:
+        except:
             continue
 else:
-    # Se a fila estiver vazia, aparece este box amarelado
     st.warning(t["vazio"])
 
 st.divider()
@@ -128,7 +125,6 @@ if st.session_state.musica_escolhida is None:
         df_cat = carregar_catalogo()
         
         if not df_cat.empty:
-            # Filtro inteligente
             res = df_cat[df_cat.apply(lambda x: busca_limpa in remover_acentos(x.iloc[1]) or busca_limpa in remover_acentos(x.iloc[2]), axis=1)].head(10)
             
             for i, row in res.iterrows():
@@ -137,7 +133,7 @@ if st.session_state.musica_escolhida is None:
                     st.rerun()
 else:
     m = st.session_state.musica_escolhida
-    # AGORA O TEXTO 'SELECIONADA' MUDA COM O IDIOMA
+    # Texto 'Selecionada' agora traduz corretamente
     st.info(f"✨ **{t['sel']}** {m.iloc[1]} - {m.iloc[2]}")
     
     col1, col2 = st.columns(2)
@@ -147,7 +143,6 @@ else:
                 nova_senha = gerar_senha()
                 url_form = "https://docs.google.com/forms/d/e/1FAIpQLSd8SRNim_Uz3KlxdkWzBTdO7zSKSIvQMfiS3flDi6HRKWggYQ/formResponse"
                 
-                # ID do campo da senha (conforme você passou: entry.694761068)
                 dados = {
                     "entry.1213556115": datetime.now().strftime("%H:%M"),
                     "entry.1947522889": str(m.iloc[0]),
@@ -165,7 +160,7 @@ else:
                     time.sleep(1)
                     st.rerun()
                 except:
-                    st.error("Erro ao conectar com o servidor.")
+                    st.error("Erro ao conectar.")
     with col2:
         if st.button(t["btn_canc"], use_container_width=True):
             st.session_state.musica_escolhida = None
