@@ -6,7 +6,7 @@
     <title>Karaokê Coopers</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <style>
-        :root { --primary: #0077b6; --success: #2a9d8f; --bg: #f0f2f5; }
+        :root { --primary: #0077b6; --success: #90be6d; --bg: #f0f2f5; --danger: #d62828; }
         body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); margin: 0; padding: 10px; text-align: center; }
         .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); min-height: 500px; position: relative; }
         .logo-img { max-width: 140px; height: auto; border-radius: 15px; margin-bottom: 10px; }
@@ -21,20 +21,12 @@
         .queue-table td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
         input[type="text"] { width: 100%; padding: 16px; border: 2px solid #ddd; border-radius: 15px; font-size: 16px; box-sizing: border-box; outline: none; margin-top: 15px; }
         .song-item { background: #fff; border: 1px solid #eee; padding: 12px; margin: 8px 0; border-radius: 12px; cursor: pointer; border-left: 5px solid var(--primary); text-align: left; }
-        
-        /* Notificação Toast */
-        #toast { visibility: hidden; min-width: 250px; background-color: var(--success); color: white; text-align: center; border-radius: 50px; padding: 16px; position: fixed; z-index: 999; left: 50%; bottom: 30px; transform: translateX(-50%); font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-        #toast.show { visibility: visible; animation: fadeinout 2.5s; }
-
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes fadeinout { 0% { bottom: 0; opacity: 0; } 20% { bottom: 30px; opacity: 1; } 80% { bottom: 30px; opacity: 1; } 100% { bottom: 0; opacity: 0; } }
     </style>
 </head>
 <body>
 
-<div id="toast">✅ PEDIDO ENVIADO!</div>
-
-<iframe name="hidden_iframe" style="display:none;"></iframe>
+<iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
 
 <div class="container">
     <img src="9d8daa_198ec12882054dceb6d49d760eba30f0~mv2.jpg" alt="Logo" class="logo-img">
@@ -74,10 +66,10 @@
 
 <script>
     const translations = {
-        pt: { title: "Karaokê Coopers", busca: "PESQUISE MÚSICA OU ARTISTA", filaLabel: "Acompanhe sua vez:", thPos: "Pos", thSenha: "Senha", thMusica: "Música", tokenLabel: "SENHA GERADA:", filaVazia: "Fila vazia!", toast: "✅ PEDIDO ENVIADO!" },
-        en: { title: "Coopers Karaoke", busca: "SEARCH SONG OR ARTIST", filaLabel: "Current Queue:", thPos: "Pos", thSenha: "Code", thMusica: "Song", tokenLabel: "GENERATED CODE:", filaVazia: "Queue is empty!", toast: "✅ ORDER SENT!" },
-        es: { title: "Karaoke Coopers", busca: "BUSCAR MÚSICA O ARTISTA", filaLabel: "Lista de espera:", thPos: "Pos", thSenha: "Cód", thMusica: "Música", tokenLabel: "CÓDIGO GENERADO:", filaVazia: "¡Lista vazía!", toast: "✅ ¡PEDIDO ENVIADO!" },
-        fr: { title: "Karaoké Coopers", busca: "RECHERCHER CHANSON", filaLabel: "File d'attente:", thPos: "Pos", thSenha: "Code", thMusica: "Chanson", tokenLabel: "CODE GÉNÉRÉ:", filaVazia: "File vide!", toast: "✅ COMMANDE ENVOYÉE!" }
+        pt: { title: "Karaokê Coopers", busca: "PESQUISE MÚSICA OU ARTISTA", filaLabel: "Acompanhe sua vez:", thPos: "Pos", thSenha: "Senha", thMusica: "Música", tokenLabel: "SENHA GERADA:", filaVazia: "Fila vazia!", alert: "✅ PEDIDO ENVIADO!" },
+        en: { title: "Coopers Karaoke", busca: "SEARCH SONG OR ARTIST", filaLabel: "Current Queue:", thPos: "Pos", thSenha: "Code", thMusica: "Song", tokenLabel: "GENERATED CODE:", filaVazia: "Queue is empty!", alert: "✅ ORDER SENT!" },
+        es: { title: "Karaoke Coopers", busca: "BUSCAR MÚSICA O ARTISTA", filaLabel: "Lista de espera:", thPos: "Pos", thSenha: "Cód", thMusica: "Música", tokenLabel: "CÓDIGO GENERADO:", filaVazia: "¡Lista vazía!", alert: "✅ ¡PEDIDO ENVIADO!" },
+        fr: { title: "Karaoké Coopers", busca: "RECHERCHER CHANSON", filaLabel: "File d'attente:", thPos: "Pos", thSenha: "Code", thMusica: "Chanson", tokenLabel: "CODE GÉNÉRÉ:", filaVazia: "File vide!", alert: "✅ COMMANDE ENVOYÉE!" }
     };
 
     let currentLang = 'pt';
@@ -107,7 +99,6 @@
         document.getElementById('th-pos').innerText = t.thPos;
         document.getElementById('th-senha').innerText = t.thSenha;
         document.getElementById('th-musica').innerText = t.thMusica;
-        document.getElementById('toast').innerText = t.toast;
         loadQueue();
         renderMyOrders();
     }
@@ -116,4 +107,75 @@
         try {
             const resp = await fetch(SHEET_CSV + "&cache=" + Date.now());
             const text = await resp.text();
-            const rows = text.split('\n
+            const rows = text.split('\n').slice(1);
+            let html = '';
+            rows.forEach((row, i) => {
+                const cols = row.split(',');
+                if(cols.length > 5 && cols[5].trim() !== "") {
+                    html += `<tr><td>${i+1}º</td><td><strong>${cols[5]}</strong></td><td>${cols[3]}</td></tr>`;
+                }
+            });
+            document.getElementById('queueBody').innerHTML = html || `<tr><td colspan="3">${translations[currentLang].filaVazia}</td></tr>`;
+        } catch(e) {}
+    }
+
+    function searchSongs() {
+        const query = document.getElementById('searchInput').value.toLowerCase().trim();
+        const resDiv = document.getElementById('results');
+        if(query.length < 2) { resDiv.innerHTML = ''; return; }
+        const filtered = catalog.filter(s => (s[1] && s[1].toLowerCase().includes(query)) || (s[2] && s[2].toLowerCase().includes(query))).slice(0, 10);
+        resDiv.innerHTML = filtered.map(s => `
+            <div class="song-item" onclick="sendOrderDirect('${s[0]}','${s[1]}','${s[2]}')">
+                🎶 <strong>${s[1]}</strong><br><small>${s[2]}</small>
+            </div>`).join('');
+    }
+
+    function sendOrderDirect(id, title, artist) {
+        const senha = Math.random().toString(36).substring(2, 6).toUpperCase();
+        
+        // Preenchendo campos
+        document.getElementById('f_hora').value = new Date().toLocaleTimeString();
+        document.getElementById('f_codigo').value = id;
+        document.getElementById('f_musica').value = title;
+        document.getElementById('f_artista').value = artist;
+        document.getElementById('f_senha').value = senha;
+
+        // Submetendo formulário
+        document.getElementById('karaokeForm').submit();
+
+        // Guardando localmente
+        let saved = JSON.parse(localStorage.getItem('myKaraokeOrders') || '[]');
+        saved.push({ senha, musica: title });
+        localStorage.setItem('myKaraokeOrders', JSON.stringify(saved));
+        
+        // Alerta obrigatório para estabilidade
+        alert(translations[currentLang].alert);
+
+        // Confetes
+        confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+        
+        renderMyOrders();
+        document.getElementById('searchInput').value = '';
+        document.getElementById('results').innerHTML = '';
+        setTimeout(loadQueue, 2000);
+    }
+
+    function renderMyOrders() {
+        const orders = JSON.parse(localStorage.getItem('myKaraokeOrders') || '[]');
+        const area = document.getElementById('myOrders');
+        area.innerHTML = orders.map((o, idx) => `
+            <div class="card card-info">
+                <span class="remove-btn" onclick="removeMyOrder(${idx})">×</span>
+                🔑 ${translations[currentLang].tokenLabel} ${o.senha}<br><small>${o.musica}</small>
+            </div>`).join('');
+    }
+
+    function removeMyOrder(idx) {
+        let saved = JSON.parse(localStorage.getItem('myKaraokeOrders') || '[]');
+        saved.splice(idx, 1);
+        localStorage.setItem('myKaraokeOrders', JSON.stringify(saved));
+        renderMyOrders();
+    }
+</script>
+</body>
+</html>
