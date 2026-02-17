@@ -26,7 +26,7 @@
 </head>
 <body>
 
-<iframe name="google_submit_frame" style="display:none;"></iframe>
+<iframe name="hidden_iframe" style="display:none;"></iframe>
 
 <div class="container">
     <img src="9d8daa_198ec12882054dceb6d49d760eba30f0~mv2.jpg" alt="Logo" class="logo-img">
@@ -53,12 +53,12 @@
 
     <input type="text" id="searchInput" oninput="searchSongs()">
     
-    <form id="realForm" action="https://docs.google.com/forms/d/e/1bCm6owXX36OTdAaeUKTRrz18LsuHOBTbtbl35Zieato/formResponse" method="POST" target="google_submit_frame" style="display:none;">
-        <input type="hidden" name="entry.1995948109" id="form_hora">
-        <input type="hidden" name="entry.105234855" id="form_codigo">
-        <input type="hidden" name="entry.1830320650" id="form_musica">
-        <input type="hidden" name="entry.730937896" id="form_artista">
-        <input type="hidden" name="entry.1210617554" id="form_senha">
+    <form id="karaokeForm" action="https://docs.google.com/forms/d/e/1FAIpQLSc2M4LQqNDD79g0o46ImqkwAL6g7EYn74cvxIa2K-6prNBLrQ/formResponse" method="POST" target="hidden_iframe" style="display:none;">
+        <input type="hidden" name="entry.1995948109" id="f_hora">
+        <input type="hidden" name="entry.105234855" id="f_codigo">
+        <input type="hidden" name="entry.1830320650" id="f_musica">
+        <input type="hidden" name="entry.730937896" id="f_artista">
+        <input type="hidden" name="entry.1210617554" id="f_senha">
     </form>
 
     <div id="results"></div>
@@ -133,30 +133,28 @@
     function sendOrderDirect(id, title, artist) {
         const senha = Math.random().toString(36).substring(2, 6).toUpperCase();
         
-        // 1. Preenche o formulário oculto
-        document.getElementById('form_hora').value = new Date().toLocaleTimeString();
-        document.getElementById('form_codigo').value = id;
-        document.getElementById('form_musica').value = title;
-        document.getElementById('form_artista').value = artist;
-        document.getElementById('form_senha').value = senha;
+        document.getElementById('f_hora').value = new Date().toLocaleTimeString();
+        document.getElementById('f_codigo').value = id;
+        document.getElementById('f_musica').value = title;
+        document.getElementById('f_artista').value = artist;
+        document.getElementById('f_senha').value = senha;
 
-        // 2. Envia o formulário REAL (Garante o envio independente da internet)
-        document.getElementById('realForm').submit();
+        // Envio do formulário
+        document.getElementById('karaokeForm').submit();
 
-        // 3. Salva a senha local
         let saved = JSON.parse(localStorage.getItem('myKaraokeOrders') || '[]');
         saved.push({ senha, musica: title });
         localStorage.setItem('myKaraokeOrders', JSON.stringify(saved));
         
-        // 4. O POPUP (Obrigatório)
+        // Popup de confirmação
         alert(translations[currentLang].alert);
 
-        // 5. Confete e limpeza
         confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+        
         renderMyOrders();
         document.getElementById('searchInput').value = '';
         document.getElementById('results').innerHTML = '';
-        setTimeout(loadQueue, 1500);
+        setTimeout(loadQueue, 2000);
     }
 
     function renderMyOrders() {
