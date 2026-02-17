@@ -20,6 +20,7 @@ def gerar_senha():
 
 def carregar_fila():
     timestamp = int(time.time())
+    # URL com seu GID correto: 403883912
     url_dados = f"https://docs.google.com/spreadsheets/d/1FAIpQLSd8SRNim_Uz3KlxdkWzBTdO7zSKSIvQMfiS3flDi6HRKWggYQ/export?format=csv&gid=403883912&cachebust={timestamp}"
     try:
         df = pd.read_csv(url_dados)
@@ -31,7 +32,6 @@ def carregar_fila():
 @st.cache_data(ttl=60)
 def carregar_catalogo():
     try:
-        # Carrega o catálogo (karafuncatalog.csv)
         df = pd.read_csv('karafuncatalog.csv', encoding='latin1', sep=None, engine='python')
         df.columns = [str(c).strip() for c in df.columns]
         return df
@@ -47,7 +47,7 @@ if 'reset_busca' not in st.session_state:
     st.session_state.reset_busca = 0
 
 # --- TÍTULO ---
-st.markdown("<h1 style='text-align: center;'>🎤 Karaokê Coopers</h1>", unsafe_allow_html=True)
+st.title("🎤 Karaokê Coopers")
 
 # --- TRADUÇÕES ---
 idiomas = {
@@ -90,17 +90,18 @@ if st.session_state.minhas_senhas:
 
 st.divider()
 
-# --- FILA DE ESPERA ---
-st.subheader(f"🎤 {t['fila']}")
+# --- FILA DE ESPERA (COLUNAS DA SUA PLANILHA) ---
+st.subheader(f"{t['fila']}")
 df_fila = carregar_fila()
 
 if not df_fila.empty:
     for i in range(len(df_fila)):
         try:
-            musica_f = df_fila.iloc[i, 3]
-            artista_f = df_fila.iloc[i, 4]
-            senha_f = df_fila.iloc[i, 5]
-            st.success(f"**{i+1}º** — 🎵 **{musica_f}** ({artista_f})  \n🔑 {t['sucesso']} **{senha_f}**")
+            # Puxando pelas colunas da sua foto: 3=Musica, 4=Artista, 5=Senha
+            m_f = df_fila.iloc[i, 3]
+            a_f = df_fila.iloc[i, 4]
+            s_f = df_fila.iloc[i, 5]
+            st.success(f"**{i+1}º** — 🎵 **{m_f}** ({a_f})  \n🔑 {t['sucesso']} **{s_f}**")
         except:
             continue
 else:
@@ -108,40 +109,40 @@ else:
 
 st.divider()
 
-# --- BUSCA AUTOMÁTICA (MÉTODO SEM ENTER) ---
+# --- BUSCA AUTOMÁTICA (SEM ENTER) ---
 if st.session_state.musica_escolhida is None:
-    # O Streamlit atualiza a cada tecla digitada se não houver um formulário travando
-    input_usuario = st.text_input(t["busca"], key=f"in_{st.session_state.reset_busca}").strip()
+    # A mágica está aqui: st.text_input fora de formulários atualiza a cada mudança
+    label_busca = t["busca"]
+    input_usuario = st.text_input(label_busca, key=f"buscavip_{st.session_state.reset_busca}").strip()
     
-    if len(input_usuario) >= 2:  # Começa a buscar a partir de 2 letras para não travar
+    if len(input_usuario) >= 2:
         busca_limpa = remover_acentos(input_usuario)
         df_cat = carregar_catalogo()
         
         if not df_cat.empty:
-            # Filtro em tempo real
+            # Filtro imediato
             res = df_cat[df_cat.apply(lambda x: busca_limpa in remover_acentos(x.iloc[1]) or busca_limpa in remover_acentos(x.iloc[2]), axis=1)].head(10)
             
             if not res.empty:
-                st.write("---") # Pequena separação visual
                 for i, row in res.iterrows():
-                    # Botão para selecionar a música encontrada
-                    if st.button(f"🎶 {row.iloc[1]} - {row.iloc[2]}", key=f"s_{i}", use_container_width=True):
+                    if st.button(f"🎶 {row.iloc[1]} - {row.iloc[2]}", key=f"btn_{i}", use_container_width=True):
                         st.session_state.musica_escolhida = row
                         st.rerun()
             else:
                 st.caption("Nenhuma música encontrada...")
 else:
-    # Tela de Confirmação
+    # TELA DE CONFIRMAÇÃO
     m = st.session_state.musica_escolhida
     st.info(f"✨ **{t['sel']}** {m.iloc[1]} - {m.iloc[2]}")
     
-    col1, col2 = st.columns(2)
-    with col1:
+    c1, c2 = st.columns(2)
+    with c1:
         if st.button(t["btn_conf"], type="primary", use_container_width=True):
-            with st.spinner("Enviando..."):
+            with st.spinner("DJ salvando..."):
                 nova_senha = gerar_senha()
-                url_form = "https://docs.google.com/forms/d/e/1FAIpQLSd8SRNim_Uz3KlxdkWzBTdO7zSKSIvQMfiS3flDi6HRKWggYQ/formResponse"
+                url_f = "https://docs.google.com/forms/d/e/1FAIpQLSd8SRNim_Uz3KlxdkWzBTdO7zSKSIvQMfiS3flDi6HRKWggYQ/formResponse"
                 
+                # Seu ID de senha: entry.694761068
                 dados = {
                     "entry.1213556115": datetime.now().strftime("%H:%M"),
                     "entry.1947522889": str(m.iloc[0]),
@@ -151,7 +152,7 @@ else:
                 }
                 
                 try:
-                    requests.post(url_form, data=dados, timeout=5)
+                    requests.post(url_f, data=dados, timeout=5)
                     st.session_state.minhas_senhas.append({"musica": m.iloc[1], "senha": nova_senha})
                     st.balloons()
                     st.session_state.musica_escolhida = None
@@ -159,8 +160,8 @@ else:
                     time.sleep(1)
                     st.rerun()
                 except:
-                    st.error("Erro ao conectar.")
-    with col2:
+                    st.error("Erro no envio.")
+    with c2:
         if st.button(t["btn_canc"], use_container_width=True):
             st.session_state.musica_escolhida = None
             st.rerun()
