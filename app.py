@@ -87,19 +87,20 @@ t = idiomas[escolha]
 
 st.divider()
 
-# --- EXIBIÇÃO DA FILA ---
-st.subheader(t["fila_tit"])
-df_atual = carregar_fila()
-
-if not df_atual.empty:
-    # Ajuste: Pega a coluna 3 (Música) e coluna 2 (Hora) para mostrar na fila
-    # Na sua planilha Form_Responses2, a música parece estar na 4ª coluna (índice 3)
+# --- FUNÇÃO PARA LER A FILA (Substitua a sua por esta) ---
+def carregar_fila():
+    # Este link já está formatado para exportar os dados como CSV
+    url_dados = "https://docs.google.com/spreadsheets/d/1FAIpQLSd8SRNim_Uz3KlxdkWzBTdO7zSKSIvQMfiS3flDi6HRKWggYQ/export?format=csv"
     try:
-        fila_visual = df_atual.iloc[:, [1, 3]].tail(5) # Mostra as últimas 5
-        fila_visual.columns = ["Hora", "Música"]
-        st.table(fila_visual)
-    except:
-        st.write("Carregando fila...")
+        # Lemos a planilha. O 'storage_options' ajuda a evitar o cache antigo
+        df_fila = pd.read_csv(url_dados)
+        # Remove espaços em branco dos nomes das colunas
+        df_fila.columns = [c.strip() for c in df_fila.columns]
+        return df_fila
+    except Exception as e:
+        # Se der erro, ele mostra no app para sabermos o que é
+        # st.error(f"Erro ao ler planilha: {e}") 
+        return pd.DataFrame()
 else:
     st.write(t["vazio"])
 
@@ -118,28 +119,25 @@ if st.session_state.musica_escolhida is None:
             if st.button(f"🎶 {row.iloc[1]} - {row.iloc[2]}", key=f"b_{i}"):
                 st.session_state.musica_escolhida = row
                 st.rerun()
-else:
-    m = st.session_state.musica_escolhida
-    posicao = len(df_atual) + 1
-    
-    # Todos os textos agora usam a variável t[] para tradução
-    st.success(f"{t['sel']} {m.iloc[1]}")
-    st.info(f"📢 {t['pos']} {posicao}º")
+# --- EXIBIÇÃO DA FILA (Substitua o bloco correspondente por este) ---
+st.subheader(t["fila_tit"])
+df_atual = carregar_fila()
 
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button(t["conf"], type="primary"):
-            url_form = "https://docs.google.com/forms/d/e/1FAIpQLSd8SRNim_Uz3KlxdkWzBTdO7zSKSIvQMfiS3flDi6HRKWggYQ/formResponse"
-            dados = {
-                "entry.1213556115": datetime.now().strftime("%H:%M"),
-                "entry.1947522889": str(m.iloc[0]),
-                "entry.1660854967": str(m.iloc[1]),
-                "entry.700923343": str(m.iloc[2])
-            }
-            requests.post(url_form, data=dados)
-            st.balloons()
-            st.success(t["sucesso"])
-            st.button(t["outro"], on_click=voltar_inicio)
-    with col2:
-        if st.button(t["canc"], on_click=voltar_inicio):
-            pass
+if not df_atual.empty:
+    try:
+        # Nas planilhas do Forms geralmente:
+        # Coluna 0: Carimbo de data/hora
+        # Coluna 1: Pergunta 1 (Data/Hora no seu caso)
+        # Coluna 3: Pergunta 3 (Nome da Música)
+        
+        # Vamos tentar pegar as colunas pelo nome ou pela posição
+        # Vou usar a posição para garantir (1 e 3)
+        fila_visual = df_atual.iloc[:, [1, 3]].copy()
+        fila_visual.columns = ["Hora", "Música"]
+        
+        # Mostra a tabela para o cliente
+        st.table(fila_visual)
+    except Exception as e:
+        st.write("Aguardando próximos cantores... 🎤")
+else:
+    st.write(t["vazio"])
