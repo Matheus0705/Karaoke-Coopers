@@ -20,11 +20,12 @@
         .queue-table th { background: #eee; padding: 10px; text-align: left; }
         .queue-table td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
         input[type="text"] { width: 100%; padding: 16px; border: 2px solid #ddd; border-radius: 15px; font-size: 16px; box-sizing: border-box; outline: none; margin-top: 15px; }
-        .song-item { background: #fff; border: 1px solid #eee; padding: 12px; margin: 8px 0; border-radius: 12px; cursor: pointer; border-left: 5px solid var(--primary); text-align: left; transition: 0.2s; }
-        .song-item:active { background: #e9ecef; transform: scale(0.98); }
+        .song-item { background: #fff; border: 1px solid #eee; padding: 12px; margin: 8px 0; border-radius: 12px; cursor: pointer; border-left: 5px solid var(--primary); text-align: left; }
         
+        /* Notificação Suave (Toast) */
         #toast { visibility: hidden; min-width: 200px; background-color: var(--success); color: white; text-align: center; border-radius: 15px; padding: 16px; position: fixed; z-index: 99; left: 50%; bottom: 30px; transform: translateX(-50%); font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
         #toast.show { visibility: visible; animation: fadeinout 2.5s; }
+
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes fadeinout { 0% { bottom: 0; opacity: 0; } 20% { bottom: 30px; opacity: 1; } 80% { bottom: 30px; opacity: 1; } 100% { bottom: 0; opacity: 0; } }
     </style>
@@ -127,10 +128,12 @@
             </div>`).join('');
     }
 
+    // FUNÇÃO REVISADA COM A LÓGICA DO SEU CÓDIGO FUNCIONAL + FEEDBACK SEM POPUP
     function sendOrderDirect(id, title, artist) {
         const senha = Math.random().toString(36).substring(2, 6).toUpperCase();
         const params = new URLSearchParams();
         
+        // Mantendo exatamente os campos entry do seu código anterior
         params.append('entry.1995948109', new Date().toLocaleTimeString());
         params.append('entry.105234855', id);
         params.append('entry.1830320650', title);
@@ -139,27 +142,28 @@
 
         const formAction = "https://docs.google.com/forms/d/e/1bCm6owXX36OTdAaeUKTRrz18LsuHOBTbtbl35Zieato/formResponse";
 
-        // ENVIO
+        // Envio (Lógica que funcionou)
         fetch(formAction, { method: 'POST', body: params, mode: 'no-cors' });
 
-        // SALVA LOCALMENTE
+        // Salva localmente
         let saved = JSON.parse(localStorage.getItem('myKaraokeOrders') || '[]');
         saved.push({ senha, musica: title });
         localStorage.setItem('myKaraokeOrders', JSON.stringify(saved));
         
-        // FEEDBACK VISUAL
+        // Efeito de confete e Feedback visual (Toast) em vez de Popup
+        confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
         const toast = document.getElementById("toast");
         toast.className = "show";
         setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 2500);
-        confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
 
-        // O SEGREDO: Esperar 500ms antes de limpar a tela para dar tempo do envio completar
+        // DELAY DE SEGURANÇA: Espera 600ms para limpar a busca. 
+        // Isso garante que o fetch tenha tempo de sair antes da interface mudar.
         setTimeout(() => {
             renderMyOrders();
             document.getElementById('searchInput').value = '';
             document.getElementById('results').innerHTML = '';
             loadQueue();
-        }, 500);
+        }, 600);
     }
 
     function renderMyOrders() {
