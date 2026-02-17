@@ -48,11 +48,34 @@
         .logo-img { max-width: 60px; height: auto; border-radius: 10px; }
         #app-title { margin: 0; font-size: 1.6em; text-shadow: 2px 2px 4px #000; }
         
-        .lang-bar { display: flex; justify-content: center; gap: 10px; margin-bottom: 15px; padding: 10px; background: rgba(255,255,255,0.1); border-radius: 15px; }
-        .lang-item { width: 45px; height: 30px; cursor: pointer; filter: grayscale(100%); opacity: 0.5; border-radius: 4px; transition: 0.3s; }
-        .lang-item.active { filter: grayscale(0%); opacity: 1; transform: scale(1.1); border: 2px solid white; }
+        .lang-bar { 
+            display: flex; 
+            justify-content: center; 
+            gap: 15px; 
+            margin-bottom: 15px; 
+            padding: 12px; 
+            background: rgba(255,255,255,0.1); 
+            border-radius: 15px; 
+        }
+        .lang-item { 
+            width: 45px; 
+            height: 30px; 
+            cursor: pointer; 
+            filter: grayscale(100%); 
+            opacity: 0.4; 
+            border-radius: 4px; 
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        /* Classe que ativa a bandeira visualmente */
+        .lang-item.active { 
+            filter: grayscale(0%); 
+            opacity: 1; 
+            transform: scale(1.2); 
+            border-color: white; 
+            box-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
 
-        /* Aviso de Copyright - DINÂMICO */
         #copyright-alert {
             background: rgba(255, 77, 77, 0.2);
             border: 1px solid rgba(255, 77, 77, 0.4);
@@ -62,7 +85,7 @@
             font-size: 13px;
             margin: 10px 0;
             text-align: left;
-            display: none; /* Começa escondido */
+            display: none;
             align-items: flex-start;
             gap: 10px;
         }
@@ -161,6 +184,32 @@
         setInterval(loadQueue, 15000);
     };
 
+    // AQUI ESTÁ A CORREÇÃO: Função que troca a classe "active" visualmente
+    function setLang(lang) {
+        currentLang = lang;
+        // Remove "active" de todas as bandeiras
+        document.querySelectorAll('.lang-item').forEach(img => img.classList.remove('active'));
+        // Adiciona "active" apenas na que foi clicada
+        const selectedFlag = document.getElementById('flag-' + lang);
+        if(selectedFlag) selectedFlag.classList.add('active');
+        
+        updateInterface();
+    }
+
+    function updateInterface() {
+        const t = translations[currentLang];
+        document.getElementById('app-title').innerHTML = `🎤 ${t.title}`;
+        document.getElementById('searchInput').placeholder = t.busca;
+        document.getElementById('txt-fila-label').innerText = t.filaLabel;
+        document.getElementById('th-pos').innerText = t.thPos;
+        document.getElementById('th-artista').innerText = t.thArtista;
+        document.getElementById('th-musica').innerText = t.thMusica;
+        document.getElementById('msg-alert-1').innerText = t.alert1;
+        document.getElementById('msg-copyright').innerText = t.copyright;
+        loadQueue();
+        renderMyOrders();
+    }
+
     function searchSongs() {
         const query = document.getElementById('searchInput').value.toLowerCase().trim();
         const resDiv = document.getElementById('results');
@@ -172,13 +221,8 @@
             return; 
         }
 
-        // Busca exata/contida
-        let filtered = catalog.filter(s => 
-            (s[1] && s[1].toLowerCase().includes(query)) || 
-            (s[2] && s[2].toLowerCase().includes(query))
-        );
+        let filtered = catalog.filter(s => (s[1] && s[1].toLowerCase().includes(query)) || (s[2] && s[2].toLowerCase().includes(query)));
 
-        // Busca aproximada se não achar nada
         if(filtered.length === 0) {
             filtered = catalog.filter(s => {
                 const song = (s[1] || "").toLowerCase();
@@ -199,45 +243,6 @@
         }
     }
 
-    function sendOrderDirect(id, title, artist) {
-        const senha = Math.random().toString(36).substring(2, 6).toUpperCase();
-        
-        document.getElementById('f_hora').value = new Date().toLocaleTimeString();
-        document.getElementById('f_codigo').value = id;
-        document.getElementById('f_musica').value = title;
-        document.getElementById('f_artista').value = artist;
-        document.getElementById('f_senha').value = senha;
-
-        document.getElementById('karaokeForm').submit();
-
-        let saved = JSON.parse(localStorage.getItem('myKaraokeOrders') || '[]');
-        saved.push({ senha, musica: title });
-        localStorage.setItem('myKaraokeOrders', JSON.stringify(saved));
-
-        confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-        
-        setTimeout(() => {
-            renderMyOrders();
-            document.getElementById('searchInput').value = '';
-            document.getElementById('results').innerHTML = '';
-            loadQueue();
-        }, 800);
-    }
-
-    // Funções auxiliares
-    function setLang(lang) { currentLang = lang; updateInterface(); }
-    function updateInterface() {
-        const t = translations[currentLang];
-        document.getElementById('app-title').innerHTML = `🎤 ${t.title}`;
-        document.getElementById('searchInput').placeholder = t.busca;
-        document.getElementById('txt-fila-label').innerText = t.filaLabel;
-        document.getElementById('th-pos').innerText = t.thPos;
-        document.getElementById('th-artista').innerText = t.thArtista;
-        document.getElementById('th-musica').innerText = t.thMusica;
-        document.getElementById('msg-alert-1').innerText = t.alert1;
-        document.getElementById('msg-copyright').innerText = t.copyright;
-        loadQueue(); renderMyOrders();
-    }
     async function loadQueue() {
         try {
             const resp = await fetch(SHEET_CSV + "&cache=" + Date.now());
@@ -251,11 +256,29 @@
             document.getElementById('queueBody').innerHTML = html || `<tr><td colspan="3">${translations[currentLang].filaVazia}</td></tr>`;
         } catch(e) {}
     }
+
+    function sendOrderDirect(id, title, artist) {
+        const senha = Math.random().toString(36).substring(2, 6).toUpperCase();
+        document.getElementById('f_hora').value = new Date().toLocaleTimeString();
+        document.getElementById('f_codigo').value = id;
+        document.getElementById('f_musica').value = title;
+        document.getElementById('f_artista').value = artist;
+        document.getElementById('f_senha').value = senha;
+        document.getElementById('karaokeForm').submit();
+        
+        let saved = JSON.parse(localStorage.getItem('myKaraokeOrders') || '[]');
+        saved.push({ senha, musica: title });
+        localStorage.setItem('myKaraokeOrders', JSON.stringify(saved));
+        confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+        setTimeout(() => { renderMyOrders(); document.getElementById('searchInput').value = ''; document.getElementById('results').innerHTML = ''; loadQueue(); }, 800);
+    }
+
     function renderMyOrders() {
         const orders = JSON.parse(localStorage.getItem('myKaraokeOrders') || '[]');
         document.getElementById('myOrders').innerHTML = orders.map((o, idx) => `
             <div class="card-info"><span class="remove-btn" onclick="removeMyOrder(${idx})">×</span>🔑 ${translations[currentLang].tokenLabel} ${o.senha}<br><small>${o.musica}</small></div>`).join('');
     }
+
     function removeMyOrder(idx) {
         let saved = JSON.parse(localStorage.getItem('myKaraokeOrders') || '[]');
         saved.splice(idx, 1); localStorage.setItem('myKaraokeOrders', JSON.stringify(saved)); renderMyOrders();
