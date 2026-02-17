@@ -3,38 +3,50 @@ import pandas as pd
 from datetime import datetime
 import requests
 
-# Configuração da página
+# Configuração
 st.set_page_config(page_title="Karaokê Coopers", layout="centered", page_icon="🎤")
+
+# --- FUNÇÃO PARA LER A FILA ATUAL ---
+def ler_fila_atual():
+    # Substitua o link abaixo pelo link da sua planilha do Google Sheets
+    # Certifique-se de que o link termina com /export?format=csv
+    sheet_url = "SUA_PLANILHA_LINK_AQUI/export?format=csv"
+    try:
+        df_fila = pd.read_csv(sheet_url)
+        return len(df_fila) # Retorna quantas pessoas já estão na fila
+    except:
+        return 0
 
 @st.cache_data
 def carregar_catalogo():
-    try:
-        # Carrega o catálogo local
-        df = pd.read_csv('karafuncatalog.csv', encoding='latin1', sep=None, engine='python')
-        df.columns = [str(c).strip() for c in df.columns]
-        return df
-    except Exception as e:
-        st.error(f"Erro ao carregar catálogo: {e}")
-        return None
+    df = pd.read_csv('karafuncatalog.csv', encoding='latin1', sep=None, engine='python')
+    df.columns = [str(c).strip() for c in df.columns]
+    return df
 
 df_catalogo = carregar_catalogo()
 
-# Dicionário de Tradução
+# Resetar estado
+def resetar():
+    st.session_state.musica_escolhida = None
+    st.rerun()
+
+# Traduções
 idiomas_dict = {
-    "Português 🇧🇷🇵🇹": {"label": "Pesquisar música ou artista...", "sel": "Selecionado", "conf": "Confirmar ✅", "canc": "Voltar ❌", "sucesso": "Pedido Enviado! 🕺🏻"},
-    "English 🇺🇸🇬🇧": {"label": "Search song or artist...", "sel": "Selected", "conf": "Confirm ✅", "canc": "Back ❌", "sucesso": "Request Sent! 🕺🏻"},
-    "Español 🇪🇸": {"label": "Buscar música o artista...", "sel": "Seleccionado", "conf": "Confirmar ✅", "canc": "Volver ❌", "sucesso": "¡Enviado! 🕺🏻"},
-    "Français 🇫🇷": {"label": "Chercher chanson ou artiste...", "sel": "Sélectionné", "conf": "Confirmer ✅", "canc": "Retour ❌", "sucesso": "Envoyé ! 🕺🏻"}
+    "Português 🇧🇷🇵🇹": {"label": "Pesquisar...", "sel": "Selecionado", "conf": "Confirmar ✅", "canc": "Voltar ❌", "sucesso": "Pedido Enviado!", "posicao": "Estás na posição nº"},
+    "English 🇺🇸🇬🇧": {"label": "Search...", "sel": "Selected", "conf": "Confirm ✅", "canc": "Back ❌", "sucesso": "Sent!", "posicao": "You are at position #"}
 }
 
 st.title("🎤 Karaokê Coopers")
-idioma = st.radio("Idioma", list(idiomas_dict.keys()), horizontal=True)
+idioma = st.sidebar.radio("Idioma", list(idiomas_dict.keys())) # Coloquei no lado para limpar o meio
 t = idiomas_dict[idioma]
+
+# Mostrar fila atual (para a pessoa acompanhar)
+fila_agora = ler_fila_atual()
+st.info(f"📢 {t['posicao']} {fila_agora + 1} da fila!")
 
 if 'musica_escolhida' not in st.session_state:
     st.session_state.musica_escolhida = None
 
-# Interface de Busca
 if st.session_state.musica_escolhida is None:
     busca = st.text_input(t["label"]).strip().lower()
     if busca:
@@ -46,37 +58,23 @@ if st.session_state.musica_escolhida is None:
                 st.rerun()
 else:
     m = st.session_state.musica_escolhida
-    st.success(f"{t['sel']}: {m.iloc[1]} ({m.iloc[2]})")
+    st.warning(f"{t['sel']}: {m.iloc[1]}")
     
     col1, col2 = st.columns(2)
     with col1:
         if st.button(t["conf"], type="primary"):
             url_form = "https://docs.google.com/forms/d/e/1FAIpQLSd8SRNim_Uz3KlxdkWzBTdO7zSKSIvQMfiS3flDi6HRKWggYQ/formResponse"
-            
             dados = {
-                "entry.1213556115": datetime.now().strftime("%H:%M"), 
-                "entry.1947522889": str(m.iloc[0]),                   
-                "entry.1660854967": str(m.iloc[1]),                   
-                "entry.700923343": str(m.iloc[2])                     
+                "entry.1213556115": datetime.now().strftime("%H:%M"),
+                "entry.1947522889": str(m.iloc[0]),
+                "entry.1660854967": str(m.iloc[1]),
+                "entry.700923343": str(m.iloc[2])
             }
+            requests.post(url_form, data=dados)
+            st.balloons()
+            st.success(f"{t['sucesso']} {t['posicao']} {fila_agora + 1}")
+            st.button("Fazer novo pedido 🎤", on_click=resetar) # Este botão agora funciona!
             
-            try:
-                # Faz o envio e guarda a resposta para diagnóstico
-                resposta = requests.post(url_form, data=dados)
-                
-                if resposta.status_code == 200:
-                    st.balloons()
-                    st.success(t["sucesso"])
-                    st.info("💡 Verifique a sua Planilha Google agora!")
-                else:
-                    st.error(f"Erro do Google: Código {resposta.status_code}")
-                    st.warning("Verifique se o formulário aceita respostas de qualquer pessoa.")
-                    
-            except Exception as e:
-                st.error(f"Erro técnico no envio: {e}")
-                st.info("Verifique se 'requests' está no requirements.txt")
-
     with col2:
-        if st.button(t["canc"]):
-            st.session_state.musica_escolhida = None
-            st.rerun()
+        if st.button(t["canc"], on_click=resetar):
+            pass
