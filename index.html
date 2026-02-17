@@ -7,12 +7,10 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <style>
         :root { 
-            --primary: #0077b6; /* Azul para cartões de pedido */
-            --success: #90be6d; /* Verde padrão */
-            --bg: #169916;     /* Verde de fundo */
-            --danger: #d62828;  /* Vermelho padrão */
-            --text-color: #333; /* Cor de texto padrão */
-            --light-bg: #f8f9fa; /* Fundo mais claro para barras */
+            --primary: #0077b6; 
+            --success: #90be6d; 
+            --bg: #000000;     /* Fundo Preto agora */
+            --danger: #d62828;  
         }
         body { 
             font-family: 'Segoe UI', Arial, sans-serif; 
@@ -20,103 +18,66 @@
             margin: 0; 
             padding: 10px; 
             text-align: center; 
-            color: var(--text-color); /* Garante que o texto seja legível */
         }
         .container { 
             max-width: 500px; 
             margin: auto; 
-            background: white; 
+            /* AQUI ENTRA A SUA IMAGEM DO GITHUB */
+            background: url('unnamed.jpg') no-repeat center center;
+            background-size: cover; 
             padding: 20px; 
             border-radius: 25px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2); 
-            min-height: 500px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+            min-height: 600px; 
             position: relative; 
+            color: white; /* Texto branco para destacar no fundo neon */
+        }
+        /* Overlay leve para garantir que o texto seja lido sobre a imagem */
+        .container::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.4); /* Escurece um pouco a imagem de fundo */
+            border-radius: 25px;
+            z-index: 0;
+        }
+        .header-content, .lang-bar, #myOrders, #queueSection, input, #results {
+            position: relative;
+            z-index: 1; /* Coloca o conteúdo acima do fundo/overlay */
         }
         .header-content {
             display: flex;
             align-items: center;
-            justify-content: center; /* Centraliza logo e título */
-            gap: 10px; /* Espaço entre a logo e o texto */
+            justify-content: center;
+            gap: 10px;
             margin-bottom: 10px;
         }
-        .logo-img { 
-            max-width: 80px; /* Reduz um pouco o tamanho da logo para caber ao lado do texto */
-            height: auto; 
-            border-radius: 15px; 
-        }
-        #app-title {
-            margin: 0;
-            font-size: 1.8em; /* Ajusta o tamanho da fonte do título */
-            color: var(--primary); /* Mantém a cor do título para destaque */
-            display: flex;
-            align-items: center;
-            gap: 8px; /* Espaço entre o microfone e o texto */
-        }
+        .logo-img { max-width: 60px; height: auto; border-radius: 10px; }
+        #app-title { margin: 0; font-size: 1.6em; text-shadow: 2px 2px 4px #000; }
+        
         .lang-bar { 
-            display: flex; 
-            justify-content: center; 
-            gap: 10px; 
-            margin-bottom: 20px; 
-            padding: 10px; 
-            background: var(--light-bg); 
-            border-radius: 15px; 
+            display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; 
+            padding: 10px; background: rgba(255,255,255,0.1); border-radius: 15px; 
         }
-        .lang-item { 
-            width: 45px; height: 30px; cursor: pointer; transition: 0.2s; 
-            filter: grayscale(100%); opacity: 0.5; object-fit: cover; 
-            border-radius: 4px; border: 1px solid #ddd; 
-        }
-        .lang-item.active { 
-            filter: grayscale(0%); opacity: 1; transform: scale(1.1); 
-            border-color: var(--primary); 
-        }
-        .card { 
-            padding: 12px; border-radius: 15px; margin-bottom: 10px; 
-            font-weight: bold; position: relative; animation: fadeIn 0.5s; 
-        }
-        .card-info { 
-            background: var(--primary); color: white; border-left: 5px solid #023e8a; 
-            text-align: left; /* Alinha o texto do cartão à esquerda */
-        }
-        .remove-btn { 
-            position: absolute; right: 10px; top: 8px; cursor: pointer; 
-            background: rgba(255,255,255,0.3); /* Um pouco mais visível */
-            border-radius: 50%; width: 20px; height: 20px; line-height: 18px; 
-            color: white; 
-            border: 1px solid rgba(255,255,255,0.5); /* Borda para destaque */
-        }
-        .queue-table { 
-            width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 10px; 
-        }
-        .queue-table th { 
-            background: var(--light-bg); padding: 10px; text-align: left; 
-            border-bottom: 2px solid #ddd;
-        }
-        .queue-table td { 
-            padding: 12px; border-bottom: 1px solid #eee; text-align: left; 
-        }
+        .lang-item { width: 45px; height: 30px; cursor: pointer; filter: grayscale(100%); opacity: 0.5; border-radius: 4px; }
+        .lang-item.active { filter: grayscale(0%); opacity: 1; transform: scale(1.1); border: 2px solid white; }
+
+        .card-info { background: var(--primary); color: white; border-radius: 15px; padding: 12px; margin-bottom: 10px; font-weight: bold; position: relative; }
+        .remove-btn { position: absolute; right: 10px; top: 8px; cursor: pointer; background: rgba(0,0,0,0.3); border-radius: 50%; width: 22px; height: 22px; color: white; }
+
+        .queue-table { width: 100%; border-collapse: collapse; font-size: 14px; background: rgba(255,255,255,0.9); color: #333; border-radius: 15px; overflow: hidden; }
+        .queue-table th { background: #eee; padding: 10px; text-align: left; }
+        .queue-table td { padding: 10px; border-bottom: 1px solid #ddd; }
+
         input[type="text"] { 
-            width: 100%; padding: 16px; border: 2px solid #ddd; 
-            border-radius: 15px; font-size: 16px; box-sizing: border-box; 
-            outline: none; margin-top: 15px; 
+            width: 100%; padding: 16px; border: none; border-radius: 15px; 
+            font-size: 16px; box-sizing: border-box; outline: none; margin-top: 15px;
+            background: rgba(255,255,255,0.9);
         }
         .song-item { 
-            background: #fff; border: 1px solid #eee; padding: 12px; margin: 8px 0; 
-            border-radius: 12px; cursor: pointer; border-left: 5px solid var(--primary); 
-            text-align: left; 
-            display: flex; /* Para alinhar o ícone de música com o texto */
-            align-items: center;
-            gap: 8px;
+            background: white; color: #333; padding: 12px; margin: 8px 0; 
+            border-radius: 12px; cursor: pointer; text-align: left; border-left: 5px solid var(--primary);
         }
-        .song-item small {
-            color: #666; /* Cor mais suave para o nome do artista */
-        }
-        .section-divider {
-            margin: 20px 0;
-            font-size: 1.5em;
-            color: #ccc; /* Cor discreta para os divisores */
-        }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
@@ -125,7 +86,7 @@
 
 <div class="container">
     <div class="header-content">
-        <img src="9d8daa_198ec12882054dceb6d49d760eba30f0~mv2.jpg" alt="Logo Coopers" class="logo-img">
+        <img src="9d8daa_198ec12882054dceb6d49d760eba30f0~mv2.jpg" alt="Logo" class="logo-img">
         <h2 id="app-title">🎤 Karaokê Coopers</h2>
     </div>
     
@@ -138,8 +99,6 @@
 
     <div id="myOrders"></div>
 
-    <div class="section-divider">🎶</div>
-
     <div id="queueSection">
         <h4 id="txt-fila-label">Acompanhe sua vez:</h4>
         <table class="queue-table">
@@ -149,8 +108,6 @@
             <tbody id="queueBody"></tbody>
         </table>
     </div>
-
-    <div class="section-divider">🎶</div>
 
     <input type="text" id="searchInput" oninput="searchSongs()" placeholder="PESQUISE MÚSICA OU ARTISTA">
     
@@ -166,6 +123,7 @@
 </div>
 
 <script>
+    // Mantendo toda a sua lógica de tradução, busca e envio igualzinha ao código anterior
     const translations = {
         pt: { title: "Karaokê Coopers", busca: "PESQUISE MÚSICA OU ARTISTA", filaLabel: "Acompanhe sua vez:", thPos: "Pos", thArtista: "Artista", thMusica: "Música", tokenLabel: "SUA SENHA:", filaVazia: "Fila vazia!" },
         en: { title: "Coopers Karaoke", busca: "SEARCH SONG OR ARTIST", filaLabel: "Current Queue:", thPos: "Pos", thArtista: "Artist", thMusica: "Song", tokenLabel: "YOUR CODE:", filaVazia: "Queue is empty!" },
@@ -194,7 +152,7 @@
 
     function updateInterface() {
         const t = translations[currentLang];
-        document.getElementById('app-title').innerHTML = `🎤 ${t.title}`; // Adiciona o microfone
+        document.getElementById('app-title').innerHTML = `🎤 ${t.title}`;
         document.getElementById('searchInput').placeholder = t.busca;
         document.getElementById('txt-fila-label').innerText = t.filaLabel;
         document.getElementById('th-pos').innerText = t.thPos;
@@ -227,31 +185,22 @@
         const filtered = catalog.filter(s => (s[1] && s[1].toLowerCase().includes(query)) || (s[2] && s[2].toLowerCase().includes(query))).slice(0, 10);
         resDiv.innerHTML = filtered.map(s => `
             <div class="song-item" onclick="sendOrderDirect('${s[0]}','${s[1]}','${s[2]}')">
-                <span>🎶</span> 
-                <div>
-                    <strong>${s[1]}</strong><br>
-                    <small>${s[2]}</small>
-                </div>
+                🎶 <strong>${s[1]}</strong> - <small>${s[2]}</small>
             </div>`).join('');
     }
 
     function sendOrderDirect(id, title, artist) {
         const senha = Math.random().toString(36).substring(2, 6).toUpperCase();
-        
         document.getElementById('f_hora').value = new Date().toLocaleTimeString();
         document.getElementById('f_codigo').value = id;
         document.getElementById('f_musica').value = title;
         document.getElementById('f_artista').value = artist;
         document.getElementById('f_senha').value = senha;
-
         document.getElementById('karaokeForm').submit();
-
         let saved = JSON.parse(localStorage.getItem('myKaraokeOrders') || '[]');
         saved.push({ senha, musica: title });
         localStorage.setItem('myKaraokeOrders', JSON.stringify(saved));
-
         confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-        
         setTimeout(() => {
             renderMyOrders();
             document.getElementById('searchInput').value = '';
@@ -264,7 +213,7 @@
         const orders = JSON.parse(localStorage.getItem('myKaraokeOrders') || '[]');
         const area = document.getElementById('myOrders');
         area.innerHTML = orders.map((o, idx) => `
-            <div class="card card-info">
+            <div class="card-info">
                 <span class="remove-btn" onclick="removeMyOrder(${idx})">×</span>
                 🔑 ${translations[currentLang].tokenLabel} ${o.senha}<br><small>${o.musica}</small>
             </div>`).join('');
