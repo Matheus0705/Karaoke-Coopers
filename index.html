@@ -10,7 +10,7 @@
             --primary: #0077b6; 
             --bg: #000000;
             --warning: #ffb703;
-            --danger: #ff4d4d;
+            --danger: #ff0000;
         }
         body { 
             font-family: 'Segoe UI', Arial, sans-serif; 
@@ -67,15 +67,31 @@
             border-color: white; box-shadow: 0 0 10px rgba(255,255,255,0.5);
         }
 
-        /* Aviso de Copyright Estilizado */
+        /* AVISO DE COPYRIGHT TURBINADO */
         #copyright-alert {
-            background: rgba(255, 77, 77, 0.2);
-            border: 1px solid rgba(255, 77, 77, 0.4);
-            color: #ff9999;
-            padding: 12px; border-radius: 12px; font-size: 13px;
-            margin: 10px 0; text-align: left; display: none;
-            align-items: flex-start; gap: 10px;
+            background: rgba(255, 0, 0, 0.9); 
+            border: 2px solid #ff0000;
+            color: #ffffff;
+            padding: 15px;
+            border-radius: 15px;
+            font-size: 14px;
+            font-weight: bold;
+            margin: 15px 0;
+            text-align: left;
+            display: none;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.7);
+            animation: pulse-alert 2s infinite;
         }
+
+        @keyframes pulse-alert {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+            100% { transform: scale(1); }
+        }
+
+        .alert-icon { font-size: 24px; }
 
         .footer-update-alert {
             margin-top: 20px; padding: 8px; font-size: 12px;
@@ -127,7 +143,7 @@
         <input type="text" id="searchInput" oninput="searchSongs()" placeholder="PESQUISE MÚSICA OU ARTISTA">
         
         <div id="copyright-alert">
-            <span>⚠️</span>
+            <span class="alert-icon">⚠️</span>
             <span id="msg-copyright">Música não encontrada no catálogo oficial.</span>
         </div>
 
@@ -151,8 +167,8 @@
     const translations = {
         pt: { title: "Karaokê Coopers", busca: "PESQUISE MÚSICA OU ARTISTA", filaLabel: "Acompanhe sua vez:", thPos: "Pos", thArtista: "Artista", thMusica: "Música", tokenLabel: "SUA SENHA:", filaVazia: "Fila vazia!", alert1: "🔄 A fila atualiza a cada 15 segundos.", copyright: "Música não encontrada. Algumas músicas não aparecem na lista oficial devido aos direitos autorais (Karafunc)." },
         en: { title: "Coopers Karaoke", busca: "SEARCH SONG OR ARTIST", filaLabel: "Current Queue:", thPos: "Pos", thArtista: "Artist", thMusica: "Song", tokenLabel: "YOUR CODE:", filaVazia: "Queue is empty!", alert1: "🔄 Queue updates every 15 seconds.", copyright: "Song not found. Some songs don't appear in the official list due to copyrights (Karafunc)." },
-        es: { title: "Karaoke Coopers", busca: "BUSCAR MÚSICA O ARTISTA", filaLabel: "Lista de espera:", thPos: "Pos", thArtista: "Artista", thMusica: "Música", tokenLabel: "TU CÓDIGO:", filaVazia: "¡Lista vazía!", alert1: "🔄 La fila se actualiza cada 15 segundos.", copyright: "Canción no encontrada. Algumas canciones no aparecen por derechos de autor (Karafunc)." },
-        fr: { title: "Karaoké Coopers", busca: "RECHERCHER CHANSON", filaLabel: "File d'attente:", thPos: "Pos", thArtista: "Artiste", thMusica: "Chanson", tokenLabel: "VOTRE CODE:", filaVazia: "File vide!", alert1: "🔄 La file s'actualise todas les 15 s.", copyright: "Chanson non trouvée. Algumas musiques n'apparaissent pas por direitos autorais (Karafunc)." }
+        es: { title: "Karaoke Coopers", busca: "BUSCAR MÚSICA O ARTISTA", filaLabel: "Lista de espera:", thPos: "Pos", thArtista: "Artista", thMusica: "Música", tokenLabel: "TU CÓDIGO:", filaVazia: "¡Lista vazía!", alert1: "🔄 La fila se actualiza cada 15 segundos.", copyright: "Canción no encontrada. Algunas canciones no aparecem por derechos de autor (Karafunc)." },
+        fr: { title: "Karaoké Coopers", busca: "RECHERCHER CHANSON", filaLabel: "File d'attente:", thPos: "Pos", thArtista: "Artiste", thMusica: "Chanson", tokenLabel: "VOTRE CODE:", filaVazia: "File vide!", alert1: "🔄 La file s'actualise toutes les 15 s.", copyright: "Chanson non trouvée. Certaines musiques n'apparaissent pas por droits d'auteur (Karafunc)." }
     };
 
     let currentLang = 'pt';
@@ -201,14 +217,14 @@
 
         const searchTerms = query.split(' ');
 
-        // 1. Busca Rigorosa (Deve conter TODOS os termos digitados)
+        // 1. Busca Exata por Termos (Contém todas as palavras digitadas)
         let exactMatch = catalog.filter(s => {
             if(!s[1] || !s[2]) return false;
             const combined = `${s[1].toLowerCase()} ${s[2].toLowerCase()}`;
             return searchTerms.every(term => combined.includes(term));
         });
 
-        // 2. Busca Ampla (Sugestões se houver qualquer termo)
+        // 2. Busca Ampla (Sugestões)
         let suggestions = [];
         if (exactMatch.length === 0) {
             suggestions = catalog.filter(s => {
@@ -218,14 +234,12 @@
             }).slice(0, 8);
         }
 
-        // LÓGICA DO AVISO: 
-        // Se não houver "exactMatch", mostramos o aviso, mesmo que existam sugestões.
         if(exactMatch.length > 0) {
             alertDiv.style.display = 'none';
             renderResults(exactMatch.slice(0, 10));
         } else if (suggestions.length > 0) {
-            alertDiv.style.display = 'flex'; // Mostra o aviso de "não encontrada"
-            renderResults(suggestions);     // Mas lista as sugestões embaixo
+            alertDiv.style.display = 'flex'; // Exibe o aviso pulsante
+            renderResults(suggestions);     // Exibe as sugestões abaixo
         } else {
             alertDiv.style.display = 'flex';
             resDiv.innerHTML = '';
@@ -240,7 +254,6 @@
             </div>`).join('');
     }
 
-    // Mantendo as funções de envio e fila intactas
     async function loadQueue() {
         try {
             const resp = await fetch(SHEET_CSV + "&cache=" + Date.now());
@@ -249,7 +262,9 @@
             let html = '';
             rows.forEach((row, i) => {
                 const cols = row.split(',');
-                if(cols.length > 5 && cols[5].trim() !== "") html += `<tr><td>${i+1}º</td><td>${cols[4]}</td><td>${cols[3]}</td></tr>`;
+                if(cols.length > 5 && cols[5].trim() !== "") {
+                    html += `<tr><td>${i+1}º</td><td>${cols[4]}</td><td>${cols[3]}</td></tr>`;
+                }
             });
             document.getElementById('queueBody').innerHTML = html || `<tr><td colspan="3">${translations[currentLang].filaVazia}</td></tr>`;
         } catch(e) {}
@@ -262,12 +277,22 @@
         document.getElementById('f_musica').value = title;
         document.getElementById('f_artista').value = artist;
         document.getElementById('f_senha').value = senha;
+        
         document.getElementById('karaokeForm').submit();
+        
         let saved = JSON.parse(localStorage.getItem('myKaraokeOrders') || '[]');
         saved.push({ senha, musica: title });
         localStorage.setItem('myKaraokeOrders', JSON.stringify(saved));
+        
         confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-        setTimeout(() => { renderMyOrders(); document.getElementById('searchInput').value = ''; document.getElementById('results').innerHTML = ''; alertDiv.style.display = 'none'; loadQueue(); }, 800);
+        
+        setTimeout(() => { 
+            renderMyOrders(); 
+            document.getElementById('searchInput').value = ''; 
+            document.getElementById('results').innerHTML = ''; 
+            document.getElementById('copyright-alert').style.display = 'none'; 
+            loadQueue(); 
+        }, 800);
     }
 
     function renderMyOrders() {
@@ -278,7 +303,9 @@
 
     function removeMyOrder(idx) {
         let saved = JSON.parse(localStorage.getItem('myKaraokeOrders') || '[]');
-        saved.splice(idx, 1); localStorage.setItem('myKaraokeOrders', JSON.stringify(saved)); renderMyOrders();
+        saved.splice(idx, 1); 
+        localStorage.setItem('myKaraokeOrders', JSON.stringify(saved)); 
+        renderMyOrders();
     }
 </script>
 </body>
