@@ -6,22 +6,10 @@ import time
 import random
 import string
 
-# 1. CONFIGURAÇÃO DE TEMA (Cores do Logo)
-# Altere os hexadecimais abaixo para as cores exatas do seu logo
+# Configuração da página
 st.set_page_config(page_title="Karaokê Coopers", layout="centered", page_icon="🎤")
 
-st.markdown("""
-    <style>
-    .stApp {
-        background-color: #0E1117; /* Fundo escuro */
-    }
-    .stButton>button {
-        border-radius: 20px;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-
-# --- FUNÇÕES ---
+# --- 1. FUNÇÕES CORE ---
 def gerar_senha():
     return ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
 
@@ -44,92 +32,118 @@ def carregar_catalogo():
     except:
         return None
 
-df_catalogo = carregar_catalogo()
-
-# --- ESTADO DO SISTEMA ---
+# --- 2. GESTÃO DE ESTADO (Sessão e Memória) ---
 if 'musica_escolhida' not in st.session_state:
     st.session_state.musica_escolhida = None
-if 'contador_reset' not in st.session_state:
-    st.session_state.contador_reset = 0
+if 'reset_busca' not in st.session_state:
+    st.session_state.reset_busca = 0
 if 'minha_senha' not in st.session_state:
     st.session_state.minha_senha = None
 
-# --- TRADUÇÕES ---
+# --- 3. DICIONÁRIO DE TRADUÇÃO COMPLETO ---
 idiomas = {
     "Português 🇧🇷": {
         "busca": "Pesquisar música ou artista...",
-        "fila": "🎤 Fila de Espera",
+        "fila": "Fila de Espera",
         "vazio": "Fila vazia! Peça a primeira!",
-        "col_pos": "Posição", "col_mus": "Música", "col_art": "Artista",
-        "sel": "Selecionado:", "conf": "Confirmar ✅", "canc": "Cancelar ❌",
-        "sucesso": "Pedido enviado!", "senha_msg": "SUA SENHA:",
-        "aviso": "Esta senha é sua identificação para o DJ!",
-        "erro": "Música não encontrada. Cheque com o DJ!"
+        "sel": "Selecionado:",
+        "pos": "Sua posição:",
+        "conf": "Confirmar ✅",
+        "canc": "Cancelar ❌",
+        "sucesso": "Pedido feito! Sua Senha:",
+        "erro": "Desculpe, no momento não temos essa música. Cheque com o DJ, pois algumas músicas não irão aparecer na lista oficial devido a direitos autorais, obrigado!"
     },
     "English 🇺🇸": {
         "busca": "Search song or artist...",
-        "fila": "🎤 Current Queue",
-        "vazio": "Empty queue!",
-        "col_pos": "Position", "col_mus": "Song", "col_art": "Artist",
-        "sel": "Selected:", "conf": "Confirm ✅", "canc": "Cancel ❌",
-        "sucesso": "Sent successfully!", "senha_msg": "YOUR TOKEN:",
-        "aviso": "This token is your ID for the DJ!",
-        "erro": "Song not found. Check with the DJ!"
+        "fila": "Current Queue",
+        "vazio": "Empty queue! Be the first!",
+        "sel": "Selected:",
+        "pos": "Your position:",
+        "conf": "Confirm ✅",
+        "canc": "Cancel ❌",
+        "sucesso": "Order placed! Your Token:",
+        "erro": "Sorry, we don't have this song at the moment. Please check with the DJ, as some songs may not appear on the official list due to copyright reasons, thank you!"
+    },
+    "Español 🇪🇦": {
+        "busca": "Buscar música o artista...",
+        "fila": "Lista de espera",
+        "vazio": "¡Lista vacía!",
+        "sel": "Seleccionado:",
+        "pos": "Tu posición:",
+        "conf": "Confirmar ✅",
+        "canc": "Cancelar ❌",
+        "sucesso": "¡Pedido realizado! Tu Código:",
+        "erro": "Lo sentimos, no tenemos esta canción en este momento. Consulta con el DJ, ya que algunas canciones no aparecerán en la lista oficial debido a derechos de autor, ¡gracias!"
+    },
+    "Français 🇫🇷": {
+        "busca": "Chercher uma chanson...",
+        "fila": "File d'attente",
+        "vazio": "File vide !",
+        "sel": "Sélectionné :",
+        "pos": "Votre position :",
+        "conf": "Confirmer ✅",
+        "canc": "Annuler ❌",
+        "sucesso": "Demande envoyée ! Votre Code :",
+        "erro": "Désolé, nous n'avons pas cette chanson pour o moment. Vérifiez auprès du DJ, car certaines chansons n'apparaîtront pas sur la liste officielle en raison de droits d'auteur, merci !"
     }
 }
 
-# --- LOGO ---
-# Substitua 'logo.png' pelo caminho do seu arquivo de logo no GitHub
-try:
-    st.image("logo.png", width=150) 
-except:
-    st.title("🎤 Karaokê Coopers")
+# --- 4. INTERFACE PRINCIPAL ---
+st.title("🎤 Karaokê Coopers")
 
-escolha = st.radio("Idioma:", list(idiomas.keys()), horizontal=True)
+# Seletor de Idiomas Horizontal
+escolha = st.radio("Idioma / Language / Idioma / Langue:", list(idiomas.keys()), horizontal=True)
 t = idiomas[escolha]
 
-# --- EXIBIÇÃO DA FILA (SEM SENHA PÚBLICA) ---
-st.subheader(t["fila"])
+# Exibição da Senha Fixa (Caso o usuário já tenha pedido)
+if st.session_state.minha_senha:
+    st.info(f"🔑 {t['sucesso']} {st.session_state.minha_senha}")
+
+st.divider()
+
+# --- 5. TABELA DE FILA ---
+st.subheader(f"🎤 {t['fila']}")
 df_atual = carregar_fila()
 
 if not df_atual.empty:
     try:
-        # Mostramos apenas Música (3) e Artista (4). Senha (5) fica oculta.
-        fila_visual = df_atual.iloc[:, [3, 4]].copy()
-        fila_visual.columns = [t["col_mus"], t["col_art"]]
-        
-        # Criando a coluna de Posição como solicitado
-        posicoes = [f"{i+1}º" for i in range(len(fila_visual))]
-        fila_visual.insert(0, t["col_pos"], posicoes)
-        
+        # Pega Senha (5), Música (3) e Artista (4)
+        fila_visual = df_atual.iloc[:, [5, 3, 4]].copy()
+        fila_visual.columns = ["Senha", "Música", "Artista"]
+        fila_visual.index = [f"{i+1}º" for i in range(len(fila_visual))]
         st.table(fila_visual)
     except:
-        st.write("Atualizando...")
+        st.write(t["vazio"])
 else:
     st.write(t["vazio"])
 
-# --- SENHA PRIVADA (Aparece apenas para o dono do celular) ---
-if st.session_state.minha_senha:
-    st.info(f"🔑 {t['senha_msg']} **{st.session_state.minha_senha}**")
-
 st.divider()
 
-# --- LÓGICA DE PEDIDO ---
+# --- 6. LÓGICA DE BUSCA E PEDIDO ---
 if st.session_state.musica_escolhida is None:
-    busca = st.text_input(t["busca"], key=f"input_{st.session_state.contador_reset}").strip().lower()
+    # O reset_busca garante que o campo limpe após a confirmação
+    busca = st.text_input(t["busca"], key=f"input_{st.session_state.reset_busca}").strip().lower()
+    
     if busca:
-        res = df_catalogo[df_catalogo.iloc[:, 1].str.lower().str.contains(busca, na=False) | 
-                          df_catalogo.iloc[:, 2].str.lower().str.contains(busca, na=False)].head(10)
-        if not res.empty:
-            for i, row in res.iterrows():
-                if st.button(f"🎶 {row.iloc[1]} - {row.iloc[2]}", key=f"b_{i}"):
-                    st.session_state.musica_escolhida = row
-                    st.rerun()
-        else:
-            st.error(t["erro"])
+        df_cat = carregar_catalogo()
+        if df_cat is not None:
+            res = df_cat[df_cat.iloc[:, 1].str.lower().str.contains(busca, na=False) | 
+                         df_cat.iloc[:, 2].str.lower().str.contains(busca, na=False)].head(10)
+            
+            if not res.empty:
+                for i, row in res.iterrows():
+                    if st.button(f"🎶 {row.iloc[1]} - {row.iloc[2]}", key=f"btn_{i}"):
+                        st.session_state.musica_escolhida = row
+                        st.rerun()
+            else:
+                st.error(t["erro"])
 else:
+    # Tela de Confirmação
     m = st.session_state.musica_escolhida
-    st.success(f"{t['sel']} {m.iloc[1]}")
+    posicao_fila = len(df_atual) + 1
+    
+    st.success(f"✅ {t['sel']} {m.iloc[1]} - {m.iloc[2]}")
+    st.warning(f"📢 {t['pos']} {posicao_fila}º")
     
     col1, col2 = st.columns(2)
     with col1:
@@ -137,29 +151,33 @@ else:
             nova_senha = gerar_senha()
             url_form = "https://docs.google.com/forms/d/e/1FAIpQLSd8SRNim_Uz3KlxdkWzBTdO7zSKSIvQMfiS3flDi6HRKWggYQ/formResponse"
             
+            # --- COLE O ID DA SENHA AQUI ---
+            id_da_senha = "INSIRA_O_ID_AQUI" 
+            
             dados = {
                 "entry.1213556115": datetime.now().strftime("%H:%M"),
                 "entry.1947522889": str(m.iloc[0]),
                 "entry.1660854967": str(m.iloc[1]),
                 "entry.700923343": str(m.iloc[2]),
-                "entry.694761068": nova_senha 
+                f"entry.{id_da_senha}": nova_senha
             }
             
             try:
                 requests.post(url_form, data=dados)
-                # Salva a senha apenas neste navegador
-                st.session_state.minha_senha = nova_senha 
+                st.session_state.minha_senha = nova_senha # Salva a senha na tela
+                st.balloons() # Balões ativados!
                 
-                st.snow() # Efeito de neve (mais elegante que balões)
-                st.toast(t["sucesso"])
-                
+                # Reseta o sistema para o próximo pedido
                 st.session_state.musica_escolhida = None
-                st.session_state.contador_reset += 1
+                st.session_state.reset_busca += 1 
                 time.sleep(2)
                 st.rerun()
             except:
-                st.error("Erro na conexão.")
+                st.error("Erro ao enviar pedido. Tente novamente.")
+
     with col2:
         if st.button(t["canc"]):
             st.session_state.musica_escolhida = None
             st.rerun()
+
+# --- FIM DO CÓDIGO ---
