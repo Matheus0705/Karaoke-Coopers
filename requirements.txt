@@ -1,4 +1,5 @@
 streamlit
+st.session_state
 streamlit-local-storage
 pandas
 requests
