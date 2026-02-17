@@ -79,9 +79,12 @@
 
     window.onload = () => {
         updateInterface();
-        fetch('karafuncatalog.csv').then(r => r.text()).then(data => {
-            catalog = data.split('\n').map(line => line.replace(/"/g, '').split(/[;,]/));
-        });
+        fetch('karafuncatalog.csv')
+            .then(r => r.text())
+            .then(data => {
+                catalog = data.split('\n').map(line => line.replace(/"/g, '').split(/[;,]/));
+            }).catch(e => console.log("Erro ao carregar catálogo"));
+        
         setInterval(loadQueue, 20000);
     };
 
@@ -112,7 +115,7 @@
             let html = '';
             rows.forEach((row, i) => {
                 const cols = row.split(',');
-                if(cols.length > 5 && cols[5].trim() !== "") {
+                if(cols.length > 5 && cols[5] && cols[5].trim() !== "") {
                     html += `<tr><td>${i+1}º</td><td><strong>${cols[5]}</strong></td><td>${cols[3]}</td></tr>`;
                 }
             });
@@ -125,29 +128,44 @@
         const query = document.getElementById('searchInput').value.toLowerCase().trim();
         const resDiv = document.getElementById('results');
         const errDiv = document.getElementById('errorDJ');
+        
         if(query.length < 2) { resDiv.innerHTML = ''; errDiv.style.display = 'none'; return; }
+        
         const filtered = catalog.filter(s => (s[1] && s[1].toLowerCase().includes(query)) || (s[2] && s[2].toLowerCase().includes(query))).slice(0, 10);
+        
         if(filtered.length === 0) {
             errDiv.innerText = translations[currentLang].djMsg;
             errDiv.style.display = 'block';
             resDiv.innerHTML = '';
         } else {
             errDiv.style.display = 'none';
-            resDiv.innerHTML = filtered.map(s => `<div class="song-item" onclick="sendOrderDirect('${s[0]}','${s[1]}','${s[2]}')">🎶 <strong>${s[1]}</strong><br><small>${s[2]}</small></div>`).join('');
+            resDiv.innerHTML = filtered.map(s => `
+                <div class="song-item" onclick="sendOrderDirect('${s[0]}','${s[1]}','${s[2]}')">
+                    🎶 <strong>${s[1]}</strong><br><small>${s[2]}</small>
+                </div>`).join('');
         }
     }
 
     function sendOrderDirect(id, title, artist) {
         const senha = Math.random().toString(36).substring(2, 6).toUpperCase();
         const params = new URLSearchParams();
+        
+        // IDs ATUALIZADOS CONFORME SEU LINK
         params.append('entry.1995948109', new Date().toLocaleTimeString());
         params.append('entry.105234855', id);
         params.append('entry.1830320650', title);
         params.append('entry.730937896', artist);
         params.append('entry.1210617554', senha);
 
-        fetch("https://docs.google.com/forms/d/e/1FAIpQLSc7z8A-f7Z2U_7qR3Yl2-pU5vI-X2Qp8K2Y-pX6v-Q-V-X-vA/formResponse", { method: 'POST', body: params, mode: 'no-cors' });
-        
+        // LINK DO FORMULÁRIO ATUALIZADO
+        const formAction = "https://docs.google.com/forms/d/e/1FAIpQLSc2M4LQqNDD79g0o46ImqkwAL6g7EYn74cvxIa2K-6prNBLrQ/formResponse";
+
+        fetch(formAction, {
+            method: 'POST',
+            body: params,
+            mode: 'no-cors'
+        });
+
         let saved = JSON.parse(localStorage.getItem('myKaraokeOrders') || '[]');
         saved.push({ senha, musica: title });
         localStorage.setItem('myKaraokeOrders', JSON.stringify(saved));
@@ -156,10 +174,9 @@
         renderMyOrders();
         alert(translations[currentLang].alertSucesso + senha);
         
-        // Limpa a busca
         document.getElementById('searchInput').value = '';
         document.getElementById('results').innerHTML = '';
-        setTimeout(loadQueue, 2000);
+        setTimeout(loadQueue, 2500);
     }
 
     function renderMyOrders() {
