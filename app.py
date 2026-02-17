@@ -9,13 +9,29 @@ import string
 # Configuração da página
 st.set_page_config(page_title="Karaokê Coopers", layout="centered", page_icon="🎤")
 
-# --- 1. FUNÇÕES DE APOIO ---
+# --- ESTILIZAÇÃO CUSTOMIZADA ---
+st.markdown("""
+    <style>
+    .main { background-color: #0e1117; }
+    .stTable { background-color: #1e1e1e; border-radius: 10px; }
+    .fila-header { 
+        background-color: #ff4b4b; 
+        color: white; 
+        padding: 10px; 
+        border-radius: 10px 10px 0 0; 
+        text-align: center;
+        font-weight: bold;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+# --- FUNÇÕES CORE ---
 def gerar_senha():
     return ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
 
 def carregar_fila():
     timestamp = int(time.time())
-    url_dados = f"https://docs.google.com/spreadsheets/d/1FAIpQLSd8SRNim_Uz3KlxdkWzBTdO7zSKSIvQMfiS3flDi6HRKWggYQ/export?format=csv&cachebust={timestamp}"
+    url_dados = f"https://docs.google.com/spreadsheets/d/1g88-tIUw0xLedVBlp2UuZmkFG0nAOW1ef58q5j9Jndk/export?format=csv&cachebust={timestamp}"
     try:
         df = pd.read_csv(url_dados)
         df.columns = [c.strip() for c in df.columns]
@@ -30,152 +46,117 @@ def carregar_catalogo():
         df.columns = [str(c).strip() for c in df.columns]
         return df
     except:
-        return None
+        return pd.DataFrame()
 
-def voltar_inicio():
-    st.session_state.musica_escolhida = None
-
-# --- 2. MEMÓRIA DE PEDIDOS DO CLIENTE ---
-if 'minhas_senhas' not in st.session_state:
-    st.session_state.minhas_senhas = []
-
-# --- 3. DICIONÁRIO DE TRADUÇÃO ---
+# --- DICIONÁRIO DE TRADUÇÃO ---
 idiomas = {
     "Português 🇧🇷": {
         "busca": "Pesquisar música ou artista...",
-        "fila": "🎤 Fila de Espera",
-        "meus_pedidos": "🎫 Meus Pedidos (Mostre ao DJ)",
+        "fila": "PROXIMOS CANTORES",
         "vazio": "Fila vazia! Peça a primeira!",
-        "sel": "Selecionado:",
-        "pos": "Sua posição:",
-        "conf": "Confirmar ✅",
-        "sucesso": "Pedido enviado!",
-        "erro": "Desculpe, não encontramos essa música...",
-        "aviso_dj": "Cheque com o DJ sobre direitos autorais.",
-        "dj_admin": "PAINEL DO DJ ATIVO 🎧"
+        "sel": "Selecionada:",
+        "conf": "CONFIRMAR PEDIDO ✅",
+        "canc": "CANCELAR ❌",
+        "sucesso": "Pedido Feito! Sua Senha:",
+        "aviso_fila": "Sua senha aparecerá na lista no topo em instantes.",
+        "erro_busca": "Desculpe, não temos essa música. Cheque com o DJ (direitos autorais)."
     },
     "English 🇺🇸": {
         "busca": "Search song or artist...",
-        "fila": "🎤 Current Queue",
-        "meus_pedidos": "🎫 My Tokens (Show to DJ)",
-        "vazio": "Empty queue!",
+        "fila": "UP NEXT",
+        "vazio": "Empty queue! Be the first!",
         "sel": "Selected:",
-        "pos": "Your position:",
-        "conf": "Confirm ✅",
-        "sucesso": "Sent!",
-        "erro": "Song not found...",
-        "aviso_dj": "Check with the DJ regarding copyrights.",
-        "dj_admin": "DJ PANEL ACTIVE 🎧"
+        "conf": "CONFIRM ORDER ✅",
+        "canc": "CANCEL ❌",
+        "sucesso": "Request Sent! Your Token:",
+        "aviso_fila": "Your token will appear in the list above shortly.",
+        "erro_busca": "Sorry, song not found. Check with the DJ (copyright reasons)."
     },
     "Español 🇪🇦": {
-        "busca": "Buscar canción o artista...",
-        "fila": "🎤 Lista de espera",
-        "meus_pedidos": "🎫 Mis pedidos (Mostrar al DJ)",
+        "busca": "Buscar música o artista...",
+        "fila": "PRÓXIMOS",
         "vazio": "¡Lista vacía!",
-        "sel": "Seleccionado:",
-        "pos": "Tu posición:",
-        "conf": "Confirmar ✅",
-        "sucesso": "¡Pedido enviado!",
-        "erro": "Lo sentimos, canción no encontrada...",
-        "aviso_dj": "Consulta con el DJ sobre los derechos de autor.",
-        "dj_admin": "PANEL DE DJ ACTIVO 🎧"
+        "sel": "Seleccionada:",
+        "conf": "CONFIRMAR ✅",
+        "canc": "CANCELAR ❌",
+        "sucesso": "¡Pedido hecho! Tu Código:",
+        "aviso_fila": "Tu código aparecerá en la lista arriba en breve.",
+        "erro_busca": "Lo sentimos, no la encontramos. Consulta al DJ."
     },
     "Français 🇫🇷": {
         "busca": "Chercher une chanson...",
-        "fila": "🎤 File d'attente",
-        "meus_pedidos": "🎫 Mes tickets (Montrer au DJ)",
+        "fila": "À VENIR",
         "vazio": "File vide !",
-        "sel": "Sélectionné :",
-        "pos": "Votre position :",
-        "conf": "Confirmer ✅",
-        "sucesso": "Envoyé !",
-        "erro": "Désolé, chanson non trouvée...",
-        "aviso_dj": "Vérifiez auprès du DJ pour les droits d'auteur.",
-        "dj_admin": "PANNEAU DJ ACTIF 🎧"
+        "sel": "Sélectionnée :",
+        "conf": "CONFIRMER ✅",
+        "canc": "ANNULER ❌",
+        "sucesso": "Demande envoyée ! Votre Code :",
+        "aviso_fila": "Votre code apparaîtra dans la liste ci-dessus sous peu.",
+        "erro_busca": "Désolé, chanson non trouvée. Vérifiez avec le DJ."
     }
 }
 
-st.title("🎤 Karaokê Coopers")
-escolha = st.radio("Idioma / Language:", list(idiomas.keys()), horizontal=True)
-t = idiomas[escolha]
-
-# --- 4. CARTÃO FIXO: MEUS PEDIDOS (CLIENTE) ---
-if st.session_state.minhas_senhas:
-    with st.expander(t["meus_pedidos"], expanded=True):
-        for p in st.session_state.minhas_senhas:
-            st.success(f"🎵 **{p['musica']}** | 🔑 SENHA: `{p['senha']}`")
+# --- SELEÇÃO DE IDIOMA ---
+escolha_idioma = st.radio("Language / Idioma:", list(idiomas.keys()), horizontal=True)
+t = idiomas[escolha_idioma]
 
 st.divider()
 
-# --- 5. FILA GERAL E MODO DJ ---
-st.subheader(t["fila"])
+# --- CABEÇALHO COM LOGO E TÍTULO ---
+col_logo1, col_logo2 = st.columns([1, 3])
+with col_logo1:
+    try:
+        st.image("9d8daa_198ec12882054dceb6d49d760eba30f0~mv2.jpg", width=100) 
+    except:
+        st.write("🎤")
+with col_logo2:
+    st.title("Karaokê Coopers")
+
+# --- INTERFACE: PARTE SUPERIOR (FILA PÚBLICA) ---
+st.markdown(f'<div class="fila-header">{t["fila"]}</div>', unsafe_allow_html=True)
 df_atual = carregar_fila()
 
-busca = st.text_input(t["busca"]).strip().lower()
-
-# LÓGICA DO DJ
-if busca == "coopersdj":
-    st.warning(t["dj_admin"])
-    if not df_atual.empty:
-        musica_agora = df_atual.iloc[0, 3] # Coluna D da sua planilha
-        st.write(f"📀 **Tocando agora:** {musica_agora}")
-        
-        if st.button("✅ CONCLUIR E CHAMAR PRÓXIMO", type="primary", use_container_width=True):
-            url_script = "https://script.google.com/macros/s/AKfycbw_EO6sUbJOP1l6uXIsb9BtUHrb91ivduWCWplbLt1zaWexivJi_hPIKHz-n7hy5u7p/exec"
-            try:
-                r = requests.get(url_script)
-                st.toast("Fila atualizada!")
-                time.sleep(1)
-                st.rerun()
-            except:
-                st.error("Erro ao conectar com a planilha.")
-    else:
-        st.write("A fila está vazia.")
-    st.stop() 
-
-# EXIBIÇÃO DA FILA (CLIENTE)
 if not df_atual.empty:
     try:
-        # Colunas: 5 (Senha), 3 (Música), 4 (Artista)
-        fila_visual = df_atual.iloc[:, [5, 3, 4]].copy() 
-        fila_visual.columns = ["Senha", "Música", "Artista"]
+        fila_visual = df_atual.iloc[:, [5, 3, 4]].copy()
+        fila_visual.columns = ["SENHA", "MÚSICA", "ARTISTA"]
         fila_visual.index = [f"{i+1}º" for i in range(len(fila_visual))]
-        st.table(fila_visual)
+        st.table(fila_visual.head(10)) 
     except:
-        st.write("Atualizando...")
+        st.info("...")
 else:
-    st.write(t["vazio"])
+    st.info(t["vazio"])
 
 st.divider()
 
-# --- 6. BUSCA E PEDIDO ---
-df_catalogo = carregar_catalogo()
-
+# --- INTERFACE: PARTE INFERIOR (PESQUISA E PEDIDO) ---
 if 'musica_escolhida' not in st.session_state:
     st.session_state.musica_escolhida = None
 
 if st.session_state.musica_escolhida is None:
+    busca = st.text_input(t["busca"], key="input_pesquisa").strip().lower()
+    
     if busca:
-        res = df_catalogo[df_catalogo.iloc[:, 1].str.lower().str.contains(busca, na=False) | 
-                          df_catalogo.iloc[:, 2].str.lower().str.contains(busca, na=False)].head(10)
-        if not res.empty:
-            for i, row in res.iterrows():
-                if st.button(f"🎶 {row.iloc[1]} - {row.iloc[2]}", key=f"b_{i}"):
-                    st.session_state.musica_escolhida = row
-                    st.rerun()
-        else:
-            st.error(t["erro"])
-            st.caption(t["aviso_dj"])
+        df_cat = carregar_catalogo()
+        if not df_cat.empty:
+            res = df_cat[df_cat.iloc[:, 1].str.lower().str.contains(busca, na=False) | 
+                         df_cat.iloc[:, 2].str.lower().str.contains(busca, na=False)].head(8)
+            
+            if not res.empty:
+                for i, row in res.iterrows():
+                    if st.button(f"🎶 {row.iloc[1]} - {row.iloc[2]}", key=f"btn_{i}"):
+                        st.session_state.musica_escolhida = row
+                        st.rerun()
+            else:
+                st.error(t["erro_busca"])
 else:
     m = st.session_state.musica_escolhida
-    posicao = len(df_atual) + 1
-    st.warning(f"{t['sel']} {m.iloc[1]}")
-    st.info(f"📢 {t['pos']} {posicao}º")
-
+    st.success(f"✅ {t['sel']} {m.iloc[1]} ({m.iloc[2]})")
+    
     col1, col2 = st.columns(2)
     with col1:
         if st.button(t["conf"], type="primary"):
-            token = gerar_senha()
+            nova_senha = gerar_senha()
             url_form = "https://docs.google.com/forms/d/e/1FAIpQLSd8SRNim_Uz3KlxdkWzBTdO7zSKSIvQMfiS3flDi6HRKWggYQ/formResponse"
             
             dados = {
@@ -183,18 +164,22 @@ else:
                 "entry.1947522889": str(m.iloc[0]),
                 "entry.1660854967": str(m.iloc[1]),
                 "entry.700923343": str(m.iloc[2]),
-                "entry.1691316531": token  # ID DA SENHA
+                "entry.1583091993": nova_senha 
             }
             
-            requests.post(url_form, data=dados)
-            st.session_state.minhas_senhas.append({"musica": m.iloc[1], "senha": token})
-            st.balloons()
-            st.success(t["sucesso"])
-            time.sleep(2)
-            st.session_state.musica_escolhida = None
-            st.rerun()
-            
+            try:
+                requests.post(url_form, data=dados)
+                st.balloons()
+                st.markdown(f"### 🎉 {t['sucesso']} **{nova_senha}**")
+                st.info(t["aviso_fila"])
+                
+                time.sleep(5)
+                st.session_state.musica_escolhida = None
+                st.rerun()
+            except:
+                st.error("Error!")
+                
     with col2:
-        if st.button("Voltar"):
+        if st.button(t["canc"]):
             st.session_state.musica_escolhida = None
             st.rerun()
