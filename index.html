@@ -21,15 +21,17 @@
         .queue-table td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
         input[type="text"] { width: 100%; padding: 16px; border: 2px solid #ddd; border-radius: 15px; font-size: 16px; box-sizing: border-box; outline: none; margin-top: 15px; }
         .song-item { background: #fff; border: 1px solid #eee; padding: 12px; margin: 8px 0; border-radius: 12px; cursor: pointer; border-left: 5px solid var(--primary); text-align: left; }
+        
+        /* Notificação Toast */
         #toast { visibility: hidden; min-width: 200px; background-color: var(--success); color: white; text-align: center; border-radius: 15px; padding: 16px; position: fixed; z-index: 99; left: 50%; bottom: 30px; transform: translateX(-50%); font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
         #toast.show { visibility: visible; animation: fadeinout 2.5s; }
+
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes fadeinout { 0% { bottom: 0; opacity: 0; } 20% { bottom: 30px; opacity: 1; } 80% { bottom: 30px; opacity: 1; } 100% { bottom: 0; opacity: 0; } }
     </style>
 </head>
 <body>
 
-<iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
 <div id="toast">✅ PEDIDO ENVIADO!</div>
 
 <div class="container">
@@ -56,15 +58,6 @@
     </div>
 
     <input type="text" id="searchInput" oninput="searchSongs()">
-    
-    <form id="karaokeForm" action="https://docs.google.com/forms/d/e/1bCm6owXX36OTdAaeUKTRrz18LsuHOBTbtbl35Zieato/formResponse" method="POST" target="hidden_iframe" style="display:none;">
-        <input type="hidden" name="entry.1995948109" id="f_hora">
-        <input type="hidden" name="entry.105234855" id="f_codigo">
-        <input type="hidden" name="entry.1830320650" id="f_musica">
-        <input type="hidden" name="entry.730937896" id="f_artista">
-        <input type="hidden" name="entry.1210617554" id="f_senha">
-    </form>
-
     <div id="results"></div>
 </div>
 
@@ -116,8 +109,7 @@
             let html = '';
             rows.forEach((row, i) => {
                 const cols = row.split(',');
-                // AJUSTE: A senha agora está na coluna F (índice 5) e a música na D (índice 3)
-                if(cols.length > 5 && cols[5] && cols[5].trim() !== "") {
+                if(cols.length > 5 && cols[5].trim() !== "") {
                     html += `<tr><td>${i+1}º</td><td><strong>${cols[5]}</strong></td><td>${cols[3]}</td></tr>`;
                 }
             });
@@ -136,31 +128,41 @@
             </div>`).join('');
     }
 
+    // AQUI ESTÁ A FUNÇÃO QUE VOCÊ CONFIRMOU QUE FUNCIONOU
     function sendOrderDirect(id, title, artist) {
         const senha = Math.random().toString(36).substring(2, 6).toUpperCase();
+        const params = new URLSearchParams();
         
-        document.getElementById('f_hora').value = new Date().toLocaleTimeString();
-        document.getElementById('f_codigo').value = id;
-        document.getElementById('f_musica').value = title;
-        document.getElementById('f_artista').value = artist;
-        document.getElementById('f_senha').value = senha;
+        // IDs das colunas que deram certo
+        params.append('entry.1995948109', new Date().toLocaleTimeString());
+        params.append('entry.105234855', id);
+        params.append('entry.1830320650', title);
+        params.append('entry.730937896', artist);
+        params.append('entry.1210617554', senha);
 
-        document.getElementById('karaokeForm').submit();
+        // O link exato que funcionou
+        const formAction = "https://docs.google.com/forms/d/e/1bCm6owXX36OTdAaeUKTRrz18LsuHOBTbtbl35Zieato/formResponse";
 
+        // Envio via FETCH (o que funcionou antes)
+        fetch(formAction, { method: 'POST', body: params, mode: 'no-cors' });
+
+        // Salva localmente
         let saved = JSON.parse(localStorage.getItem('myKaraokeOrders') || '[]');
         saved.push({ senha, musica: title });
         localStorage.setItem('myKaraokeOrders', JSON.stringify(saved));
         
+        // FEEDBACK SEM POPUP (TOAST)
         const toast = document.getElementById("toast");
         toast.className = "show";
         setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 2500);
 
+        // Confetes
         confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
         
         renderMyOrders();
         document.getElementById('searchInput').value = '';
         document.getElementById('results').innerHTML = '';
-        setTimeout(loadQueue, 2500);
+        setTimeout(loadQueue, 2000);
     }
 
     function renderMyOrders() {
