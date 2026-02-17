@@ -6,21 +6,116 @@
     <title>Karaokê Coopers</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <style>
-        :root { --primary: #0077b6; --success: #90be6d; --bg: #169916; --danger: #d62828; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); margin: 0; padding: 10px; text-align: center; }
-        .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); min-height: 500px; position: relative; }
-        .logo-img { max-width: 140px; height: auto; border-radius: 15px; margin-bottom: 10px; }
-        .lang-bar { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; padding: 10px; background: #f8f9fa; border-radius: 15px; }
-        .lang-item { width: 45px; height: 30px; cursor: pointer; transition: 0.2s; filter: grayscale(100%); opacity: 0.5; object-fit: cover; border-radius: 4px; border: 1px solid #ddd; }
-        .lang-item.active { filter: grayscale(0%); opacity: 1; transform: scale(1.1); border-color: var(--primary); }
-        .card { padding: 12px; border-radius: 15px; margin-bottom: 10px; font-weight: bold; position: relative; animation: fadeIn 0.5s; }
-        .card-info { background: var(--primary); color: white; border-left: 5px solid #023e8a; }
-        .remove-btn { position: absolute; right: 10px; top: 8px; cursor: pointer; background: rgba(0,0,0,0.2); border-radius: 50%; width: 20px; height: 20px; line-height: 18px; color: white; }
-        .queue-table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 10px; }
-        .queue-table th { background: #eee; padding: 10px; text-align: left; }
-        .queue-table td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
-        input[type="text"] { width: 100%; padding: 16px; border: 2px solid #ddd; border-radius: 15px; font-size: 16px; box-sizing: border-box; outline: none; margin-top: 15px; }
-        .song-item { background: #fff; border: 1px solid #eee; padding: 12px; margin: 8px 0; border-radius: 12px; cursor: pointer; border-left: 5px solid var(--primary); text-align: left; }
+        :root { 
+            --primary: #0077b6; /* Azul para cartões de pedido */
+            --success: #90be6d; /* Verde padrão */
+            --bg: #169916;     /* Verde de fundo */
+            --danger: #d62828;  /* Vermelho padrão */
+            --text-color: #333; /* Cor de texto padrão */
+            --light-bg: #f8f9fa; /* Fundo mais claro para barras */
+        }
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            background: var(--bg); 
+            margin: 0; 
+            padding: 10px; 
+            text-align: center; 
+            color: var(--text-color); /* Garante que o texto seja legível */
+        }
+        .container { 
+            max-width: 500px; 
+            margin: auto; 
+            background: white; 
+            padding: 20px; 
+            border-radius: 25px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2); 
+            min-height: 500px; 
+            position: relative; 
+        }
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: center; /* Centraliza logo e título */
+            gap: 10px; /* Espaço entre a logo e o texto */
+            margin-bottom: 10px;
+        }
+        .logo-img { 
+            max-width: 80px; /* Reduz um pouco o tamanho da logo para caber ao lado do texto */
+            height: auto; 
+            border-radius: 15px; 
+        }
+        #app-title {
+            margin: 0;
+            font-size: 1.8em; /* Ajusta o tamanho da fonte do título */
+            color: var(--primary); /* Mantém a cor do título para destaque */
+            display: flex;
+            align-items: center;
+            gap: 8px; /* Espaço entre o microfone e o texto */
+        }
+        .lang-bar { 
+            display: flex; 
+            justify-content: center; 
+            gap: 10px; 
+            margin-bottom: 20px; 
+            padding: 10px; 
+            background: var(--light-bg); 
+            border-radius: 15px; 
+        }
+        .lang-item { 
+            width: 45px; height: 30px; cursor: pointer; transition: 0.2s; 
+            filter: grayscale(100%); opacity: 0.5; object-fit: cover; 
+            border-radius: 4px; border: 1px solid #ddd; 
+        }
+        .lang-item.active { 
+            filter: grayscale(0%); opacity: 1; transform: scale(1.1); 
+            border-color: var(--primary); 
+        }
+        .card { 
+            padding: 12px; border-radius: 15px; margin-bottom: 10px; 
+            font-weight: bold; position: relative; animation: fadeIn 0.5s; 
+        }
+        .card-info { 
+            background: var(--primary); color: white; border-left: 5px solid #023e8a; 
+            text-align: left; /* Alinha o texto do cartão à esquerda */
+        }
+        .remove-btn { 
+            position: absolute; right: 10px; top: 8px; cursor: pointer; 
+            background: rgba(255,255,255,0.3); /* Um pouco mais visível */
+            border-radius: 50%; width: 20px; height: 20px; line-height: 18px; 
+            color: white; 
+            border: 1px solid rgba(255,255,255,0.5); /* Borda para destaque */
+        }
+        .queue-table { 
+            width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 10px; 
+        }
+        .queue-table th { 
+            background: var(--light-bg); padding: 10px; text-align: left; 
+            border-bottom: 2px solid #ddd;
+        }
+        .queue-table td { 
+            padding: 12px; border-bottom: 1px solid #eee; text-align: left; 
+        }
+        input[type="text"] { 
+            width: 100%; padding: 16px; border: 2px solid #ddd; 
+            border-radius: 15px; font-size: 16px; box-sizing: border-box; 
+            outline: none; margin-top: 15px; 
+        }
+        .song-item { 
+            background: #fff; border: 1px solid #eee; padding: 12px; margin: 8px 0; 
+            border-radius: 12px; cursor: pointer; border-left: 5px solid var(--primary); 
+            text-align: left; 
+            display: flex; /* Para alinhar o ícone de música com o texto */
+            align-items: center;
+            gap: 8px;
+        }
+        .song-item small {
+            color: #666; /* Cor mais suave para o nome do artista */
+        }
+        .section-divider {
+            margin: 20px 0;
+            font-size: 1.5em;
+            color: #ccc; /* Cor discreta para os divisores */
+        }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
@@ -29,8 +124,10 @@
 <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
 
 <div class="container">
-    <img src="9d8daa_198ec12882054dceb6d49d760eba30f0~mv2.jpg" alt="Logo" class="logo-img">
-    <h2 id="app-title">Karaokê Coopers</h2>
+    <div class="header-content">
+        <img src="9d8daa_198ec12882054dceb6d49d760eba30f0~mv2.jpg" alt="Logo Coopers" class="logo-img">
+        <h2 id="app-title">🎤 Karaokê Coopers</h2>
+    </div>
     
     <div class="lang-bar">
         <img src="portugal-e-brasil-realçam-duas-bandeiras-juntas-d-ilustração-283267433.webp" class="lang-item active" onclick="setLang('pt')" id="flag-pt">
@@ -40,6 +137,8 @@
     </div>
 
     <div id="myOrders"></div>
+
+    <div class="section-divider">🎶</div>
 
     <div id="queueSection">
         <h4 id="txt-fila-label">Acompanhe sua vez:</h4>
@@ -51,7 +150,9 @@
         </table>
     </div>
 
-    <input type="text" id="searchInput" oninput="searchSongs()">
+    <div class="section-divider">🎶</div>
+
+    <input type="text" id="searchInput" oninput="searchSongs()" placeholder="PESQUISE MÚSICA OU ARTISTA">
     
     <form id="karaokeForm" action="https://docs.google.com/forms/d/e/1FAIpQLSc2M4LQqNDD79g0o46ImqkwAL6g7EYn74cvxIa2K-6prNBLrQ/formResponse" method="POST" target="hidden_iframe" style="display:none;">
         <input type="hidden" name="entry.1995948109" id="f_hora">
@@ -93,7 +194,7 @@
 
     function updateInterface() {
         const t = translations[currentLang];
-        document.getElementById('app-title').innerText = t.title;
+        document.getElementById('app-title').innerHTML = `🎤 ${t.title}`; // Adiciona o microfone
         document.getElementById('searchInput').placeholder = t.busca;
         document.getElementById('txt-fila-label').innerText = t.filaLabel;
         document.getElementById('th-pos').innerText = t.thPos;
@@ -126,7 +227,11 @@
         const filtered = catalog.filter(s => (s[1] && s[1].toLowerCase().includes(query)) || (s[2] && s[2].toLowerCase().includes(query))).slice(0, 10);
         resDiv.innerHTML = filtered.map(s => `
             <div class="song-item" onclick="sendOrderDirect('${s[0]}','${s[1]}','${s[2]}')">
-                🎶 <strong>${s[1]}</strong><br><small>${s[2]}</small>
+                <span>🎶</span> 
+                <div>
+                    <strong>${s[1]}</strong><br>
+                    <small>${s[2]}</small>
+                </div>
             </div>`).join('');
     }
 
