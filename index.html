@@ -58,46 +58,28 @@
             border-radius: 15px; 
         }
         .lang-item { 
-            width: 45px; 
-            height: 30px; 
-            cursor: pointer; 
-            filter: grayscale(100%); 
-            opacity: 0.4; 
-            border-radius: 4px; 
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
+            width: 45px; height: 30px; cursor: pointer; 
+            filter: grayscale(100%); opacity: 0.4; border-radius: 4px; 
+            transition: all 0.3s ease; border: 2px solid transparent;
         }
-        /* Classe que ativa a bandeira visualmente */
         .lang-item.active { 
-            filter: grayscale(0%); 
-            opacity: 1; 
-            transform: scale(1.2); 
-            border-color: white; 
-            box-shadow: 0 0 10px rgba(255,255,255,0.5);
+            filter: grayscale(0%); opacity: 1; transform: scale(1.2); 
+            border-color: white; box-shadow: 0 0 10px rgba(255,255,255,0.5);
         }
 
         #copyright-alert {
             background: rgba(255, 77, 77, 0.2);
             border: 1px solid rgba(255, 77, 77, 0.4);
             color: #ff9999;
-            padding: 12px;
-            border-radius: 12px;
-            font-size: 13px;
-            margin: 10px 0;
-            text-align: left;
-            display: none;
-            align-items: flex-start;
-            gap: 10px;
+            padding: 12px; border-radius: 12px; font-size: 13px;
+            margin: 10px 0; text-align: left; display: none;
+            align-items: flex-start; gap: 10px;
         }
 
         .footer-update-alert {
-            margin-top: 20px;
-            padding: 8px;
-            font-size: 12px;
-            color: #ffca3a;
-            background: rgba(0, 0, 0, 0.4);
-            border-radius: 10px;
-            display: inline-block;
+            margin-top: 20px; padding: 8px; font-size: 12px;
+            color: #ffca3a; background: rgba(0, 0, 0, 0.4);
+            border-radius: 10px; display: inline-block;
         }
 
         .card-info { background: var(--primary); color: white; border-radius: 15px; padding: 12px; margin-bottom: 10px; font-weight: bold; position: relative; text-align: left; border-left: 5px solid #023e8a; }
@@ -184,15 +166,11 @@
         setInterval(loadQueue, 15000);
     };
 
-    // AQUI ESTÁ A CORREÇÃO: Função que troca a classe "active" visualmente
     function setLang(lang) {
         currentLang = lang;
-        // Remove "active" de todas as bandeiras
         document.querySelectorAll('.lang-item').forEach(img => img.classList.remove('active'));
-        // Adiciona "active" apenas na que foi clicada
         const selectedFlag = document.getElementById('flag-' + lang);
         if(selectedFlag) selectedFlag.classList.add('active');
-        
         updateInterface();
     }
 
@@ -210,6 +188,7 @@
         renderMyOrders();
     }
 
+    // NOVA BUSCA POR TERMOS (RESOLVE O PROBLEMA DA RIHANNA/DAVID GUETTA)
     function searchSongs() {
         const query = document.getElementById('searchInput').value.toLowerCase().trim();
         const resDiv = document.getElementById('results');
@@ -221,8 +200,16 @@
             return; 
         }
 
-        let filtered = catalog.filter(s => (s[1] && s[1].toLowerCase().includes(query)) || (s[2] && s[2].toLowerCase().includes(query)));
+        const searchTerms = query.split(' ');
 
+        // Busca Inteligente: Cruza termos entre Música e Artista
+        let filtered = catalog.filter(s => {
+            if(!s[1] || !s[2]) return false;
+            const combinedInfo = `${s[1].toLowerCase()} ${s[2].toLowerCase()}`;
+            return searchTerms.every(term => combinedInfo.includes(term));
+        });
+
+        // Se falhar, tenta o início das palavras (Fuzzy)
         if(filtered.length === 0) {
             filtered = catalog.filter(s => {
                 const song = (s[1] || "").toLowerCase();
@@ -269,8 +256,15 @@
         let saved = JSON.parse(localStorage.getItem('myKaraokeOrders') || '[]');
         saved.push({ senha, musica: title });
         localStorage.setItem('myKaraokeOrders', JSON.stringify(saved));
+        
         confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-        setTimeout(() => { renderMyOrders(); document.getElementById('searchInput').value = ''; document.getElementById('results').innerHTML = ''; loadQueue(); }, 800);
+        
+        setTimeout(() => { 
+            renderMyOrders(); 
+            document.getElementById('searchInput').value = ''; 
+            document.getElementById('results').innerHTML = ''; 
+            loadQueue(); 
+        }, 800);
     }
 
     function renderMyOrders() {
@@ -281,7 +275,9 @@
 
     function removeMyOrder(idx) {
         let saved = JSON.parse(localStorage.getItem('myKaraokeOrders') || '[]');
-        saved.splice(idx, 1); localStorage.setItem('myKaraokeOrders', JSON.stringify(saved)); renderMyOrders();
+        saved.splice(idx, 1); 
+        localStorage.setItem('myKaraokeOrders', JSON.stringify(saved)); 
+        renderMyOrders();
     }
 </script>
 </body>
