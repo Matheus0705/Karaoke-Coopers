@@ -10,67 +10,51 @@
         body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); margin: 0; padding: 10px; text-align: center; }
         .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); min-height: 500px; }
         .logo-img { max-width: 140px; height: auto; border-radius: 15px; cursor: pointer; margin-bottom: 10px; }
-        
         .lang-bar { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; padding: 10px; background: #f8f9fa; border-radius: 15px; }
         .lang-item { width: 45px; height: 30px; cursor: pointer; transition: 0.2s; filter: grayscale(100%); opacity: 0.5; object-fit: cover; border-radius: 4px; border: 1px solid #ddd; }
         .lang-item.active { filter: grayscale(0%); opacity: 1; transform: scale(1.1); border-color: var(--primary); }
-
         .card { padding: 12px; border-radius: 15px; margin-bottom: 10px; font-weight: bold; position: relative; animation: fadeIn 0.5s; }
-        .card-info { background: var(--primary); color: white; }
+        .card-info { background: var(--primary); color: white; border-left: 5px solid #023e8a; }
         .remove-btn { position: absolute; right: 10px; top: 8px; cursor: pointer; background: rgba(0,0,0,0.2); border-radius: 50%; width: 20px; height: 20px; line-height: 18px; color: white; }
-
         .queue-table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 10px; }
         .queue-table th { background: #eee; padding: 10px; text-align: left; }
         .queue-table td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
-
         input[type="text"] { width: 100%; padding: 16px; border: 2px solid #ddd; border-radius: 15px; font-size: 16px; box-sizing: border-box; outline: none; margin-top: 15px; }
-        .song-item { background: #fff; border: 1px solid #eee; padding: 12px; margin: 8px 0; border-radius: 12px; cursor: pointer; border-left: 5px solid var(--primary); text-align: left; transition: 0.2s; }
-        .song-item:active { background: #e9ecef; transform: scale(0.98); }
-        .error-dj { background: #fff3f3; color: var(--danger); padding: 15px; border-radius: 15px; border-left: 5px solid var(--danger); margin-top: 10px; text-align: left; display: none; }
-
+        .song-item { background: #fff; border: 1px solid #eee; padding: 12px; margin: 8px 0; border-radius: 12px; cursor: pointer; border-left: 5px solid var(--primary); text-align: left; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <img src="9d8daa_198ec12882054dceb6d49d760eba30f0~mv2.jpg" alt="Logo" class="logo-img" id="mainLogo">
+    <img src="9d8daa_198ec12882054dceb6d49d760eba30f0~mv2.jpg" alt="Logo" class="logo-img">
     <h2 id="app-title">Karaokê Coopers</h2>
-
     <div class="lang-bar">
         <img src="portugal-e-brasil-realçam-duas-bandeiras-juntas-d-ilustração-283267433.webp" class="lang-item active" onclick="setLang('pt')" id="flag-pt">
         <img src="usa-flag-stars-stripes-uk-260nw-2630619109.webp" class="lang-item" onclick="setLang('en')" id="flag-en">
         <img src="bandeira-da-espanha-balancando-ao-vento_2227-2338.avif" class="lang-item" onclick="setLang('es')" id="flag-es">
         <img src="34921756-nacional-bandeira-do-franca-3d-ilustracao-vetor.jpg" class="lang-item" onclick="setLang('fr')" id="flag-fr">
     </div>
-    
     <div id="myOrders"></div>
-
     <div id="queueSection">
         <h4 id="txt-fila-label">Acompanhe sua vez:</h4>
         <table class="queue-table">
             <thead>
-                <tr>
-                    <th id="th-pos">Pos</th>
-                    <th id="th-senha">Senha</th>
-                    <th id="th-musica">Música</th>
-                </tr>
+                <tr><th id="th-pos">Pos</th><th id="th-senha">Senha</th><th id="th-musica">Música</th></tr>
             </thead>
             <tbody id="queueBody"></tbody>
         </table>
     </div>
-
     <input type="text" id="searchInput" oninput="searchSongs()">
-    <div id="errorDJ" class="error-dj"></div>
     <div id="results"></div>
 </div>
 
 <script>
     const translations = {
-        pt: { title: "Karaokê Coopers", busca: "PESQUISE MÚSICA OU ARTISTA", filaLabel: "Acompanhe sua vez:", thPos: "Pos", thSenha: "Senha", thMusica: "Música", tokenLabel: "SENHA ATIVA:", djMsg: "Música não encontrada. Cheque com o DJ!", alertSucesso: "Pedido enviado! Senha: ", filaVazia: "Fila vazia!" },
-        en: { title: "Coopers Karaoke", busca: "SEARCH SONG OR ARTIST", filaLabel: "Current Queue:", thPos: "Pos", thSenha: "Code", thMusica: "Song", tokenLabel: "ACTIVE CODE:", djMsg: "Song not found. Check with the DJ!", alertSucesso: "Order sent! Code: ", filaVazia: "Queue is empty!" },
-        es: { title: "Karaoke Coopers", busca: "BUSCAR MÚSICA O ARTISTA", filaLabel: "Lista de espera:", thPos: "Pos", thSenha: "Cód", thMusica: "Música", tokenLabel: "CÓDIGO ACTIVO:", djMsg: "Música no encontrada. ¡Consulta con el DJ!", alertSucesso: "¡Pedido enviado! Código: ", filaVazia: "¡Lista vacía!" },
-        fr: { title: "Karaoké Coopers", busca: "RECHERCHER CHANSON", filaLabel: "File d'attente:", thPos: "Pos", thSenha: "Code", thMusica: "Chanson", tokenLabel: "CODE ACTIF:", djMsg: "Vérifiez avec le DJ!", alertSucesso: "Commande envoyée! Code: ", filaVazia: "File vide!" }
+        pt: { title: "Karaokê Coopers", busca: "PESQUISE MÚSICA OU ARTISTA", filaLabel: "Acompanhe sua vez:", thPos: "Pos", thSenha: "Senha", thMusica: "Música", tokenLabel: "SENHA GERADA:", filaVazia: "Fila vazia!" },
+        en: { title: "Coopers Karaoke", busca: "SEARCH SONG OR ARTIST", filaLabel: "Current Queue:", thPos: "Pos", thSenha: "Code", thMusica: "Song", tokenLabel: "GENERATED CODE:", filaVazia: "Queue is empty!" },
+        es: { title: "Karaoke Coopers", busca: "BUSCAR MÚSICA O ARTISTA", filaLabel: "Lista de espera:", thPos: "Pos", thSenha: "Cód", thMusica: "Música", tokenLabel: "CÓDIGO GENERADO:", filaVazia: "¡Lista vacía!" },
+        fr: { title: "Karaoké Coopers", busca: "RECHERCHER CHANSON", filaLabel: "File d'attente:", thPos: "Pos", thSenha: "Code", thMusica: "Chanson", tokenLabel: "CODE GÉNÉRÉ:", filaVazia: "File vide!" }
     };
 
     let currentLang = 'pt';
@@ -79,14 +63,18 @@
 
     window.onload = () => {
         updateInterface();
-        fetch('karafuncatalog.csv')
-            .then(r => r.text())
-            .then(data => {
-                catalog = data.split('\n').map(line => line.replace(/"/g, '').split(/[;,]/));
-            }).catch(e => console.log("Erro ao carregar catálogo"));
-        
-        setInterval(loadQueue, 20000);
+        fetch('karafuncatalog.csv').then(r => r.text()).then(data => {
+            catalog = data.split('\n').map(line => line.replace(/"/g, '').split(/[;,]/));
+        });
+        setInterval(loadQueue, 15000);
     };
+
+    function setLang(lang) {
+        currentLang = lang;
+        document.querySelectorAll('.lang-item').forEach(img => img.classList.remove('active'));
+        document.getElementById('flag-' + lang).classList.add('active');
+        updateInterface();
+    }
 
     function updateInterface() {
         const t = translations[currentLang];
@@ -100,13 +88,6 @@
         renderMyOrders();
     }
 
-    function setLang(lang) {
-        currentLang = lang;
-        document.querySelectorAll('.lang-item').forEach(img => img.classList.remove('active'));
-        document.getElementById('flag-' + lang).classList.add('active');
-        updateInterface();
-    }
-
     async function loadQueue() {
         try {
             const resp = await fetch(SHEET_CSV + "&cache=" + Date.now());
@@ -115,56 +96,38 @@
             let html = '';
             rows.forEach((row, i) => {
                 const cols = row.split(',');
-                if(cols.length > 5 && cols[5] && cols[5].trim() !== "") {
+                if(cols.length > 5 && cols[5].trim() !== "") {
                     html += `<tr><td>${i+1}º</td><td><strong>${cols[5]}</strong></td><td>${cols[3]}</td></tr>`;
                 }
             });
-            const emptyMsg = translations[currentLang].filaVazia;
-            document.getElementById('queueBody').innerHTML = html || `<tr><td colspan="3">${emptyMsg}</td></tr>`;
-        } catch(e) { }
+            document.getElementById('queueBody').innerHTML = html || `<tr><td colspan="3">${translations[currentLang].filaVazia}</td></tr>`;
+        } catch(e) {}
     }
 
     function searchSongs() {
         const query = document.getElementById('searchInput').value.toLowerCase().trim();
         const resDiv = document.getElementById('results');
-        const errDiv = document.getElementById('errorDJ');
-        
-        if(query.length < 2) { resDiv.innerHTML = ''; errDiv.style.display = 'none'; return; }
-        
+        if(query.length < 2) { resDiv.innerHTML = ''; return; }
         const filtered = catalog.filter(s => (s[1] && s[1].toLowerCase().includes(query)) || (s[2] && s[2].toLowerCase().includes(query))).slice(0, 10);
-        
-        if(filtered.length === 0) {
-            errDiv.innerText = translations[currentLang].djMsg;
-            errDiv.style.display = 'block';
-            resDiv.innerHTML = '';
-        } else {
-            errDiv.style.display = 'none';
-            resDiv.innerHTML = filtered.map(s => `
-                <div class="song-item" onclick="sendOrderDirect('${s[0]}','${s[1]}','${s[2]}')">
-                    🎶 <strong>${s[1]}</strong><br><small>${s[2]}</small>
-                </div>`).join('');
-        }
+        resDiv.innerHTML = filtered.map(s => `
+            <div class="song-item" onclick="sendOrderDirect('${s[0]}','${s[1]}','${s[2]}')">
+                🎶 <strong>${s[1]}</strong><br><small>${s[2]}</small>
+            </div>`).join('');
     }
 
     function sendOrderDirect(id, title, artist) {
         const senha = Math.random().toString(36).substring(2, 6).toUpperCase();
         const params = new URLSearchParams();
-        
-        // IDs ATUALIZADOS CONFORME SEU LINK
         params.append('entry.1995948109', new Date().toLocaleTimeString());
         params.append('entry.105234855', id);
         params.append('entry.1830320650', title);
         params.append('entry.730937896', artist);
         params.append('entry.1210617554', senha);
 
-        // LINK DO FORMULÁRIO ATUALIZADO
-        const formAction = "https://docs.google.com/forms/d/e/1FAIpQLSc2M4LQqNDD79g0o46ImqkwAL6g7EYn74cvxIa2K-6prNBLrQ/formResponse";
+        // ID ATUALIZADO CONFORME SUA IMAGEM
+        const formAction = "https://docs.google.com/forms/d/e/1bCm6owXX36OTdAaeUKTRrz18LsuHOBTbtbl35Zieato/formResponse";
 
-        fetch(formAction, {
-            method: 'POST',
-            body: params,
-            mode: 'no-cors'
-        });
+        fetch(formAction, { method: 'POST', body: params, mode: 'no-cors' });
 
         let saved = JSON.parse(localStorage.getItem('myKaraokeOrders') || '[]');
         saved.push({ senha, musica: title });
@@ -172,21 +135,18 @@
         
         confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
         renderMyOrders();
-        alert(translations[currentLang].alertSucesso + senha);
-        
         document.getElementById('searchInput').value = '';
         document.getElementById('results').innerHTML = '';
-        setTimeout(loadQueue, 2500);
+        setTimeout(loadQueue, 2000);
     }
 
     function renderMyOrders() {
         const orders = JSON.parse(localStorage.getItem('myKaraokeOrders') || '[]');
         const area = document.getElementById('myOrders');
-        const t = translations[currentLang];
         area.innerHTML = orders.map((o, idx) => `
             <div class="card card-info">
                 <span class="remove-btn" onclick="removeMyOrder(${idx})">×</span>
-                🔑 ${t.tokenLabel} ${o.senha}<br><small>${o.musica}</small>
+                🔑 ${translations[currentLang].tokenLabel} ${o.senha}<br><small>${o.musica}</small>
             </div>`).join('');
     }
 
