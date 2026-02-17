@@ -3,19 +3,22 @@ import pandas as pd
 from datetime import datetime
 import requests
 
+# Configuração da página
 st.set_page_config(page_title="Karaokê Coopers", layout="centered", page_icon="🎤")
 
-# --- FUNÇÃO PARA LER A FILA ---
+# --- FUNÇÃO PARA LER A FILA DO GOOGLE SHEETS ---
 def carregar_fila():
-    # Use o link da sua planilha nova que termina com /gviz/tq?tqx=out:csv
-    url_dados = "https://docs.google.com/spreadsheets/d/1FAIpQLSd8SRNim_Uz3KlxdkWzBTdO7zSKSIvQMfiS3flDi6HRKWggYQ/gviz/tq?tqx=out:csv"
+    # Link formatado para exportar os dados reais da planilha em CSV
+    url_dados = "https://docs.google.com/spreadsheets/d/1FAIpQLSd8SRNim_Uz3KlxdkWzBTdO7zSKSIvQMfiS3flDi6HRKWggYQ/export?format=csv"
     try:
-        # Lemos a planilha e forçamos a atualização
+        # Lemos a planilha ignorando o cache para ter dados frescos
         df_fila = pd.read_csv(url_dados)
+        df_fila.columns = [c.strip() for c in df_fila.columns]
         return df_fila
     except:
         return pd.DataFrame()
 
+# --- CARREGAR CATÁLOGO DE MÚSICAS ---
 @st.cache_data
 def carregar_catalogo():
     try:
@@ -27,6 +30,7 @@ def carregar_catalogo():
 
 df_catalogo = carregar_catalogo()
 
+# Função para limpar a seleção e voltar à busca
 def voltar_inicio():
     st.session_state.musica_escolhida = None
     st.rerun()
@@ -35,25 +39,29 @@ def voltar_inicio():
 idiomas = {
     "Português 🇧🇷": {
         "busca": "Pesquisar música ou artista...",
-        "fila_tit": "🎤 Fila de Espera",
-        "vazio": "Fila vazia! Peça a primeira!",
+        "fila_tit": "🎤 Fila de Espera Atual",
+        "vazio": "Fila vazia! Peça a primeira música!",
         "sel": "Selecionado:",
         "pos": "Sua posição na fila será:",
         "conf": "Confirmar ✅",
         "canc": "Voltar ❌",
         "sucesso": "Pedido enviado com sucesso!",
-        "outro": "Pedir outra música 🎤"
+        "outro": "Pedir outra música 🎤",
+        "col_hora": "Hora",
+        "col_musica": "Música"
     },
     "English 🇺🇸": {
         "busca": "Search song or artist...",
         "fila_tit": "🎤 Current Queue",
-        "vazio": "Empty queue! Be the first!",
+        "vazio": "Empty queue! Be the first one!",
         "sel": "Selected:",
         "pos": "Your position will be:",
         "conf": "Confirm ✅",
         "canc": "Back ❌",
         "sucesso": "Request sent successfully!",
-        "outro": "Request another song 🎤"
+        "outro": "Request another song 🎤",
+        "col_hora": "Time",
+        "col_musica": "Song"
     },
     "Español 🇪🇦": {
         "busca": "Buscar música o artista...",
@@ -64,7 +72,9 @@ idiomas = {
         "conf": "Confirmar ✅",
         "canc": "Volver ❌",
         "sucesso": "¡Pedido enviado con éxito!",
-        "outro": "Pedir otra canción 🎤"
+        "outro": "Pedir otra canción 🎤",
+        "col_hora": "Hora",
+        "col_musica": "Canción"
     },
     "Français 🇫🇷": {
         "busca": "Chercher une chanson...",
@@ -75,38 +85,38 @@ idiomas = {
         "conf": "Confirmer ✅",
         "canc": "Retour ❌",
         "sucesso": "Demande envoyée avec succès !",
-        "outro": "Demander une autre chanson 🎤"
+        "outro": "Demander une autre chanson 🎤",
+        "col_hora": "Heure",
+        "col_musica": "Chanson"
     }
 }
 
 st.title("🎤 Karaokê Coopers")
 
-# Idiomas agora na tela principal
+# 1. Seleção de Idioma no topo da interface principal
 escolha = st.radio("Escolha o idioma / Select language:", list(idiomas.keys()), horizontal=True)
 t = idiomas[escolha]
 
 st.divider()
 
-# --- FUNÇÃO PARA LER A FILA (Substitua a sua por esta) ---
-def carregar_fila():
-    # Este link já está formatado para exportar os dados como CSV
-    url_dados = "https://docs.google.com/spreadsheets/d/1FAIpQLSd8SRNim_Uz3KlxdkWzBTdO7zSKSIvQMfiS3flDi6HRKWggYQ/export?format=csv"
+# 2. Exibição da Fila de Espera (Tabela ao Vivo)
+st.subheader(t["fila_tit"])
+df_atual = carregar_fila()
+
+if not df_atual.empty:
     try:
-        # Lemos a planilha. O 'storage_options' ajuda a evitar o cache antigo
-        df_fila = pd.read_csv(url_dados)
-        # Remove espaços em branco dos nomes das colunas
-        df_fila.columns = [c.strip() for c in df_fila.columns]
-        return df_fila
-    except Exception as e:
-        # Se der erro, ele mostra no app para sabermos o que é
-        # st.error(f"Erro ao ler planilha: {e}") 
-        return pd.DataFrame()
+        # Pegamos a coluna da Hora (índice 1) e da Música (índice 3)
+        fila_visual = df_atual.iloc[:, [1, 3]].copy()
+        fila_visual.columns = [t["col_hora"], t["col_musica"]]
+        st.table(fila_visual)
+    except:
+        st.info("Atualizando fila...")
 else:
     st.write(t["vazio"])
 
 st.divider()
 
-# --- LÓGICA DE PEDIDO ---
+# 3. Lógica de Pedido de Música
 if 'musica_escolhida' not in st.session_state:
     st.session_state.musica_escolhida = None
 
@@ -119,25 +129,32 @@ if st.session_state.musica_escolhida is None:
             if st.button(f"🎶 {row.iloc[1]} - {row.iloc[2]}", key=f"b_{i}"):
                 st.session_state.musica_escolhida = row
                 st.rerun()
-# --- EXIBIÇÃO DA FILA (Substitua o bloco correspondente por este) ---
-st.subheader(t["fila_tit"])
-df_atual = carregar_fila()
-
-if not df_atual.empty:
-    try:
-        # Nas planilhas do Forms geralmente:
-        # Coluna 0: Carimbo de data/hora
-        # Coluna 1: Pergunta 1 (Data/Hora no seu caso)
-        # Coluna 3: Pergunta 3 (Nome da Música)
-        
-        # Vamos tentar pegar as colunas pelo nome ou pela posição
-        # Vou usar a posição para garantir (1 e 3)
-        fila_visual = df_atual.iloc[:, [1, 3]].copy()
-        fila_visual.columns = ["Hora", "Música"]
-        
-        # Mostra a tabela para o cliente
-        st.table(fila_visual)
-    except Exception as e:
-        st.write("Aguardando próximos cantores... 🎤")
 else:
-    st.write(t["vazio"])
+    m = st.session_state.musica_escolhida
+    posicao_prevista = len(df_atual) + 1
+    
+    st.success(f"{t['sel']} {m.iloc[1]} - {m.iloc[2]}")
+    st.info(f"📢 {t['pos']} {posicao_prevista}º")
+
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button(t["conf"], type="primary"):
+            url_form = "https://docs.google.com/forms/d/e/1FAIpQLSd8SRNim_Uz3KlxdkWzBTdO7zSKSIvQMfiS3flDi6HRKWggYQ/formResponse"
+            dados = {
+                "entry.1213556115": datetime.now().strftime("%H:%M"),
+                "entry.1947522889": str(m.iloc[0]),
+                "entry.1660854967": str(m.iloc[1]),
+                "entry.700923343": str(m.iloc[2])
+            }
+            try:
+                requests.post(url_form, data=dados)
+                st.balloons()
+                st.success(t["sucesso"])
+                # Botão de reset com tradução
+                st.button(t["outro"], on_click=voltar_inicio)
+            except:
+                st.error("Erro de conexão. Tente novamente.")
+                
+    with col2:
+        if st.button(t["canc"], on_click=voltar_inicio):
+            pass
