@@ -6,7 +6,7 @@
     <title>Karaokê Coopers</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <style>
-        :root { --primary: #0077b6; --success: #90be6d; --bg: #f0f2f5; --danger: #d62828; }
+        :root { --primary: #0077b6; --success: #2a9d8f; --bg: #f0f2f5; }
         body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); margin: 0; padding: 10px; text-align: center; }
         .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); min-height: 500px; position: relative; }
         .logo-img { max-width: 140px; height: auto; border-radius: 15px; margin-bottom: 10px; }
@@ -21,12 +21,20 @@
         .queue-table td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
         input[type="text"] { width: 100%; padding: 16px; border: 2px solid #ddd; border-radius: 15px; font-size: 16px; box-sizing: border-box; outline: none; margin-top: 15px; }
         .song-item { background: #fff; border: 1px solid #eee; padding: 12px; margin: 8px 0; border-radius: 12px; cursor: pointer; border-left: 5px solid var(--primary); text-align: left; }
+        
+        /* Notificação Toast */
+        #toast { visibility: hidden; min-width: 250px; background-color: var(--success); color: white; text-align: center; border-radius: 50px; padding: 16px; position: fixed; z-index: 999; left: 50%; bottom: 30px; transform: translateX(-50%); font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        #toast.show { visibility: visible; animation: fadeinout 2.5s; }
+
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeinout { 0% { bottom: 0; opacity: 0; } 20% { bottom: 30px; opacity: 1; } 80% { bottom: 30px; opacity: 1; } 100% { bottom: 0; opacity: 0; } }
     </style>
 </head>
 <body>
 
-<iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
+<div id="toast">✅ PEDIDO ENVIADO!</div>
+
+<iframe name="hidden_iframe" style="display:none;"></iframe>
 
 <div class="container">
     <img src="9d8daa_198ec12882054dceb6d49d760eba30f0~mv2.jpg" alt="Logo" class="logo-img">
@@ -45,4 +53,67 @@
         <h4 id="txt-fila-label">Acompanhe sua vez:</h4>
         <table class="queue-table">
             <thead>
-                <tr><th id="th-pos">Pos</th><th id="th-senha">Senha</th><th id="th-musica
+                <tr><th id="th-pos">Pos</th><th id="th-senha">Senha</th><th id="th-musica">Música</th></tr>
+            </thead>
+            <tbody id="queueBody"></tbody>
+        </table>
+    </div>
+
+    <input type="text" id="searchInput" oninput="searchSongs()">
+    
+    <form id="karaokeForm" action="https://docs.google.com/forms/d/e/1FAIpQLSc2M4LQqNDD79g0o46ImqkwAL6g7EYn74cvxIa2K-6prNBLrQ/formResponse" method="POST" target="hidden_iframe" style="display:none;">
+        <input type="hidden" name="entry.1995948109" id="f_hora">
+        <input type="hidden" name="entry.105234855" id="f_codigo">
+        <input type="hidden" name="entry.1830320650" id="f_musica">
+        <input type="hidden" name="entry.730937896" id="f_artista">
+        <input type="hidden" name="entry.1210617554" id="f_senha">
+    </form>
+
+    <div id="results"></div>
+</div>
+
+<script>
+    const translations = {
+        pt: { title: "Karaokê Coopers", busca: "PESQUISE MÚSICA OU ARTISTA", filaLabel: "Acompanhe sua vez:", thPos: "Pos", thSenha: "Senha", thMusica: "Música", tokenLabel: "SENHA GERADA:", filaVazia: "Fila vazia!", toast: "✅ PEDIDO ENVIADO!" },
+        en: { title: "Coopers Karaoke", busca: "SEARCH SONG OR ARTIST", filaLabel: "Current Queue:", thPos: "Pos", thSenha: "Code", thMusica: "Song", tokenLabel: "GENERATED CODE:", filaVazia: "Queue is empty!", toast: "✅ ORDER SENT!" },
+        es: { title: "Karaoke Coopers", busca: "BUSCAR MÚSICA O ARTISTA", filaLabel: "Lista de espera:", thPos: "Pos", thSenha: "Cód", thMusica: "Música", tokenLabel: "CÓDIGO GENERADO:", filaVazia: "¡Lista vazía!", toast: "✅ ¡PEDIDO ENVIADO!" },
+        fr: { title: "Karaoké Coopers", busca: "RECHERCHER CHANSON", filaLabel: "File d'attente:", thPos: "Pos", thSenha: "Code", thMusica: "Chanson", tokenLabel: "CODE GÉNÉRÉ:", filaVazia: "File vide!", toast: "✅ COMMANDE ENVOYÉE!" }
+    };
+
+    let currentLang = 'pt';
+    let catalog = [];
+    const SHEET_CSV = "https://docs.google.com/spreadsheets/d/1jL19NPfxuPziBqoVYU8DIPxUtbiqBbKNPgfsyFCIppc/export?format=csv&gid=1924484966";
+
+    window.onload = () => {
+        updateInterface();
+        fetch('karafuncatalog.csv').then(r => r.text()).then(data => {
+            catalog = data.split('\n').map(line => line.replace(/"/g, '').split(/[;,]/));
+        });
+        setInterval(loadQueue, 15000);
+    };
+
+    function setLang(lang) {
+        currentLang = lang;
+        document.querySelectorAll('.lang-item').forEach(img => img.classList.remove('active'));
+        document.getElementById('flag-' + lang).classList.add('active');
+        updateInterface();
+    }
+
+    function updateInterface() {
+        const t = translations[currentLang];
+        document.getElementById('app-title').innerText = t.title;
+        document.getElementById('searchInput').placeholder = t.busca;
+        document.getElementById('txt-fila-label').innerText = t.filaLabel;
+        document.getElementById('th-pos').innerText = t.thPos;
+        document.getElementById('th-senha').innerText = t.thSenha;
+        document.getElementById('th-musica').innerText = t.thMusica;
+        document.getElementById('toast').innerText = t.toast;
+        loadQueue();
+        renderMyOrders();
+    }
+
+    async function loadQueue() {
+        try {
+            const resp = await fetch(SHEET_CSV + "&cache=" + Date.now());
+            const text = await resp.text();
+            const rows = text.split('\n
