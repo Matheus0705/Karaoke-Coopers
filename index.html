@@ -67,6 +67,7 @@
             border-color: white; box-shadow: 0 0 10px rgba(255,255,255,0.5);
         }
 
+        /* Aviso de Copyright Estilizado */
         #copyright-alert {
             background: rgba(255, 77, 77, 0.2);
             border: 1px solid rgba(255, 77, 77, 0.4);
@@ -127,7 +128,7 @@
         
         <div id="copyright-alert">
             <span>⚠️</span>
-            <span id="msg-copyright">Música não encontrada...</span>
+            <span id="msg-copyright">Música não encontrada no catálogo oficial.</span>
         </div>
 
         <div id="results"></div>
@@ -148,10 +149,10 @@
 
 <script>
     const translations = {
-        pt: { title: "Karaokê Coopers", busca: "PESQUISE MÚSICA OU ARTISTA", filaLabel: "Acompanhe sua vez:", thPos: "Pos", thArtista: "Artista", thMusica: "Música", tokenLabel: "SUA SENHA:", filaVazia: "Fila vazia!", alert1: "🔄 A fila atualiza a cada 15 segundos.", copyright: "Música não encontrada. Se informe com o DJ, pois algumas músicas não aparecem na lista oficial devido aos direitos autorais." },
-        en: { title: "Coopers Karaoke", busca: "SEARCH SONG OR ARTIST", filaLabel: "Current Queue:", thPos: "Pos", thArtista: "Artist", thMusica: "Song", tokenLabel: "YOUR CODE:", filaVazia: "Queue is empty!", alert1: "🔄 Queue updates every 15 seconds.", copyright: "Song not found. Check with the DJ, as some songs don't appear in the official list due to copyrights." },
-        es: { title: "Karaoke Coopers", busca: "BUSCAR MÚSICA O ARTISTA", filaLabel: "Lista de espera:", thPos: "Pos", thArtista: "Artista", thMusica: "Música", tokenLabel: "TU CÓDIGO:", filaVazia: "¡Lista vazía!", alert1: "🔄 La fila se actualiza cada 15 segundos.", copyright: "Canción no encontrada. Consulte al DJ, ya que algunas canciones no aparecen por derechos de autor." },
-        fr: { title: "Karaoké Coopers", busca: "RECHERCHER CHANSON", filaLabel: "File d'attente:", thPos: "Pos", thArtista: "Artiste", thMusica: "Chanson", tokenLabel: "VOTRE CODE:", filaVazia: "File vide!", alert1: "🔄 La file s'actualise toutes les 15 s.", copyright: "Chanson non trouvée. Vérifiez auprès du DJ, car certaines musiques n'apparaissent pas dans la liste officielle." }
+        pt: { title: "Karaokê Coopers", busca: "PESQUISE MÚSICA OU ARTISTA", filaLabel: "Acompanhe sua vez:", thPos: "Pos", thArtista: "Artista", thMusica: "Música", tokenLabel: "SUA SENHA:", filaVazia: "Fila vazia!", alert1: "🔄 A fila atualiza a cada 15 segundos.", copyright: "Música não encontrada. Algumas músicas não aparecem na lista oficial devido aos direitos autorais (Karafunc)." },
+        en: { title: "Coopers Karaoke", busca: "SEARCH SONG OR ARTIST", filaLabel: "Current Queue:", thPos: "Pos", thArtista: "Artist", thMusica: "Song", tokenLabel: "YOUR CODE:", filaVazia: "Queue is empty!", alert1: "🔄 Queue updates every 15 seconds.", copyright: "Song not found. Some songs don't appear in the official list due to copyrights (Karafunc)." },
+        es: { title: "Karaoke Coopers", busca: "BUSCAR MÚSICA O ARTISTA", filaLabel: "Lista de espera:", thPos: "Pos", thArtista: "Artista", thMusica: "Música", tokenLabel: "TU CÓDIGO:", filaVazia: "¡Lista vazía!", alert1: "🔄 La fila se actualiza cada 15 segundos.", copyright: "Canción no encontrada. Algumas canciones no aparecen por derechos de autor (Karafunc)." },
+        fr: { title: "Karaoké Coopers", busca: "RECHERCHER CHANSON", filaLabel: "File d'attente:", thPos: "Pos", thArtista: "Artiste", thMusica: "Chanson", tokenLabel: "VOTRE CODE:", filaVazia: "File vide!", alert1: "🔄 La file s'actualise todas les 15 s.", copyright: "Chanson non trouvée. Algumas musiques n'apparaissent pas por direitos autorais (Karafunc)." }
     };
 
     let currentLang = 'pt';
@@ -184,11 +185,9 @@
         document.getElementById('th-musica').innerText = t.thMusica;
         document.getElementById('msg-alert-1').innerText = t.alert1;
         document.getElementById('msg-copyright').innerText = t.copyright;
-        loadQueue();
-        renderMyOrders();
+        loadQueue(); renderMyOrders();
     }
 
-    // NOVA BUSCA POR TERMOS (RESOLVE O PROBLEMA DA RIHANNA/DAVID GUETTA)
     function searchSongs() {
         const query = document.getElementById('searchInput').value.toLowerCase().trim();
         const resDiv = document.getElementById('results');
@@ -202,34 +201,46 @@
 
         const searchTerms = query.split(' ');
 
-        // Busca Inteligente: Cruza termos entre Música e Artista
-        let filtered = catalog.filter(s => {
+        // 1. Busca Rigorosa (Deve conter TODOS os termos digitados)
+        let exactMatch = catalog.filter(s => {
             if(!s[1] || !s[2]) return false;
-            const combinedInfo = `${s[1].toLowerCase()} ${s[2].toLowerCase()}`;
-            return searchTerms.every(term => combinedInfo.includes(term));
+            const combined = `${s[1].toLowerCase()} ${s[2].toLowerCase()}`;
+            return searchTerms.every(term => combined.includes(term));
         });
 
-        // Se falhar, tenta o início das palavras (Fuzzy)
-        if(filtered.length === 0) {
-            filtered = catalog.filter(s => {
-                const song = (s[1] || "").toLowerCase();
-                const art = (s[2] || "").toLowerCase();
-                return song.startsWith(query.substring(0,3)) || art.startsWith(query.substring(0,3));
-            }).slice(0, 5);
+        // 2. Busca Ampla (Sugestões se houver qualquer termo)
+        let suggestions = [];
+        if (exactMatch.length === 0) {
+            suggestions = catalog.filter(s => {
+                if(!s[1] || !s[2]) return false;
+                const combined = `${s[1].toLowerCase()} ${s[2].toLowerCase()}`;
+                return searchTerms.some(term => combined.includes(term));
+            }).slice(0, 8);
         }
 
-        if(filtered.length > 0) {
+        // LÓGICA DO AVISO: 
+        // Se não houver "exactMatch", mostramos o aviso, mesmo que existam sugestões.
+        if(exactMatch.length > 0) {
             alertDiv.style.display = 'none';
-            resDiv.innerHTML = filtered.slice(0, 10).map(s => `
-                <div class="song-item" onclick="sendOrderDirect('${s[0]}','${s[1]}','${s[2]}')">
-                    🎶 <strong>${s[1]}</strong> - <small>${s[2]}</small>
-                </div>`).join('');
+            renderResults(exactMatch.slice(0, 10));
+        } else if (suggestions.length > 0) {
+            alertDiv.style.display = 'flex'; // Mostra o aviso de "não encontrada"
+            renderResults(suggestions);     // Mas lista as sugestões embaixo
         } else {
-            resDiv.innerHTML = '';
             alertDiv.style.display = 'flex';
+            resDiv.innerHTML = '';
         }
     }
 
+    function renderResults(songs) {
+        const resDiv = document.getElementById('results');
+        resDiv.innerHTML = songs.map(s => `
+            <div class="song-item" onclick="sendOrderDirect('${s[0]}','${s[1]}','${s[2]}')">
+                🎶 <strong>${s[1]}</strong> - <small>${s[2]}</small>
+            </div>`).join('');
+    }
+
+    // Mantendo as funções de envio e fila intactas
     async function loadQueue() {
         try {
             const resp = await fetch(SHEET_CSV + "&cache=" + Date.now());
@@ -252,19 +263,11 @@
         document.getElementById('f_artista').value = artist;
         document.getElementById('f_senha').value = senha;
         document.getElementById('karaokeForm').submit();
-        
         let saved = JSON.parse(localStorage.getItem('myKaraokeOrders') || '[]');
         saved.push({ senha, musica: title });
         localStorage.setItem('myKaraokeOrders', JSON.stringify(saved));
-        
         confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-        
-        setTimeout(() => { 
-            renderMyOrders(); 
-            document.getElementById('searchInput').value = ''; 
-            document.getElementById('results').innerHTML = ''; 
-            loadQueue(); 
-        }, 800);
+        setTimeout(() => { renderMyOrders(); document.getElementById('searchInput').value = ''; document.getElementById('results').innerHTML = ''; alertDiv.style.display = 'none'; loadQueue(); }, 800);
     }
 
     function renderMyOrders() {
@@ -275,9 +278,7 @@
 
     function removeMyOrder(idx) {
         let saved = JSON.parse(localStorage.getItem('myKaraokeOrders') || '[]');
-        saved.splice(idx, 1); 
-        localStorage.setItem('myKaraokeOrders', JSON.stringify(saved)); 
-        renderMyOrders();
+        saved.splice(idx, 1); localStorage.setItem('myKaraokeOrders', JSON.stringify(saved)); renderMyOrders();
     }
 </script>
 </body>
