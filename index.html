@@ -6,9 +6,9 @@
     <title>Karaokê Coopers</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <style>
-        :root { --primary: #0077b6; --success: #90be6d; --bg: #f0f2f5; --danger: #d62828; }
+        :root { --primary: #0077b6; --success: #90be6d; --bg: #169916; --danger: #d62828; }
         body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); margin: 0; padding: 10px; text-align: center; }
-        .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); min-height: 500px; position: relative; }
+        .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); min-height: 500px; position: relative; }
         .logo-img { max-width: 140px; height: auto; border-radius: 15px; margin-bottom: 10px; }
         .lang-bar { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; padding: 10px; background: #f8f9fa; border-radius: 15px; }
         .lang-item { width: 45px; height: 30px; cursor: pointer; transition: 0.2s; filter: grayscale(100%); opacity: 0.5; object-fit: cover; border-radius: 4px; border: 1px solid #ddd; }
@@ -111,7 +111,6 @@
             let html = '';
             rows.forEach((row, i) => {
                 const cols = row.split(',');
-                // cols[4] é o Artista e cols[3] é a Música na planilha do Google
                 if(cols.length > 5 && cols[5].trim() !== "") {
                     html += `<tr><td>${i+1}º</td><td>${cols[4]}</td><td>${cols[3]}</td></tr>`;
                 }
