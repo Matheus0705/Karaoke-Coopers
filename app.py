@@ -62,17 +62,19 @@ else:
                 "entry.700923343": str(m.iloc[2])                     # ARTISTA
             }
             
-            try:
-                # Faz o envio para o Google Forms
-                requests.post(url_form, data=dados)
-                st.balloons()
-                st.success(t["sucesso"])
-                # Botão para limpar a seleção e permitir nova busca
-                if st.button("Pedir outra música 🎤"):
-                    st.session_state.musica_escolhida = None
-                    st.rerun()
-            except:
-                st.error("Erro de conexão ao enviar o pedido.")
+           try:
+                # Faz o envio e guarda a resposta
+                resposta = requests.post(url_form, data=dados)
+                
+                if resposta.status_code == 200:
+                    st.balloons()
+                    st.success(t["sucesso"])
+                    st.info("Verifique a planilha agora!")
+                else:
+                    st.error(f"Erro do Google: Código {resposta.status_code}")
+                    
+            except Exception as e:
+                st.error(f"Erro técnico: {e}")
     with col2:
         if st.button(t["canc"]):
             st.session_state.musica_escolhida = None
