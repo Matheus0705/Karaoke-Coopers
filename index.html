@@ -10,6 +10,7 @@
             --primary: #0077b6; 
             --bg: #000000;
             --warning: #ffb703;
+            --danger: #ff4d4d;
         }
         body { 
             font-family: 'Segoe UI', Arial, sans-serif; 
@@ -26,10 +27,12 @@
             padding: 20px; 
             border-radius: 25px; 
             box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
-            min-height: 600px; 
+            min-height: 650px; 
             position: relative; 
             color: white;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
         .container::before {
             content: "";
@@ -39,31 +42,41 @@
             border-radius: 25px;
             z-index: 0;
         }
-        .content-wrapper { position: relative; z-index: 1; }
+        .content-wrapper { position: relative; z-index: 1; flex-grow: 1; }
 
         .header-content { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px; }
         .logo-img { max-width: 60px; height: auto; border-radius: 10px; }
         #app-title { margin: 0; font-size: 1.6em; text-shadow: 2px 2px 4px #000; }
         
-        /* Aviso de Atualização Único */
-        .alert-box {
+        .lang-bar { display: flex; justify-content: center; gap: 10px; margin-bottom: 15px; padding: 10px; background: rgba(255,255,255,0.1); border-radius: 15px; }
+        .lang-item { width: 45px; height: 30px; cursor: pointer; filter: grayscale(100%); opacity: 0.5; border-radius: 4px; transition: 0.3s; }
+        .lang-item.active { filter: grayscale(0%); opacity: 1; transform: scale(1.1); border: 2px solid white; }
+
+        /* Estilo do Aviso de Direitos Autorais (Topo) */
+        .copyright-alert {
+            background: rgba(255, 77, 77, 0.15);
+            border: 1px solid rgba(255, 77, 77, 0.4);
+            color: #ff9999;
             padding: 10px;
-            margin-bottom: 12px;
             border-radius: 12px;
-            font-size: 13px;
-            text-align: center;
+            font-size: 12px;
+            margin-bottom: 15px;
+            text-align: left;
             display: flex;
-            align-items: center;
-            justify-content: center;
+            align-items: flex-start;
             gap: 10px;
-            background: rgba(255, 183, 3, 0.15);
-            border: 1px solid rgba(255, 183, 3, 0.3);
-            color: #ffca3a;
         }
 
-        .lang-bar { display: flex; justify-content: center; gap: 10px; margin-bottom: 15px; padding: 10px; background: rgba(255,255,255,0.1); border-radius: 15px; }
-        .lang-item { width: 45px; height: 30px; cursor: pointer; filter: grayscale(100%); opacity: 0.5; border-radius: 4px; }
-        .lang-item.active { filter: grayscale(0%); opacity: 1; transform: scale(1.1); border: 2px solid white; }
+        /* Estilo do Aviso de Atualização (Rodapé) */
+        .footer-update-alert {
+            margin-top: 20px;
+            padding: 8px;
+            font-size: 12px;
+            color: #ffca3a;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 10px;
+            display: inline-block;
+        }
 
         .card-info { background: var(--primary); color: white; border-radius: 15px; padding: 12px; margin-bottom: 10px; font-weight: bold; position: relative; text-align: left; border-left: 5px solid #023e8a; }
         .remove-btn { position: absolute; right: 10px; top: 8px; cursor: pointer; background: rgba(0,0,0,0.3); border-radius: 50%; width: 22px; height: 22px; color: white; line-height: 20px; text-align: center; font-size: 18px; }
@@ -94,15 +107,15 @@
             <img src="34921756-nacional-bandeira-do-franca-3d-ilustracao-vetor.jpg" class="lang-item" onclick="setLang('fr')" id="flag-fr">
         </div>
 
-        <div class="alert-box">
-            <span>🔄</span>
-            <span id="msg-alert-1">A fila atualiza a cada 15 segundos.</span>
+        <div class="copyright-alert">
+            <span>⚠️</span>
+            <span id="msg-copyright">Desculpe, no momento não temos essa música. Se informe com o DJ, pois algumas músicas não aparecem na lista oficial devido aos direitos autorais.</span>
         </div>
 
         <div id="myOrders"></div>
 
         <div id="queueSection">
-            <h4 id="txt-fila-label" style="margin-bottom: 10px;">Acompanhe sua vez:</h4>
+            <h4 id="txt-fila-label" style="margin-bottom: 5px;">Acompanhe sua vez:</h4>
             <table class="queue-table">
                 <thead>
                     <tr><th id="th-pos">Pos</th><th id="th-artista">Artista</th><th id="th-musica">Música</th></tr>
@@ -113,6 +126,10 @@
 
         <input type="text" id="searchInput" oninput="searchSongs()" placeholder="PESQUISE MÚSICA OU ARTISTA">
         <div id="results"></div>
+
+        <div class="footer-update-alert">
+            <span id="msg-alert-1">🔄 A fila atualiza a cada 15 segundos.</span>
+        </div>
     </div>
 
     <form id="karaokeForm" action="https://docs.google.com/forms/d/e/1FAIpQLSc2M4LQqNDD79g0o46ImqkwAL6g7EYn74cvxIa2K-6prNBLrQ/formResponse" method="POST" target="hidden_iframe" style="display:none;">
@@ -126,10 +143,26 @@
 
 <script>
     const translations = {
-        pt: { title: "Karaokê Coopers", busca: "PESQUISE MÚSICA OU ARTISTA", filaLabel: "Acompanhe sua vez:", thPos: "Pos", thArtista: "Artista", thMusica: "Música", tokenLabel: "SUA SENHA:", filaVazia: "Fila vazia!", alert1: "A fila atualiza a cada 15 segundos." },
-        en: { title: "Coopers Karaoke", busca: "SEARCH SONG OR ARTIST", filaLabel: "Current Queue:", thPos: "Pos", thArtista: "Artist", thMusica: "Song", tokenLabel: "YOUR CODE:", filaVazia: "Queue is empty!", alert1: "Queue updates every 15 seconds." },
-        es: { title: "Karaoke Coopers", busca: "BUSCAR MÚSICA O ARTISTA", filaLabel: "Lista de espera:", thPos: "Pos", thArtista: "Artista", thMusica: "Música", tokenLabel: "TU CÓDIGO:", filaVazia: "¡Lista vazía!", alert1: "La fila se actualiza cada 15 segundos." },
-        fr: { title: "Karaoké Coopers", busca: "RECHERCHER CHANSON", filaLabel: "File d'attente:", thPos: "Pos", thArtista: "Artiste", thMusica: "Chanson", tokenLabel: "VOTRE CODE:", filaVazia: "File vide!", alert1: "La file s'actualise toutes les 15 s." }
+        pt: { 
+            title: "Karaokê Coopers", busca: "PESQUISE MÚSICA OU ARTISTA", filaLabel: "Acompanhe sua vez:", thPos: "Pos", thArtista: "Artista", thMusica: "Música", tokenLabel: "SUA SENHA:", filaVazia: "Fila vazia!", 
+            alert1: "🔄 A fila atualiza a cada 15 segundos.",
+            copyright: "Desculpe, no momento não temos essa música. Se informe com o DJ, pois algumas músicas não aparecem na lista oficial devido aos direitos autorais."
+        },
+        en: { 
+            title: "Coopers Karaoke", busca: "SEARCH SONG OR ARTIST", filaLabel: "Current Queue:", thPos: "Pos", thArtista: "Artist", thMusica: "Song", tokenLabel: "YOUR CODE:", filaVazia: "Queue is empty!", 
+            alert1: "🔄 Queue updates every 15 seconds.",
+            copyright: "Sorry, we don't have this song at the moment. Check with the DJ, as some songs don't appear in the official list due to copyrights."
+        },
+        es: { 
+            title: "Karaoke Coopers", busca: "BUSCAR MÚSICA O ARTISTA", filaLabel: "Lista de espera:", thPos: "Pos", thArtista: "Artista", thMusica: "Música", tokenLabel: "TU CÓDIGO:", filaVazia: "¡Lista vazía!", 
+            alert1: "🔄 La fila se actualiza cada 15 segundos.",
+            copyright: "Lo sentimos, no temos esta canción. Consulte al DJ, ya que algumas canciones no aparecen en la lista oficial por derechos de autor."
+        },
+        fr: { 
+            title: "Karaoké Coopers", busca: "RECHERCHER CHANSON", filaLabel: "File d'attente:", thPos: "Pos", thArtista: "Artiste", thMusica: "Chanson", tokenLabel: "VOTRE CODE:", filaVazia: "File vide!", 
+            alert1: "🔄 La file s'actualise toutes les 15 s.",
+            copyright: "Désolé, nous n'avons pas cette chanson. Vérifiez auprès du DJ, car certaines musiques n'apparaissent pas dans la liste officielle."
+        }
     };
 
     let currentLang = 'pt';
@@ -160,6 +193,7 @@
         document.getElementById('th-artista').innerText = t.thArtista;
         document.getElementById('th-musica').innerText = t.thMusica;
         document.getElementById('msg-alert-1').innerText = t.alert1;
+        document.getElementById('msg-copyright').innerText = t.copyright;
         loadQueue();
         renderMyOrders();
     }
