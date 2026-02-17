@@ -11,9 +11,7 @@ import unicodedata
 st.set_page_config(page_title="Karaokê Coopers", layout="centered", page_icon="🎤")
 
 # --- FUNÇÕES DE APOIO ---
-
 def remover_acentos(texto):
-    """Melhoria: Busca por aproximação (ignora acentos e maiúsculas)"""
     return ''.join(c for c in unicodedata.normalize('NFD', str(texto))
                   if unicodedata.category(c) != 'Mn').lower()
 
@@ -22,6 +20,7 @@ def gerar_senha():
 
 def carregar_fila():
     timestamp = int(time.time())
+    # URL da sua planilha publicada como CSV
     url_dados = f"https://docs.google.com/spreadsheets/d/1FAIpQLSd8SRNim_Uz3KlxdkWzBTdO7zSKSIvQMfiS3flDi6HRKWggYQ/export?format=csv&cachebust={timestamp}"
     try:
         df = pd.read_csv(url_dados)
@@ -47,56 +46,49 @@ if 'musica_escolhida' not in st.session_state:
 if 'reset_busca' not in st.session_state:
     st.session_state.reset_busca = 0
 
-# --- INTERFACE (LOGO + TÍTULO HARMÔNICO) ---
-# Adicionando sua logo do GitHub redimensionada
-col_l1, col_l2, col_l3 = st.columns([1, 2, 1])
+# --- INTERFACE (LOGO CORRIGIDA + TÍTULO) ---
+col_l1, col_l2, col_l3 = st.columns([1, 1.5, 1])
 with col_l2:
+    # Link RAW corrigido para a logo aparecer
     logo_url = "https://raw.githubusercontent.com/MatheusS77/Coopers/main/9d8daa_198ec12882054dceb6d49d760eba30f0~mv2.jpg"
-    st.image(logo_url, use_container_width=True)
+    st.image(logo_url, width=250)
 
-st.markdown("<h1 style='text-align: center; margin-top: -20px;'>🎤 Karaokê Coopers</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; margin-top: -10px;'>🎤 Karaokê Coopers</h1>", unsafe_allow_html=True)
 
 # --- TRADUÇÕES ---
 idiomas = {
     "Português BR": {
         "busca": "PESQUISE SUA MÚSICA OU ARTISTA", "fila": "Acompanhe sua vez aqui!", 
-        "vazio": "Aguardando pedidos...", "sucesso": "SUA SENHA:",
-        "col_pos": "Posição", "col_sen": "Senha", "col_mus": "Música", "col_art": "Artista",
+        "vazio": "Aguardando pedidos na fila...", "sucesso": "SUA SENHA:",
         "btn_conf": "CONFIRMAR ✅", "btn_canc": "CANCELAR ❌"
     },
     "English us": {
         "busca": "SEARCH YOUR SONG OR ARTIST", "fila": "Follow your turn here!", 
         "vazio": "Waiting for requests...", "sucesso": "YOUR TOKEN:",
-        "col_pos": "Position", "col_sen": "Token", "col_mus": "Song", "col_art": "Artist",
         "btn_conf": "CONFIRM ✅", "btn_canc": "CANCEL ❌"
     },
     "Español EA": {
         "busca": "BUSCAR MÚSICA O ARTISTA", "fila": "¡Sigue tu turno aquí!", 
         "vazio": "Esperando pedidos...", "sucesso": "TU CÓDIGO:",
-        "col_pos": "Posición", "col_sen": "Código", "col_mus": "Música", "col_art": "Artista",
         "btn_conf": "CONFIRMAR ✅", "btn_canc": "CANCELAR ❌"
     },
     "Français FR": {
         "busca": "CHERCHER MUSIQUE OU ARTISTE", "fila": "Suivez votre tour aqui!", 
         "vazio": "En attente de demandes...", "sucesso": "VOTRE CODE:",
-        "col_pos": "Position", "col_sen": "Code", "col_mus": "Musique", "col_art": "Artiste",
         "btn_conf": "CONFIRMER ✅", "btn_canc": "ANNULER ❌"
     }
 }
-
 escolha = st.radio("Idioma:", list(idiomas.keys()), horizontal=True, label_visibility="collapsed")
 t = idiomas[escolha]
 
-# 1. AUTO-REFRESH DA FILA (Melhoria 1)
-# Atualiza a página silenciosamente a cada 30 segundos
-st.empty() 
+# --- AUTO-REFRESH (30s) ---
 if "last_refresh" not in st.session_state:
     st.session_state.last_refresh = time.time()
 if time.time() - st.session_state.last_refresh > 30:
     st.session_state.last_refresh = time.time()
     st.rerun()
 
-# --- BOX DE PEDIDOS DO CLIENTE ---
+# --- SEÇÃO: MEUS PEDIDOS ---
 if st.session_state.minhas_senhas:
     with st.expander("🎫 MEUS PEDIDOS / MY REQUESTS", expanded=True):
         for s in st.session_state.minhas_senhas:
@@ -104,25 +96,30 @@ if st.session_state.minhas_senhas:
 
 st.divider()
 
-# --- FILA DE ESPERA ---
-st.subheader(t["fila"])
+# --- SEÇÃO: FILA DE ESPERA (ESTILO CARDS) ---
+st.subheader(f"🎤 {t['fila']}")
 df_atual = carregar_fila()
 
 if not df_atual.empty:
-    try:
-        fila_visual = df_atual.iloc[:, [5, 3, 4]].copy()
-        posicoes = [f"{i+1}º" for i in range(len(fila_visual))]
-        fila_visual.insert(0, t["col_pos"], posicoes)
-        fila_visual.columns = [t["col_pos"], t["col_sen"], t["col_mus"], t["col_art"]]
-        st.table(fila_visual)
-    except:
-        st.write(t["vazio"])
+    # Itera sobre as linhas da planilha para criar os cards
+    for i, row in df_atual.iterrows():
+        try:
+            # Pegando dados baseados na estrutura da sua planilha (Colunas 5, 3 e 4)
+            senha_fila = row.iloc[5]
+            musica_fila = row.iloc[3]
+            artista_fila = row.iloc[4]
+            posicao = i + 1
+            
+            # Criando o Card Estilizado
+            st.success(f"**{posicao}º** — 🎵 **{musica_fila}** ({artista_fila})  \n🔑 {t['sucesso']} **{senha_fila}**")
+        except:
+            continue
 else:
-    st.write(t["vazio"])
+    st.warning(t["vazio"])
 
 st.divider()
 
-# --- BUSCA COM FILTRO FUZZY (Melhoria 3) ---
+# --- BUSCA E PEDIDO ---
 if st.session_state.musica_escolhida is None:
     input_usuario = st.text_input(t["busca"], key=f"in_{st.session_state.reset_busca}").strip()
     
@@ -131,9 +128,7 @@ if st.session_state.musica_escolhida is None:
         df_cat = carregar_catalogo()
         
         if not df_cat.empty:
-            # Filtro inteligente que ignora acentos no catálogo e na busca
-            res = df_cat[df_cat.iloc[:, 1].apply(lambda x: busca_limpa in remover_acentos(x)) | 
-                         df_cat.iloc[:, 2].apply(lambda x: busca_limpa in remover_acentos(x))].head(10)
+            res = df_cat[df_cat.iloc[0:].apply(lambda x: busca_limpa in remover_acentos(x.iloc[1]) or busca_limpa in remover_acentos(x.iloc[2]), axis=1)].head(10)
             
             for i, row in res.iterrows():
                 if st.button(f"🎶 {row.iloc[1]} - {row.iloc[2]}", key=f"s_{i}"):
@@ -141,17 +136,17 @@ if st.session_state.musica_escolhida is None:
                     st.rerun()
 else:
     m = st.session_state.musica_escolhida
-    st.success(f"Selecionada: {m.iloc[1]}")
+    # Card de confirmação da música selecionada
+    st.info(f"✨ **Selecionada:** {m.iloc[1]} - {m.iloc[2]}")
     
     col1, col2 = st.columns(2)
     with col1:
-        # Melhoria 2: Feedback visual com Spinner
         if st.button(t["btn_conf"], type="primary", use_container_width=True):
-            with st.spinner("Enviando ao DJ..."):
+            with st.spinner("Enviando..."):
                 nova_senha = gerar_senha()
                 url_form = "https://docs.google.com/forms/d/e/1FAIpQLSd8SRNim_Uz3KlxdkWzBTdO7zSKSIvQMfiS3flDi6HRKWggYQ/formResponse"
                 
-                # --- ID DA SENHA CORRIGIDO CONFORME SUA SOLICITAÇÃO ---
+                # ID do campo da senha conforme solicitado
                 id_da_senha = "entry.694761068" 
                 
                 dados = {
@@ -171,7 +166,7 @@ else:
                     time.sleep(1)
                     st.rerun()
                 except:
-                    st.error("Erro na conexão. Tente novamente!")
+                    st.error("Erro na conexão.")
     with col2:
         if st.button(t["btn_canc"], use_container_width=True):
             st.session_state.musica_escolhida = None
