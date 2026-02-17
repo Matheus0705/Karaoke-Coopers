@@ -3,19 +3,18 @@ import pandas as pd
 from datetime import datetime
 import requests
 
-# Configuração
 st.set_page_config(page_title="Karaokê Coopers", layout="centered", page_icon="🎤")
 
-# --- FUNÇÃO PARA LER A FILA ATUAL ---
-def ler_fila_atual():
-    # Substitua o link abaixo pelo link da sua planilha do Google Sheets
-    # Certifique-se de que o link termina com /export?format=csv
-    sheet_url = "SUA_PLANILHA_LINK_AQUI/export?format=csv"
+# --- FUNÇÃO PARA LER A FILA DO GOOGLE SHEETS ---
+def carregar_fila():
+    # SUBSTITUA PELO SEU LINK DA PLANILHA (com o final /gviz/tq?tqx=out:csv)
+    url_dados = "LINK_DA_SUA_PLANILHA"
     try:
-        df_fila = pd.read_csv(sheet_url)
-        return len(df_fila) # Retorna quantas pessoas já estão na fila
+        # Lemos a planilha em tempo real
+        df_fila = pd.read_csv(url_dados)
+        return df_fila
     except:
-        return 0
+        return pd.DataFrame()
 
 @st.cache_data
 def carregar_catalogo():
@@ -25,25 +24,36 @@ def carregar_catalogo():
 
 df_catalogo = carregar_catalogo()
 
-# Resetar estado
-def resetar():
+def voltar_inicio():
     st.session_state.musica_escolhida = None
     st.rerun()
 
 # Traduções
 idiomas_dict = {
-    "Português 🇧🇷🇵🇹": {"label": "Pesquisar...", "sel": "Selecionado", "conf": "Confirmar ✅", "canc": "Voltar ❌", "sucesso": "Pedido Enviado!", "posicao": "Estás na posição nº"},
-    "English 🇺🇸🇬🇧": {"label": "Search...", "sel": "Selected", "conf": "Confirm ✅", "canc": "Back ❌", "sucesso": "Sent!", "posicao": "You are at position #"}
+    "Português 🇧🇷🇵🇹": {"label": "Pesquisar música...", "conf": "Confirmar ✅", "canc": "Voltar ❌", "fila_titulo": "🎤 Fila de Espera Atual", "vazio": "Fila vazia! Peça a primeira!"},
+    "English 🇺🇸🇬🇧": {"label": "Search song...", "conf": "Confirm ✅", "canc": "Back ❌", "fila_titulo": "🎤 Current Queue", "vazio": "Empty queue! Be the first!"}
 }
 
 st.title("🎤 Karaokê Coopers")
-idioma = st.sidebar.radio("Idioma", list(idiomas_dict.keys())) # Coloquei no lado para limpar o meio
+idioma = st.sidebar.radio("Idioma", list(idiomas_dict.keys()))
 t = idiomas_dict[idioma]
 
-# Mostrar fila atual (para a pessoa acompanhar)
-fila_agora = ler_fila_atual()
-st.info(f"📢 {t['posicao']} {fila_agora + 1} da fila!")
+# --- BLOCO DA FILA AO VIVO ---
+st.subheader(t["fila_titulo"])
+df_atual = carregar_fila()
 
+if not df_atual.empty:
+    # Mostramos apenas as colunas de Música e Artista (ajuste os índices se necessário)
+    # Supondo que Música está na coluna 2 e Artista na coluna 3 da sua planilha
+    fila_visual = df_atual.iloc[:, [2, 3]].head(5) 
+    fila_visual.columns = ["Música", "Artista"]
+    st.table(fila_visual) # Mostra uma tabelinha limpa com as próximas 5
+else:
+    st.write(t["vazio"])
+
+st.divider()
+
+# --- LÓGICA DE PEDIDO ---
 if 'musica_escolhida' not in st.session_state:
     st.session_state.musica_escolhida = None
 
@@ -58,8 +68,11 @@ if st.session_state.musica_escolhida is None:
                 st.rerun()
 else:
     m = st.session_state.musica_escolhida
-    st.warning(f"{t['sel']}: {m.iloc[1]}")
+    posicao_prevista = len(df_atual) + 1
     
+    st.warning(f"Selecionada: {m.iloc[1]}")
+    st.info(f"Sua posição na fila será: {posicao_prevista}º")
+
     col1, col2 = st.columns(2)
     with col1:
         if st.button(t["conf"], type="primary"):
@@ -72,9 +85,8 @@ else:
             }
             requests.post(url_form, data=dados)
             st.balloons()
-            st.success(f"{t['sucesso']} {t['posicao']} {fila_agora + 1}")
-            st.button("Fazer novo pedido 🎤", on_click=resetar) # Este botão agora funciona!
-            
+            st.success("Pedido enviado! Fique de olho na tabela acima.")
+            st.button("Fazer outro pedido 🎤", on_click=voltar_inicio)
     with col2:
-        if st.button(t["canc"], on_click=resetar):
+        if st.button(t["canc"], on_click=voltar_inicio):
             pass
