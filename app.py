@@ -7,16 +7,13 @@ import random
 import string
 
 # Configuração da página
-st.set_page_config(page_title="Karaokê Coopers", layout="wide", page_icon="🎤")
+st.set_page_config(page_title="Karaokê Coopers", layout="centered", page_icon="🎤")
 
-# --- ESTILIZAÇÃO CSS (Para parecer com o seu desenho) ---
-st.markdown("""
-    <style>
-    .main { background-color: #2b3e36; }
-    .stTable { border: 2px solid #a066ff; border-radius: 10px; }
-    th { background-color: #3f51b5 !important; color: white !important; }
-    </style>
-    """, unsafe_allow_html=True)
+# --- 1. LOGO NO TOPO (Nome corrigido) ---
+try:
+    st.image("9d8daa_198ec12882054dceb6d49d760eba30f0~mv2.jpg", width=250)
+except:
+    st.markdown("### 🎤 KARAOKÊ COOPER'S")
 
 # --- FUNÇÕES CORE ---
 def gerar_senha():
@@ -41,11 +38,11 @@ def carregar_catalogo():
     except:
         return None
 
-# --- GESTÃO DE ESTADO ---
+# --- GESTÃO DE ESTADO (MEMÓRIA) ---
 if 'musica_escolhida' not in st.session_state:
     st.session_state.musica_escolhida = None
 if 'minhas_senhas' not in st.session_state:
-    st.session_state.minhas_senhas = [] # Lista para guardar várias senhas se ele pedir mais de uma
+    st.session_state.minhas_senhas = []
 if 'reset_busca' not in st.session_state:
     st.session_state.reset_busca = 0
 
@@ -53,76 +50,73 @@ if 'reset_busca' not in st.session_state:
 idiomas = {
     "Português 🇧🇷": {
         "titulo": "Acompanhe sua vez aqui!",
-        "col_pos": "Posição", "col_mus": "Música", "col_art": "Cantor/Artista", "col_sen": "Sua Senha",
-        "busca": "PESQUISE AQUI SUA MÚSICA/ ARTISTA", "vazio": "Fila vazia! Peça a primeira!",
+        "col_pos": "Posição", "col_mus": "Música", "col_art": "Artista", "col_sen": "Sua Senha",
+        "busca": "PESQUISE SUA MÚSICA OU ARTISTA", "vazio": "Fila vazia! Peça a primeira!",
         "conf": "Confirmar ✅", "canc": "Cancelar ❌",
         "erro": "Desculpe, no momento não temos essa música. Cheque com o DJ, pois algumas músicas não aparecerão devido a direitos autorais, obrigado!"
     },
     "English 🇺🇸": {
         "titulo": "Track your turn here!",
-        "col_pos": "Position", "col_mus": "Song", "col_art": "Artist", "col_sen": "Your Token",
-        "busca": "SEARCH YOUR SONG / ARTIST HERE", "vazio": "Empty queue!",
+        "col_pos": "Pos.", "col_mus": "Song", "col_art": "Artist", "col_sen": "Token",
+        "busca": "SEARCH YOUR SONG OR ARTIST", "vazio": "Empty queue!",
         "conf": "Confirm ✅", "canc": "Cancel ❌",
-        "erro": "Sorry, song not available. Check with the DJ for copyright reasons!"
+        "erro": "Sorry, song not found. Check with the DJ for copyright reasons!"
     },
     "Español 🇪🇦": {
         "titulo": "¡Sigue tu turno aquí!",
-        "col_pos": "Posición", "col_mus": "Canción", "col_art": "Artista", "col_sen": "Tu Código",
-        "busca": "BUSCA AQUÍ TU MÚSICA / ARTISTA", "vazio": "¡Lista vacía!",
+        "col_pos": "Pos.", "col_mus": "Canción", "col_art": "Artista", "col_sen": "Código",
+        "busca": "BUSCA TU MÚSICA O ARTISTA", "vazio": "¡Lista vacía!",
         "conf": "Confirmar ✅", "canc": "Cancelar ❌",
-        "erro": "Lo sentimos, canción no disponível. ¡Consulta al DJ!"
+        "erro": "Lo sentimos, canción no disponible. ¡Consulta al DJ!"
     },
     "Français 🇫🇷": {
-        "titulo": "Suivez votre tour ici !",
-        "col_pos": "Position", "col_mus": "Chanson", "col_art": "Artiste", "col_sen": "Votre Code",
-        "busca": "CHERCHEZ VOTRE CHANSON / ARTISTE ICI", "vazio": "File vide !",
+        "titulo": "Suivez votre tour !",
+        "col_pos": "Pos.", "col_mus": "Chanson", "col_art": "Artiste", "col_sen": "Code",
+        "busca": "CHERCHEZ VOTRE CHANSON", "vazio": "File vide !",
         "conf": "Confirmer ✅", "canc": "Annuler ❌",
-        "erro": "Désolé, chanson non disponible. Vérifiez auprès du DJ !"
+        "erro": "Désolé, nous n'avons pas cette chanson pour le moment."
     }
 }
 
-# --- INTERFACE ---
-st.write(f"# KARAOKÊ COOPER'S 🎤")
+# Seletor de Idiomas
 escolha = st.radio("Idioma:", list(idiomas.keys()), horizontal=True)
 t = idiomas[escolha]
+st.markdown(f"### {t['titulo']}")
 
-st.info(f"### {t['titulo']}")
-
-# --- FILA COM LÓGICA DE SENHA PRIVADA ---
+# --- FILA EM FORMATO DE PLANILHA ---
 df_atual = carregar_fila()
 
 if not df_atual.empty:
     try:
-        # Criar a tabela visual
-        # Colunas na planilha: 5 (Senha), 3 (Música), 4 (Artista)
+        # Colunas: 3=Música, 4=Artista, 5=Senha
         fila_visual = df_atual.iloc[:, [3, 4, 5]].copy()
-        fila_visual.columns = [t["col_mus"], t["col_art"], "senha_original"]
+        fila_visual.columns = [t["col_mus"], t["col_art"], "senha_hidden"]
         
-        # Lógica para mostrar a senha apenas se ela pertencer ao usuário
-        def mascarar_senha(row):
-            if str(row["senha_original"]) in st.session_state.minhas_senhas:
-                return f"🔑 {row['senha_original']}"
-            return "" # Fica em branco para os outros
+        # Só mostra a senha se ela foi gerada por este usuário
+        def mostrar_minha_senha(row):
+            val = str(row["senha_hidden"]).strip()
+            if val in st.session_state.minhas_senhas:
+                return f"🔑 {val}"
+            return ""
 
-        fila_visual[t["col_sen"]] = fila_visual.apply(mascarar_senha, axis=1)
+        fila_visual[t["col_sen"]] = fila_visual.apply(mostrar_minha_senha, axis=1)
         
-        # Adicionar Posição
+        # Coluna de Posição 1º, 2º...
         fila_visual.insert(0, t["col_pos"], [f"{i+1}º" for i in range(len(fila_visual))])
         
-        # Remover a coluna original da senha para não vazar
-        exibicao = fila_visual.drop(columns=["senha_original"])
-        
-        st.table(exibicao)
-    except Exception as e:
+        # Exibe como tabela limpa
+        st.table(fila_visual.drop(columns=["senha_hidden"]))
+    except:
         st.write(t["vazio"])
 else:
     st.write(t["vazio"])
 
-# --- ÁREA DE PESQUISA (ESTILO DESENHO) ---
-st.markdown("---")
-busca = st.text_input(f"🔍 {t['busca']}", key=f"search_{st.session_state.reset_busca}").strip().lower()
+st.divider()
 
+# --- BUSCA E PEDIDO ---
 if st.session_state.musica_escolhida is None:
+    busca = st.text_input(f"🔍 {t['busca']}", key=f"inp_{st.session_state.reset_busca}").strip().lower()
+    
     if busca:
         df_cat = carregar_catalogo()
         if df_cat is not None:
@@ -131,22 +125,22 @@ if st.session_state.musica_escolhida is None:
             
             if not res.empty:
                 for i, row in res.iterrows():
-                    if st.button(f"🎵 {row.iloc[1]} - {row.iloc[2]}", key=f"song_{i}"):
+                    if st.button(f"🎵 {row.iloc[1]} - {row.iloc[2]}", key=f"s_{i}"):
                         st.session_state.musica_escolhida = row
                         st.rerun()
             else:
                 st.error(t["erro"])
 else:
-    # Confirmação do Pedido
     m = st.session_state.musica_escolhida
-    st.success(f"📌 Selecionada: {m.iloc[1]} - {m.iloc[2]}")
+    st.success(f"📌 {m.iloc[1]} - {m.iloc[2]}")
     
     c1, c2 = st.columns(2)
     with c1:
         if st.button(t["conf"], type="primary"):
             nova_senha = gerar_senha()
-            # --- INSIRA SEU ID DA SENHA ABAIXO ---
-            id_senha = "INSIRA_O_ID_AQUI" 
+            
+            # ID DA SENHA QUE VOCÊ ENVIOU
+            id_senha = "694761068" 
             
             url_form = "https://docs.google.com/forms/d/e/1FAIpQLSd8SRNim_Uz3KlxdkWzBTdO7zSKSIvQMfiS3flDi6HRKWggYQ/formResponse"
             dados = {
@@ -158,8 +152,6 @@ else:
             }
             
             requests.post(url_form, data=dados)
-            
-            # Salva na lista de "minhas senhas" do navegador
             st.session_state.minhas_senhas.append(nova_senha)
             st.balloons()
             
@@ -171,7 +163,3 @@ else:
         if st.button(t["canc"]):
             st.session_state.musica_escolhida = None
             st.rerun()
-
-# --- ACESSO DJ (Simples e Oculto) ---
-with st.expander("Área Técnica"):
-    st.write("Planilha de Controle: [Clique aqui para abrir](SUA_URL_DA_PLANILHA)")
