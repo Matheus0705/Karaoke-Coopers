@@ -134,7 +134,7 @@
         input[type="text"] { width: 100%; padding: 16px; border: none; border-radius: 15px; font-size: 16px; margin-top: 15px; background: rgba(255,255,255,0.9); box-sizing: border-box; }
         .song-item { background: white; color: #333; padding: 14px; margin: 8px 0; border-radius: 12px; cursor: pointer; text-align: left; border-left: 5px solid var(--primary); }
         
-        #status-bloqueio { display: none; background: var(--danger); color: white; padding: 12px; border-radius: 12px; margin-bottom: 10px; font-weight: bold; }
+        #status-bloqueio { display: none; background: var(--danger); color: white; padding: 12px; border-radius: 12px; margin-bottom: 10px; font-weight: bold; font-size: 13px; border: 2px solid white; }
         .dj-access-btn { margin-top: 25px; font-size: 11px; opacity: 0.4; background: none; border: 1px solid white; color: white; border-radius: 8px; padding: 6px 12px; cursor: pointer; transition: 0.3s; }
 
         @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
@@ -170,7 +170,8 @@
             </div>
 
             <div class="refresh-notice" id="refresh-text">🔄 A fila atualiza automaticamente a cada 15s</div>
-            <div id="status-bloqueio">🛑 ENTRADA DE MÚSICAS FECHADA</div>
+            
+            <div id="status-bloqueio"></div>
 
             <div id="queueSection">
                 <h4 id="txt-fila-label" style="margin-bottom: 8px; text-align: left; font-size: 14px; color: #ddd;">Acompanhe sua vez:</h4>
@@ -196,7 +197,12 @@
 
             <div id="results"></div>
 
-            <button class="dj-access-btn" id="dj-btn" onclick="toggleDJ()">Acesso DJ</button>
+            <div style="margin-top: 25px; display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                <button class="dj-access-btn" id="dj-btn" onclick="toggleDJ()">Acesso DJ</button>
+                <button id="btn-lock-toggle" onclick="toggleLock()" style="display: none; background: var(--gold); color: black; border: none; padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 12px;">
+                    🔒 Bloquear Pedidos
+                </button>
+            </div>
         </div>
 
         <form id="karaokeForm" action="https://docs.google.com/forms/d/e/1FAIpQLSc2M4LQqNDD79g0o46ImqkwAL6g7EYn74cvxIa2K-6prNBLrQ/formResponse" method="POST" target="hidden_iframe" style="display:none;">
@@ -218,10 +224,10 @@
         let currentLang = 'pt';
 
         const translations = {
-            pt: { copyright: "Música não encontrada. Algumas músicas não aparecem na lista oficial devido aos direitos autorais (Karafunc).", title: "Karaokê Coopers", busca: "PESQUISE MÚSICA OU ARTISTA", filaLabel: "Acompanhe sua vez:", thPos: "Pos", thArtista: "Artista", thMusica: "Música / Senha", thAcao: "Ação", filaVazia: "Fila vazia!", cancelPrompt: "Deseja cancelar seu pedido?", closed: "Fechado!", welcomeT: "Como usar o App:", welcomeM: "1. <b>Busque</b> sua música no campo de pesquisa.<br>2. <b>Toque</b> na música para pedir.<br>3. Uma <b>Senha</b> será gerada.<br>4. Acompanhe sua posição na <b>Fila</b>.<br>5. Para desistir, clique no <b>❌</b> na fila.", btnOk: "VAMOS CANTAR!", refresh: "🔄 Atualiza a cada 15s", djLogin: "Acesso DJ", djLogout: "Sair do Modo DJ", success: "✅ Pedido enviado!" },
-            en: { copyright: "Song not found. Some songs do not appear on the official list due to copyright (Karafunc).", title: "Coopers Karaoke", busca: "SEARCH SONG OR ARTIST", filaLabel: "Current Queue:", thPos: "Pos", thArtista: "Artist", thMusica: "Song / Code", thAcao: "Action", filaVazia: "Empty!", cancelPrompt: "Cancel request?", closed: "Closed!", welcomeT: "How to use:", welcomeM: "1. <b>Search</b> for your song below.<br>2. <b>Click</b> on the song to request.<br>3. A <b>Code</b> will be generated.<br>4. Track your position in the <b>Queue</b>.<br>5. To cancel, click the <b>❌</b> button.", btnOk: "LET'S SING!", refresh: "🔄 Updates every 15s", djLogin: "DJ Access", djLogout: "Logout DJ", success: "✅ Request sent!" },
-            es: { copyright: "Música no encontrada. Algunas canciones no aparecen en la lista oficial debido a los derechos de autor (Karafunc).", title: "Karaoke Coopers", busca: "BUSCAR MÚSICA", filaLabel: "Lista de espera:", thPos: "Pos", thArtista: "Artista", thMusica: "Música / Código", thAcao: "Acción", filaVazia: "¡Vacia!", cancelPrompt: "¿Cancelar pedido?", closed: "¡Cerrado!", welcomeT: "Cómo usar:", welcomeM: "1. <b>Busca</b> tu canción abajo.<br>2. <b>Haz clic</b> para pedirla.<br>3. Se gerará un <b>Código</b>.<br>4. Sigue tu turno en la <b>Lista</b>.<br>5. Para cancelar, clic en <b>❌</b>.", btnOk: "¡A CANTAR!", refresh: "🔄 Act. cada 15s", djLogin: "Acceso DJ", djLogout: "Salir DJ", success: "✅ ¡Enviado!" },
-            fr: { copyright: "Musique non trouvée. Certaines chansons n'apparaissent pas dans la liste officielle en raison des droits d'auteur (Karafunc).", title: "Karaoké Coopers", busca: "RECHERCHER", filaLabel: "File d'attente:", thPos: "Pos", thArtista: "Artiste", thMusica: "Chanson / Code", thAcao: "Action", filaVazia: "Vide!", cancelPrompt: "Annuler?", closed: "Fermé!", welcomeT: "Comment utiliser:", welcomeM: "1. <b>Cherchez</b> votre chanson.<br>2. <b>Cliquez</b> pour commander.<br>3. Un <b>Code</b> sera généré.<br>4. Suivez votre tour dans la <b>File</b>.<br>5. Cliquez sur <b>❌</b> para annuler.", btnOk: "CHANTONS !", refresh: "🔄 Mise à jour 15s", djLogin: "Accès DJ", djLogout: "Quitter DJ", success: "✅ Envoyé !" }
+            pt: { copyright: "Música não encontrada. Algumas músicas não aparecem na lista oficial devido aos direitos autorais (Karafunc).", title: "Karaokê Coopers", busca: "PESQUISE MÚSICA OU ARTISTA", filaLabel: "Acompanhe sua vez:", thPos: "Pos", thArtista: "Artista", thMusica: "Música / Senha", thAcao: "Ação", filaVazia: "Fila vazia!", cancelPrompt: "Deseja cancelar seu pedido?", closed: "🛑 PEDIDOS ENCERRADOS<br><small>Estamos chegando ao fim da noite! Para que todos que já pediram consigam cantar, não estamos aceitando novas músicas. Obrigado!</small>", welcomeT: "Como usar o App:", welcomeM: "1. <b>Busque</b> sua música no campo de pesquisa.<br>2. <b>Toque</b> na música para pedir.<br>3. Uma <b>Senha</b> será gerada.<br>4. Acompanhe sua posição na <b>Fila</b>.<br>5. Para desistir, clique no <b>❌</b> na fila.", btnOk: "VAMOS CANTAR!", refresh: "🔄 Atualiza a cada 15s", djLogin: "Acesso DJ", djLogout: "Sair do Modo DJ", success: "✅ Pedido enviado!", lockOn: "🔒 Bloquear Pedidos", lockOff: "🔓 Abrir Entrada" },
+            en: { copyright: "Song not found. Some songs do not appear on the official list due to copyright (Karafunc).", title: "Coopers Karaoke", busca: "SEARCH SONG OR ARTIST", filaLabel: "Current Queue:", thPos: "Pos", thArtista: "Artist", thMusica: "Song / Code", thAcao: "Action", filaVazia: "Empty!", cancelPrompt: "Cancel request?", closed: "🛑 REQUESTS CLOSED<br><small>We are nearing the end of the night! To ensure everyone in line can sing, we aren't accepting new songs. Thanks!</small>", welcomeT: "How to use:", welcomeM: "1. <b>Search</b> for your song below.<br>2. <b>Click</b> on the song to request.<br>3. A <b>Code</b> will be generated.<br>4. Track your position in the <b>Queue</b>.<br>5. To cancel, click the <b>❌</b> button.", btnOk: "LET'S SING!", refresh: "🔄 Updates every 15s", djLogin: "DJ Access", djLogout: "Logout DJ", success: "✅ Request sent!", lockOn: "🔒 Lock Requests", lockOff: "🔓 Open Requests" },
+            es: { copyright: "Música no encontrada. Algumas canciones no aparecen en la lista oficial debido a los derechos de autor (Karafunc).", title: "Karaoke Coopers", busca: "BUSCAR MÚSICA", filaLabel: "Lista de espera:", thPos: "Pos", thArtista: "Artista", thMusica: "Música / Código", thAcao: "Acción", filaVazia: "¡Vacia!", cancelPrompt: "¿Cancelar pedido?", closed: "🛑 PEDIDOS CERRADOS<br><small>¡Nos acercamos al final de la noche! Para que todos los que ya pidieron possam cantar, no aceptamos nuevas canciones. ¡Gracias!</small>", welcomeT: "Cómo usar:", welcomeM: "1. <b>Busca</b> tu canción abajo.<br>2. <b>Haz clic</b> para pedirla.<br>3. Se gerará un <b>Código</b>.<br>4. Sigue tu turno en la <b>Lista</b>.<br>5. Para cancelar, clic en <b>❌</b>.", btnOk: "¡A CANTAR!", refresh: "🔄 Act. cada 15s", djLogin: "Acceso DJ", djLogout: "Salir DJ", success: "✅ ¡Enviado!", lockOn: "🔒 Bloquear", lockOff: "🔓 Abrir" },
+            fr: { copyright: "Musique non trouvée. Certaines chansons n'apparaissent pas dans la liste officielle en raison des droits d'auteur (Karafunc).", title: "Karaoké Coopers", busca: "RECHERCHER", filaLabel: "File d'attente:", thPos: "Pos", thArtista: "Artiste", thMusica: "Chanson / Code", thAcao: "Action", filaVazia: "Vide!", cancelPrompt: "Annuler?", closed: "🛑 DEMANDES FERMÉES<br><small>Nous approchons de la fin de la soirée ! Pour que tout le monde puisse passer, nous n'acceptons plus de nouveaux titres. Merci !</small>", welcomeT: "Comment utiliser:", welcomeM: "1. <b>Cherchez</b> votre chanson.<br>2. <b>Cliquez</b> pour commander.<br>3. Un <b>Code</b> sera généré.<br>4. Suivez votre tour dans la <b>File</b>.<br>5. Cliquez sur <b>❌</b> para annuler.", btnOk: "CHANTONS !", refresh: "🔄 Mise à jour 15s", djLogin: "Accès DJ", djLogout: "Quitter DJ", success: "✅ Envoyé !", lockOn: "🔒 Bloquer", lockOff: "🔓 Ouvrir" }
         };
 
         window.onload = () => {
@@ -231,7 +237,6 @@
                 catalog = data.split('\n').map(line => line.replace(/"/g, '').split(/[;,]/));
             });
             setInterval(loadQueue, 15000);
-            if(isLocked) document.getElementById('status-bloqueio').style.display = 'block';
             if(!localStorage.getItem('hasVisited')) { setTimeout(showWelcome, 30000); }
         };
 
@@ -249,12 +254,18 @@
             document.getElementById('th-musica').innerText = t.thMusica; 
             document.getElementById('th-acao-label').innerText = t.thAcao;
             document.getElementById('refresh-text').innerText = t.refresh;
+            
+            // Atualiza mensagem de bloqueio se estiver ativa
+            const statusDiv = document.getElementById('status-bloqueio');
+            statusDiv.innerHTML = t.closed;
+            statusDiv.style.display = isLocked ? 'block' : 'none';
+
             if(document.getElementById('welcome-modal').style.display === 'flex') showWelcome();
             updateDJInterface();
             loadQueue();
         }
 
-        // --- SISTEMA DE BUSCA APRIMORADO ---
+        // --- SISTEMA DE BUSCA COM MAIOR TOLERÂNCIA ---
         function searchSongs() {
             const query = document.getElementById('searchInput').value.toLowerCase().trim();
             const resDiv = document.getElementById('results');
@@ -266,23 +277,23 @@
                 return; 
             }
             
-            // Normaliza a busca (remove acentos e caracteres especiais para facilitar o reconhecimento)
             const normalizedQuery = query.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
             const terms = normalizedQuery.split(/\s+/);
             
             let matches = catalog.filter(s => {
                 if(!s[1]) return false;
-                
-                // Normaliza o conteúdo do catálogo também
                 const artist = s[2] ? s[2].toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : "";
                 const song = s[1].toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
                 const fullText = `${song} ${artist}`;
 
-                // Verifica se cada palavra digitada existe em qualquer parte do texto (Independente da ordem)
-                // Ex: "ladu gaga" -> verifica se "ladu" existe E se "gaga" existe.
-                // Como "ladu" é quase "lady", para ser mais tolerante, checamos se o termo digitado 
-                // está contido ou se o termo original contém parte dele.
-                return terms.every(t => fullText.includes(t));
+                // SE FOR UMA SÓ PALAVRA: Busca exata nela
+                if (terms.length === 1) return fullText.includes(terms[0]);
+
+                // SE FOREM DUAS OU MAIS: Se ele acertar PELO MENOS UMA palavra (com mais de 3 letras) 
+                // ou se acertar todas, ele sugere. Isso resolve o "Ladu Gaga".
+                const matchCount = terms.filter(t => t.length > 2 && fullText.includes(t)).length;
+                return matchCount >= 1; 
+
             }).slice(0, 15);
 
             if (matches.length === 0) {
@@ -317,15 +328,29 @@
             } catch(e) {}
         }
 
-        function showToast() {
-            const x = document.getElementById("toast");
-            x.innerText = translations[currentLang].success;
-            x.className = "show";
-            setTimeout(() => { x.className = x.className.replace("show", ""); }, 3000);
+        function toggleLock() {
+            if (!isDJ) return;
+            isLocked = !isLocked;
+            localStorage.setItem('karaokeLocked', isLocked);
+            setLang(currentLang); // Atualiza a mensagem e interface
+        }
+
+        function updateDJInterface() {
+            const btn = document.getElementById('dj-btn');
+            const lockBtn = document.getElementById('btn-lock-toggle');
+            const t = translations[currentLang];
+            if (isDJ) {
+                btn.innerText = t.djLogout; btn.style.opacity = "1"; btn.style.borderColor = "var(--danger)"; btn.style.color = "var(--danger)";
+                lockBtn.style.display = "block";
+                lockBtn.innerText = isLocked ? t.lockOff : t.lockOn;
+            } else {
+                btn.innerText = t.djLogin; btn.style.opacity = "0.4"; btn.style.borderColor = "white"; btn.style.color = "white";
+                lockBtn.style.display = "none";
+            }
         }
 
         function sendOrderDirect(id, title, artist) {
-            if(isLocked && !isDJ) { alert(translations[currentLang].closed); return; }
+            if(isLocked && !isDJ) { alert("Pedidos encerrados no momento!"); return; }
             const senha = Math.random().toString(36).substring(2, 6).toUpperCase();
             document.getElementById('f_hora').value = new Date().toLocaleTimeString();
             document.getElementById('f_codigo').value = id;
@@ -336,7 +361,10 @@
             let saved = JSON.parse(localStorage.getItem('myKaraokeOrders') || '[]');
             saved.push({ senha, musica: title });
             localStorage.setItem('myKaraokeOrders', JSON.stringify(saved));
-            showToast();
+            const x = document.getElementById("toast");
+            x.innerText = translations[currentLang].success;
+            x.className = "show";
+            setTimeout(() => { x.className = x.className.replace("show", ""); }, 3000);
             confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
             setTimeout(() => { 
                 document.getElementById('searchInput').value = ''; 
@@ -356,16 +384,6 @@
                 if (pass === "coopersdj26") {
                     isDJ = true; localStorage.setItem('isDJ', 'true'); updateDJInterface(); loadQueue();
                 } else if(pass !== null) { alert("Senha incorreta!"); }
-            }
-        }
-
-        function updateDJInterface() {
-            const btn = document.getElementById('dj-btn');
-            const t = translations[currentLang];
-            if (isDJ) {
-                btn.innerText = t.djLogout; btn.style.opacity = "1"; btn.style.borderColor = "var(--danger)"; btn.style.color = "var(--danger)";
-            } else {
-                btn.innerText = t.djLogin; btn.style.opacity = "0.4"; btn.style.borderColor = "white"; btn.style.color = "white";
             }
         }
 
