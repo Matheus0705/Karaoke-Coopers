@@ -60,6 +60,32 @@
             flex-grow: 1; 
         }
 
+        /* --- NOVO: ESTILO DO AVISO (TOAST) --- */
+        #toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: var(--success);
+            color: #fff;
+            text-align: center;
+            border-radius: 15px;
+            padding: 16px;
+            position: fixed;
+            z-index: 2000;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        #toast.show {
+            visibility: visible;
+            animation: fadein 0.5s, fadeout 0.5s 2.5s;
+        }
+
+        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+
         .refresh-notice {
             font-size: 10px;
             color: rgba(255,255,255,0.6);
@@ -163,7 +189,7 @@
 
         .queue-table th { background: #f0f0f0; font-weight: bold; color: #555; }
         
-        .row-highlight { background-color: var(--highlight) !important; }
+        .row-highlight { background-color: var(--highlight) !important; font-weight: bold; }
 
         .badge-token { 
             background: var(--primary); 
@@ -228,6 +254,8 @@
     </style>
 </head>
 <body>
+
+    <div id="toast">✅ Pedido enviado!</div>
 
     <div id="welcome-modal">
         <div class="modal-content">
@@ -299,10 +327,10 @@
         let currentLang = 'pt';
 
         const translations = {
-            pt: { title: "Karaokê Coopers", busca: "PESQUISE MÚSICA OU ARTISTA", filaLabel: "Acompanhe sua vez:", thPos: "Pos", thArtista: "Artista", thMusica: "Música / Senha", thAcao: "Ação", filaVazia: "Fila vazia!", cancelPrompt: "Deseja cancelar seu pedido?", closed: "Fechado!", welcomeT: "Bem-vindo!", welcomeM: "1. Busque sua música.<br>2. Peça e veja sua <b>Senha</b> na fila.", btnOk: "VAMOS LÁ!", refresh: "🔄 Atualiza a cada 15s", djLogin: "Acesso DJ", djLogout: "Sair do Modo DJ" },
-            en: { title: "Coopers Karaoke", busca: "SEARCH SONG OR ARTIST", filaLabel: "Current Queue:", thPos: "Pos", thArtista: "Artist", thMusica: "Song / Code", thAcao: "Action", filaVazia: "Empty!", cancelPrompt: "Cancel request?", closed: "Closed!", welcomeT: "Welcome!", welcomeM: "1. Search song.<br>2. Request and track <b>Code</b> in queue.", btnOk: "LET'S GO!", refresh: "🔄 Updates every 15s", djLogin: "DJ Access", djLogout: "Logout DJ" },
-            es: { title: "Karaoke Coopers", busca: "BUSCAR MÚSICA", filaLabel: "Lista de espera:", thPos: "Pos", thArtista: "Artista", thMusica: "Música / Código", thAcao: "Acción", filaVazia: "¡Vacia!", cancelPrompt: "¿Cancelar?", closed: "¡Cerrado!", welcomeT: "¡Bienvenido!", welcomeM: "1. Busca música.<br>2. Sigue tu <b>Código</b> en la lista.", btnOk: "¡VAMOS!", refresh: "🔄 Act. cada 15s", djLogin: "Acceso DJ", djLogout: "Salir DJ" },
-            fr: { title: "Karaoké Coopers", busca: "RECHERCHER", filaLabel: "File d'attente:", thPos: "Pos", thArtista: "Artiste", thMusica: "Chanson / Code", thAcao: "Action", filaVazia: "Vide!", cancelPrompt: "Annuler?", closed: "Fermé!", welcomeT: "Bienvenue!", welcomeM: "1. Cherchez.<br>2. Suivez votre <b>Code</b> dans la file.", btnOk: "C'EST PARTI!", refresh: "🔄 Mise à jour 15s", djLogin: "Accès DJ", djLogout: "Quitter DJ" }
+            pt: { title: "Karaokê Coopers", busca: "PESQUISE MÚSICA OU ARTISTA", filaLabel: "Acompanhe sua vez:", thPos: "Pos", thArtista: "Artista", thMusica: "Música / Senha", thAcao: "Ação", filaVazia: "Fila vazia!", cancelPrompt: "Deseja cancelar seu pedido?", closed: "Fechado!", welcomeT: "Bem-vindo!", welcomeM: "1. Busque sua música.<br>2. Peça e veja sua <b>Senha</b> na fila.", btnOk: "VAMOS LÁ!", refresh: "🔄 Atualiza a cada 15s", djLogin: "Acesso DJ", djLogout: "Sair do Modo DJ", success: "✅ Pedido enviado!" },
+            en: { title: "Coopers Karaoke", busca: "SEARCH SONG OR ARTIST", filaLabel: "Current Queue:", thPos: "Pos", thArtista: "Artist", thMusica: "Song / Code", thAcao: "Action", filaVazia: "Empty!", cancelPrompt: "Cancel request?", closed: "Closed!", welcomeT: "Welcome!", welcomeM: "1. Search song.<br>2. Request and track <b>Code</b> in queue.", btnOk: "LET'S GO!", refresh: "🔄 Updates every 15s", djLogin: "DJ Access", djLogout: "Logout DJ", success: "✅ Request sent!" },
+            es: { title: "Karaoke Coopers", busca: "BUSCAR MÚSICA", filaLabel: "Lista de espera:", thPos: "Pos", thArtista: "Artista", thMusica: "Música / Código", thAcao: "Acción", filaVazia: "¡Vacia!", cancelPrompt: "¿Cancelar?", closed: "¡Cerrado!", welcomeT: "¡Bienvenido!", welcomeM: "1. Busca música.<br>2. Sigue tu <b>Código</b> en la lista.", btnOk: "¡VAMOS!", refresh: "🔄 Act. cada 15s", djLogin: "Acceso DJ", djLogout: "Salir DJ", success: "✅ ¡Pedido enviado!" },
+            fr: { title: "Karaoké Coopers", busca: "RECHERCHER", filaLabel: "File d'attente:", thPos: "Pos", thArtista: "Artiste", thMusica: "Chanson / Code", thAcao: "Action", filaVazia: "Vide!", cancelPrompt: "Annuler?", closed: "Fermé!", welcomeT: "Bienvenue!", welcomeM: "1. Cherchez.<br>2. Suivez votre <b>Code</b> dans la file.", btnOk: "C'EST PARTI!", refresh: "🔄 Mise à jour 15s", djLogin: "Accès DJ", djLogout: "Quitter DJ", success: "✅ Commande envoyée!" }
         };
 
         window.onload = () => {
@@ -374,6 +402,14 @@
             } catch(e) {}
         }
 
+        /* --- NOVO: FUNÇÃO PARA MOSTRAR O AVISO --- */
+        function showToast() {
+            const x = document.getElementById("toast");
+            x.innerText = translations[currentLang].success;
+            x.className = "show";
+            setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+        }
+
         function toggleDJ() {
             if (isDJ) {
                 if (confirm(currentLang === 'pt' ? "Deseja sair do modo DJ?" : "Exit DJ mode?")) {
@@ -384,7 +420,6 @@
                 }
             } else {
                 const pass = prompt(currentLang === 'pt' ? "Senha do DJ:" : "DJ Password:");
-                // SENHA ATUALIZADA AQUI:
                 if (pass === "coopersdj26") {
                     isDJ = true;
                     localStorage.setItem('isDJ', 'true');
@@ -441,11 +476,15 @@
             saved.push({ senha, musica: title });
             localStorage.setItem('myKaraokeOrders', JSON.stringify(saved));
             
+            // MOSTRAR AVISO E CONFETES
+            showToast();
             confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
             
             setTimeout(() => { 
                 document.getElementById('searchInput').value = ''; 
                 document.getElementById('results').innerHTML = ''; 
+                // SUBIR PARA A FILA
+                window.scrollTo({ top: 0, behavior: 'smooth' });
                 loadQueue(); 
             }, 800);
         }
