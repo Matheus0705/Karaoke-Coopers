@@ -10,16 +10,17 @@
     <style>
         :root { 
             --primary: #0077b6; 
+            --neon-blue: #00d4ff;
+            --neon-pink: #ff007f;
             --bg: #000000;
             --warning: #ffb703;
             --danger: #ff0000;
-            --gold: #ffca3a;
             --success: #2ecc71;
-            --highlight: rgba(0, 119, 182, 0.15);
+            --highlight: rgba(0, 212, 255, 0.15);
         }
 
         body { 
-            font-family: 'Segoe UI', Arial, sans-serif; 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
             background: var(--bg); 
             margin: 0; 
             padding: 10px; 
@@ -32,10 +33,10 @@
             margin: auto; 
             background: url('unnamed.jpg') no-repeat center center;
             background-size: cover; 
-            padding: 20px; 
+            padding: 15px; 
             border-radius: 25px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
-            min-height: 650px; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8); 
+            min-height: 95vh; 
             position: relative; 
             overflow: hidden; 
             display: flex; 
@@ -45,12 +46,8 @@
         .container::before { 
             content: ""; 
             position: absolute; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            background: rgba(0, 0, 0, 0.6); 
-            border-radius: 25px; 
+            top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0, 0, 0, 0.75); 
             z-index: 0; 
         }
 
@@ -58,52 +55,125 @@
             position: relative; 
             z-index: 1; 
             flex-grow: 1; 
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- CABEÇALHO --- */
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 5px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+        }
+
+        .brand-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #app-title { 
+            margin: 0; 
+            font-size: 1.4em; 
+            font-weight: 800;
+            letter-spacing: 1px;
+            color: #fff;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px var(--neon-blue), 0 0 20px var(--neon-blue);
+        }
+
+        .logo-img { 
+            max-width: 45px; 
+            height: auto; 
+            border-radius: 50%;
+            border: 2px solid var(--neon-blue);
+            box-shadow: 0 0 10px var(--neon-blue);
+        }
+
+        .dj-access-btn { 
+            font-size: 10px; 
+            background: rgba(255,255,255,0.05); 
+            border: 1px solid var(--neon-blue); 
+            color: var(--neon-blue); 
+            border-radius: 8px; 
+            padding: 6px 12px; 
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+            opacity: 0.7;
+        }
+        .dj-access-btn.active-dj {
+            border-color: var(--neon-pink);
+            color: var(--neon-pink);
+            box-shadow: 0 0 15px var(--neon-pink);
+            opacity: 1;
+        }
+
+        /* --- BUSCA E RESULTADOS --- */
+        #searchContainer { position: relative; width: 100%; z-index: 100; margin-bottom: 10px; }
+        input[type="text"] { 
+            width: 100%; padding: 16px; border: 2px solid transparent; border-radius: 15px; 
+            font-size: 16px; background: rgba(255,255,255,0.95); box-sizing: border-box; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            transition: 0.3s;
+        }
+        input[type="text"]:focus { outline: none; border-color: var(--neon-blue); box-shadow: 0 0 15px var(--neon-blue); }
+
+        #results { 
+            position: absolute; top: 100%; left: 0; right: 0; 
+            background: rgba(10, 10, 10, 0.98); 
+            border-radius: 0 0 15px 15px; 
+            max-height: 350px; overflow-y: auto; 
+            z-index: 101; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            display: none;
+        }
+        .song-item { 
+            background: rgba(255,255,255,0.05); color: #fff; padding: 14px; margin: 8px; 
+            border-radius: 10px; cursor: pointer; text-align: left; 
+            border-left: 5px solid var(--neon-blue); 
+        }
+        .song-item strong { color: var(--neon-blue); }
+
+        /* --- FILA --- */
+        .queue-table { width: 100%; border-collapse: collapse; font-size: 13px; background: rgba(255,255,255,0.95); color: #333; border-radius: 15px; overflow: hidden; }
+        .queue-table th { background: #eee; padding: 12px 8px; text-transform: uppercase; font-size: 11px; }
+        .queue-table td { padding: 12px 8px; border-bottom: 1px solid #ddd; }
+        .row-highlight { background-color: var(--highlight) !important; font-weight: bold; }
+
+        /* --- COMPONENTES --- */
+        #status-bloqueio { 
+            display: none; background: rgba(255, 0, 0, 0.2); color: white; padding: 15px; 
+            border-radius: 15px; margin-bottom: 15px; font-weight: bold; border: 1px solid var(--danger);
+            backdrop-filter: blur(5px);
+        }
+
+        #btn-lock-toggle {
+            position: fixed; bottom: 20px; right: 20px; z-index: 2000;
+            background: var(--neon-pink); color: white; border: none;
+            width: 60px; height: 60px; border-radius: 50%;
+            font-size: 24px; cursor: pointer; display: none;
+            box-shadow: 0 0 20px var(--neon-pink);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 10px var(--neon-pink); }
+            50% { transform: scale(1.1); box-shadow: 0 0 25px var(--neon-pink); }
+            100% { transform: scale(1); box-shadow: 0 0 10px var(--neon-pink); }
         }
 
         #toast {
-            visibility: hidden;
-            min-width: 250px;
-            background-color: var(--success);
-            color: #fff;
-            text-align: center;
-            border-radius: 15px;
-            padding: 16px;
-            position: fixed;
-            z-index: 2000;
-            left: 50%;
-            bottom: 30px;
-            transform: translateX(-50%);
-            font-weight: bold;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            visibility: hidden; min-width: 200px; background: var(--success); color: #fff;
+            text-align: center; border-radius: 50px; padding: 16px; position: fixed;
+            z-index: 3000; left: 50%; bottom: 30px; transform: translateX(-50%);
+            box-shadow: 0 0 15px var(--success);
         }
         #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
-
-        #copyright-alert {
-            background: rgba(255, 0, 0, 0.9); border: 2px solid #ff0000; color: #ffffff;
-            padding: 15px; border-radius: 15px; font-size: 14px; font-weight: bold;
-            margin: 15px 0; text-align: left; display: none; align-items: center; gap: 12px;
-        }
-
-        #status-bloqueio { 
-            display: none; background: var(--danger); color: white; padding: 12px; 
-            border-radius: 12px; margin-bottom: 10px; font-weight: bold; font-size: 13px; 
-            border: 2px solid white; line-height: 1.4;
-        }
-
-        .queue-table { width: 100%; border-collapse: collapse; font-size: 13px; background: rgba(255,255,255,0.95); color: #333; border-radius: 15px; overflow: hidden; margin-top: 5px; }
-        .queue-table th, .queue-table td { padding: 12px 8px; border-bottom: 1px solid #ddd; text-align: left; }
-        .queue-table th { background: #f0f0f0; font-weight: bold; color: #555; }
-        .row-highlight { background-color: var(--highlight) !important; font-weight: bold; }
-
-        .badge-token { background: var(--primary); color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; display: inline-block; margin-top: 4px; }
-        .btn-action { border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        .btn-cancel { background: var(--danger); color: white; }
-        .btn-dj-del { background: #333; color: white; }
-
-        input[type="text"] { width: 100%; padding: 16px; border: none; border-radius: 15px; font-size: 16px; margin-top: 15px; background: rgba(255,255,255,0.9); box-sizing: border-box; }
-        .song-item { background: white; color: #333; padding: 14px; margin: 8px 0; border-radius: 12px; cursor: pointer; text-align: left; border-left: 5px solid var(--primary); }
-        
-        .dj-access-btn { margin-top: 25px; font-size: 11px; opacity: 0.4; background: none; border: 1px solid white; color: white; border-radius: 8px; padding: 6px 12px; cursor: pointer; transition: 0.3s; }
 
         @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
         @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
@@ -113,79 +183,68 @@
 
     <div id="toast">✅ Pedido enviado!</div>
 
-    <div id="welcome-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 20px;">
-        <div class="modal-content" style="background: #111; border: 2px solid var(--primary); padding: 25px; border-radius: 20px; max-width: 400px; text-align: center;">
-            <h3 id="modal-title"></h3>
-            <p id="modal-text"></p>
-            <button class="btn-ok" onclick="closeWelcome()" style="background: var(--primary); color: white; border: none; padding: 14px 30px; border-radius: 12px; font-weight: bold; margin-top: 20px; cursor: pointer; width: 100%;"></button>
-        </div>
-    </div>
-
-    <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
-
     <div class="container">
         <div class="content-wrapper">
-            <div class="header-content" style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px;">
-                <img src="9d8daa_198ec12882054dceb6d49d760eba30f0~mv2.jpg" class="logo-img" style="max-width: 60px; height: auto; border-radius: 10px;">
-                <h2 id="app-title">🎤 Karaokê Coopers</h2>
-            </div>
             
-            <div class="lang-bar" style="display: flex; justify-content: center; gap: 15px; margin-bottom: 10px; padding: 12px; background: rgba(255,255,255,0.1); border-radius: 15px;">
-                <img src="portugal-e-brasil-realçam-duas-bandeiras-juntas-d-ilustração-283267433.webp" class="lang-item active" onclick="setLang('pt')" id="flag-pt" style="width: 45px; height: 30px; cursor: pointer; border-radius: 4px;">
-                <img src="usa-flag-stars-stripes-uk-260nw-2630619109.webp" class="lang-item" onclick="setLang('en')" id="flag-en" style="width: 45px; height: 30px; cursor: pointer; border-radius: 4px;">
-                <img src="bandeira-da-espanha-balancando-ao-vento_2227-2338.avif" class="lang-item" onclick="setLang('es')" id="flag-es" style="width: 45px; height: 30px; cursor: pointer; border-radius: 4px;">
-                <img src="34921756-nacional-bandeira-do-franca-3d-ilustracao-vetor.jpg" class="lang-item" onclick="setLang('fr')" id="flag-fr" style="width: 45px; height: 30px; cursor: pointer; border-radius: 4px;">
+            <header class="header-content">
+                <div class="brand-area">
+                    <img src="9d8daa_198ec12882054dceb6d49d760eba30f0~mv2.jpg" class="logo-img" alt="Logo">
+                    <h2 id="app-title">Coopers 🎤</h2>
+                </div>
+                <button class="dj-access-btn" id="dj-btn" onclick="toggleDJ()">Acesso DJ</button>
+            </header>
+            
+            <div class="lang-bar" style="display: flex; justify-content: center; gap: 12px; margin-bottom: 15px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 20px;">
+                <img src="portugal-e-brasil-realçam-duas-bandeiras-juntas-d-ilustração-283267433.webp" class="lang-item" onclick="setLang('pt')" id="flag-pt" style="width: 40px; height: 26px; cursor: pointer; border-radius: 4px;">
+                <img src="usa-flag-stars-stripes-uk-260nw-2630619109.webp" class="lang-item" onclick="setLang('en')" id="flag-en" style="width: 40px; height: 26px; cursor: pointer; border-radius: 4px;">
+                <img src="bandeira-da-espanha-balancando-ao-vento_2227-2338.avif" class="lang-item" onclick="setLang('es')" id="flag-es" style="width: 40px; height: 26px; cursor: pointer; border-radius: 4px;">
+                <img src="34921756-nacional-bandeira-do-franca-3d-ilustracao-vetor.jpg" class="lang-item" onclick="setLang('fr')" id="flag-fr" style="width: 40px; height: 26px; cursor: pointer; border-radius: 4px;">
             </div>
 
-            <div class="refresh-notice" id="refresh-text" style="font-size: 10px; color: rgba(255,255,255,0.6); margin-bottom: 8px; font-style: italic;">🔄 A fila atualiza automaticamente a cada 15s</div>
+            <div id="searchContainer">
+                <input type="text" id="searchInput" oninput="searchSongs()" placeholder="BUSCAR MÚSICA OU ARTISTA">
+                <div id="results"></div>
+                <div id="copyright-alert" style="display:none; color: #ff4d4d; font-size: 12px; margin-top: 10px;">
+                    ⚠️ Música não encontrada...
+                </div>
+            </div>
             
             <div id="status-bloqueio"></div>
 
             <div id="queueSection">
-                <h4 id="txt-fila-label" style="margin-bottom: 8px; text-align: left; font-size: 14px; color: #ddd;">Acompanhe sua vez:</h4>
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 8px; padding: 0 5px;">
+                    <h4 id="txt-fila-label" style="margin: 0; font-size: 12px; color: var(--neon-blue); text-transform: uppercase;">Acompanhe sua vez:</h4>
+                    <span id="refresh-text" style="font-size: 9px; opacity: 0.5;">🔄 15s</span>
+                </div>
                 <table class="queue-table">
                     <thead>
                         <tr>
-                            <th id="th-pos" style="width: 40px;">Pos</th>
+                            <th id="th-pos">Pos</th>
                             <th id="th-artista">Artista</th>
-                            <th id="th-musica">Música / Senha</th>
-                            <th id="th-acao-label" style="width: 50px;">Ação</th>
+                            <th id="th-musica">Música</th>
+                            <th id="th-acao-label">Ação</th>
                         </tr>
                     </thead>
                     <tbody id="queueBody"></tbody>
                 </table>
             </div>
 
-            <div id="searchContainer">
-                <input type="text" id="searchInput" oninput="searchSongs()" placeholder="PESQUISE MÚSICA OU ARTISTA">
-            </div>
-            
-            <div id="copyright-alert">
-                <span style="font-size:24px;">⚠️</span>
-                <span id="msg-copyright"></span>
-            </div>
-
-            <div id="results"></div>
-
-            <div style="margin-top: 25px; display: flex; flex-direction: column; align-items: center; gap: 10px;">
-                <button class="dj-access-btn" id="dj-btn" onclick="toggleDJ()">Acesso DJ</button>
-                <button id="btn-lock-toggle" onclick="toggleLock()" style="display: none; background: var(--gold); color: black; border: none; padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 12px;">
-                    🔒 Bloquear Pedidos
-                </button>
-            </div>
         </div>
-
-        <form id="karaokeForm" action="https://docs.google.com/forms/d/e/1FAIpQLSc2M4LQqNDD79g0o46ImqkwAL6g7EYn74cvxIa2K-6prNBLrQ/formResponse" method="POST" target="hidden_iframe" style="display:none;">
-            <input type="hidden" name="entry.1995948109" id="f_hora">
-            <input type="hidden" name="entry.105234855" id="f_codigo">
-            <input type="hidden" name="entry.1830320650" id="f_musica">
-            <input type="hidden" name="entry.730937896" id="f_artista">
-            <input type="hidden" name="entry.1210617554" id="f_senha">
-        </form>
     </div>
 
+    <button id="btn-lock-toggle" onclick="toggleLock()">🔒</button>
+
+    <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
+
+    <form id="karaokeForm" action="https://docs.google.com/forms/d/e/1FAIpQLSc2M4LQqNDD79g0o46ImqkwAL6g7EYn74cvxIa2K-6prNBLrQ/formResponse" method="POST" target="hidden_iframe" style="display:none;">
+        <input type="hidden" name="entry.1995948109" id="f_hora">
+        <input type="hidden" name="entry.105234855" id="f_codigo">
+        <input type="hidden" name="entry.1830320650" id="f_musica">
+        <input type="hidden" name="entry.730937896" id="f_artista">
+        <input type="hidden" name="entry.1210617554" id="f_senha">
+    </form>
+
     <script>
-        // NOVO LINK DO SCRIPT INTEGRADO
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyjuLJcHS5USHKCzIjLfcgC7ci2IKD-bLlRQ0qVy_HSV9CWKB5CvvZLy1o1r6MaZjO5/exec"; 
         const SHEET_CSV = "https://docs.google.com/spreadsheets/d/1jL19NPfxuPziBqoVYU8DIPxUtbiqBbKNPgfsyFCIppc/export?format=csv&gid=1924484966";
         
@@ -195,10 +254,10 @@
         let currentLang = 'pt';
 
         const translations = {
-            pt: { copyright: "Música não encontrada...", title: "Karaokê Coopers", busca: "PESQUISE MÚSICA OU ARTISTA", filaLabel: "Acompanhe sua vez:", thPos: "Pos", thArtista: "Artista", thMusica: "Música / Senha", thAcao: "Ação", filaVazia: "Fila vazia!", cancelPrompt: "Deseja cancelar seu pedido?", closed: "🛑 PEDIDOS ENCERRADOS<br><small>Estamos chegando ao fim da noite! Para que todos que já pediram consigam cantar, não estamos aceitando novas músicas. Obrigado!</small>", btnOk: "VAMOS CANTAR!", refresh: "🔄 Atualiza a cada 15s", djLogin: "Acesso DJ", djLogout: "Sair do Modo DJ", success: "✅ Pedido enviado!", lockOn: "🔒 Bloquear Pedidos", lockOff: "🔓 Abrir Entrada" },
-            en: { copyright: "Song not found...", title: "Coopers Karaoke", busca: "SEARCH SONG OR ARTIST", filaLabel: "Current Queue:", thPos: "Pos", thArtista: "Artist", thMusica: "Song / Code", thAcao: "Action", filaVazia: "Empty!", cancelPrompt: "Cancel request?", closed: "🛑 REQUESTS CLOSED<br><small>We are nearing the end! To ensure everyone can sing, we aren't accepting new songs. Thanks!</small>", btnOk: "LET'S SING!", refresh: "🔄 Updates 15s", djLogin: "DJ Access", djLogout: "Logout DJ", success: "✅ Sent!", lockOn: "🔒 Lock Requests", lockOff: "🔓 Open Requests" },
-            es: { copyright: "Música no encontrada...", title: "Karaoke Coopers", busca: "BUSCAR MÚSICA", filaLabel: "Lista de espera:", thPos: "Pos", thArtista: "Artista", thMusica: "Música / Código", thAcao: "Acción", filaVazia: "¡Vacia!", cancelPrompt: "¿Cancelar?", closed: "🛑 PEDIDOS CERRADOS<br><small>¡Nos acercamos al final! Para que todos possam cantar, no aceptamos nuevas canciones. ¡Gracias!</small>", btnOk: "¡A CANTAR!", refresh: "🔄 Act. 15s", djLogin: "Acceso DJ", djLogout: "Salir DJ", success: "✅ ¡Enviado!", lockOn: "🔒 Bloquear", lockOff: "🔓 Abrir" },
-            fr: { copyright: "Musique não trouvée...", title: "Karaoké Coopers", busca: "RECHERCHER", filaLabel: "File d'attente:", thPos: "Pos", thArtista: "Artiste", thMusica: "Chanson / Code", thAcao: "Action", filaVazia: "Vide!", cancelPrompt: "Annuler?", closed: "🛑 DEMANDES FERMÉES<br><small>Nous approchons de la fin ! Nous n'acceptons plus de novos titres. Merci !</small>", btnOk: "CHANTONS !", refresh: "🔄 15s", djLogin: "Accès DJ", djLogout: "Quitter DJ", success: "✅ Envoyé !", lockOn: "🔒 Bloquer", lockOff: "🔓 Ouvrir" }
+            pt: { title: "Coopers 🎤", busca: "PESQUISE MÚSICA OU ARTISTA", filaLabel: "Acompanhe sua vez:", thPos: "Pos", thArtista: "Artista", thMusica: "Música / Senha", thAcao: "Ação", filaVazia: "Fila vazia!", closed: "🛑 PEDIDOS ENCERRADOS", success: "✅ Enviado!" },
+            en: { title: "Coopers 🎤", busca: "SEARCH SONG OR ARTIST", filaLabel: "Queue:", thPos: "Pos", thArtista: "Artist", thMusica: "Song / Code", thAcao: "Action", filaVazia: "Empty!", closed: "🛑 REQUESTS CLOSED", success: "✅ Sent!" },
+            es: { title: "Coopers 🎤", busca: "BUSCAR MÚSICA", filaLabel: "Lista:", thPos: "Pos", thArtista: "Artista", thMusica: "Música / Código", thAcao: "Acción", filaVazia: "¡Vacia!", closed: "🛑 CERRADO", success: "✅ ¡Enviado!" },
+            fr: { title: "Coopers 🎤", busca: "RECHERCHER", filaLabel: "File:", thPos: "Pos", thArtista: "Artiste", thMusica: "Chanson", thAcao: "Action", filaVazia: "Vide!", closed: "🛑 FERMÉ", success: "✅ Envoyé !" }
         };
 
         window.onload = () => {
@@ -217,13 +276,7 @@
             const t = translations[lang];
             document.getElementById('app-title').innerText = t.title;
             document.getElementById('searchInput').placeholder = t.busca;
-            document.getElementById('msg-copyright').innerText = t.copyright;
             document.getElementById('txt-fila-label').innerText = t.filaLabel;
-            document.getElementById('th-pos').innerText = t.thPos;
-            document.getElementById('th-artista').innerText = t.thArtista;
-            document.getElementById('th-musica').innerText = t.thMusica; 
-            document.getElementById('th-acao-label').innerText = t.thAcao;
-            document.getElementById('refresh-text').innerText = t.refresh;
             loadQueue();
         }
 
@@ -231,9 +284,8 @@
             try {
                 const resp = await fetch(SHEET_CSV + "&cache=" + Date.now());
                 const text = await resp.text();
-                
-                // SINCRONIZA BLOQUEIO: Lê se a planilha tem a palavra "BLOQUEADO"
                 isLocked = text.includes("BLOQUEADO");
+                
                 const statusDiv = document.getElementById('status-bloqueio');
                 const searchCont = document.getElementById('searchContainer');
                 
@@ -245,6 +297,7 @@
                     statusDiv.style.display = 'none';
                     searchCont.style.display = 'block';
                 }
+                
                 updateDJInterface();
 
                 const rows = text.split('\n').map(r => r.split(','));
@@ -257,37 +310,38 @@
                         const tokenFila = cols[5].trim();
                         const isMySong = myTokens.includes(tokenFila);
                         let rowStyle = isMySong ? 'class="row-highlight"' : "";
-                        let actionBtn = isDJ ? `<button class="btn-action btn-dj-del" onclick="removeSong(${i+1})">🗑️</button>` : (isMySong ? `<button class="btn-action btn-cancel" onclick="removeSong(${i+1}, true)">❌</button>` : '');
-                        html += `<tr ${rowStyle}><td>${i+1}º</td><td>${cols[4]}</td><td>${cols[3]} <br><span class="badge-token">🔑 ${tokenFila}</span></td><td>${actionBtn}</td></tr>`;
+                        let actionBtn = isDJ ? `<button onclick="removeSong(${i+1})">🗑️</button>` : (isMySong ? `<button onclick="removeSong(${i+1})">❌</button>` : '');
+                        html += `<tr ${rowStyle}><td>${i+1}º</td><td>${cols[4]}</td><td>${cols[3]} <br><span style="font-size:10px; color:var(--primary)">🔑 ${tokenFila}</span></td><td>${actionBtn}</td></tr>`;
                     }
                 });
-                document.getElementById('queueBody').innerHTML = html || `<tr><td colspan="4" style="text-align:center; padding: 20px;">${translations[currentLang].filaVazia}</td></tr>`;
+                document.getElementById('queueBody').innerHTML = html || '<tr><td colspan="4">Fila vazia!</td></tr>';
             } catch(e) {}
         }
 
         function searchSongs() {
             const query = document.getElementById('searchInput').value.toLowerCase().trim();
             const resDiv = document.getElementById('results');
-            const alertDiv = document.getElementById('copyright-alert');
-            if(query.length < 2) { resDiv.innerHTML = ''; alertDiv.style.display = 'none'; return; }
+            if(query.length < 2) { resDiv.style.display = 'none'; return; }
+            
             const norm = (t) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
             const terms = norm(query).split(/\s+/);
             
             let matches = catalog.filter(s => {
                 if(!s[1]) return false;
                 const full = norm(`${s[1]} ${s[2]}`).toLowerCase();
-                // Aumenta a tolerância: Se acertar pelo menos uma palavra grande, ou todas.
                 return terms.some(t => t.length > 3 && full.includes(t)) || terms.every(t => full.includes(t));
             }).slice(0, 15);
             
-            if (matches.length === 0) { resDiv.innerHTML = ''; alertDiv.style.display = 'flex'; } 
-            else { alertDiv.style.display = 'none'; resDiv.innerHTML = matches.map(s => `<div class="song-item" onclick="sendOrderDirect('${s[0]}','${s[1]}','${s[2]}')">🎶 <strong>${s[1]}</strong> - <small>${s[2]}</small></div>`).join(''); }
+            if (matches.length > 0) {
+                resDiv.style.display = 'block';
+                resDiv.innerHTML = matches.map(s => `<div class="song-item" onclick="sendOrderDirect('${s[0]}','${s[1]}','${s[2]}')">🎶 <strong>${s[1]}</strong><br><small>${s[2]}</small></div>`).join('');
+            } else { resDiv.style.display = 'none'; }
         }
 
         async function toggleLock() {
             if (!isDJ) return;
             const action = isLocked ? "abrir" : "bloquear";
-            if(confirm(`Deseja ${action} os pedidos para todos os usuários?`)) {
+            if(confirm(`Deseja ${action} a entrada?`)) {
                 fetch(`${SCRIPT_URL}?action=toggleLock&status=${!isLocked}`, {mode: 'no-cors'}).then(() => {
                     setTimeout(loadQueue, 2000);
                 });
@@ -295,26 +349,22 @@
         }
 
         function toggleDJ() {
-            if (isDJ) { if (confirm("Sair do modo DJ?")) { isDJ = false; localStorage.setItem('isDJ', 'false'); updateDJInterface(); loadQueue(); } }
-            else { const pass = prompt("Senha:"); if (pass === "coopersdj26") { isDJ = true; localStorage.setItem('isDJ', 'true'); updateDJInterface(); loadQueue(); } }
+            if (isDJ) { if (confirm("Sair do DJ?")) { isDJ = false; localStorage.setItem('isDJ', 'false'); location.reload(); } }
+            else { const pass = prompt("Senha:"); if (pass === "coopersdj26") { isDJ = true; localStorage.setItem('isDJ', 'true'); updateDJInterface(); } }
         }
 
         function updateDJInterface() {
             const btn = document.getElementById('dj-btn');
             const lockBtn = document.getElementById('btn-lock-toggle');
-            const t = translations[currentLang];
             if (isDJ) {
-                btn.innerText = t.djLogout; btn.style.borderColor = "var(--danger)"; btn.style.color = "var(--danger)"; btn.style.opacity = "1";
+                btn.innerText = "DJ ATIVO";
+                btn.classList.add('active-dj');
                 lockBtn.style.display = "block";
-                lockBtn.innerText = isLocked ? t.lockOff : t.lockOn;
-            } else {
-                btn.innerText = t.djLogin; btn.style.borderColor = "white"; btn.style.color = "white"; btn.style.opacity = "0.4";
-                lockBtn.style.display = "none";
+                lockBtn.innerText = isLocked ? "🔓" : "🔒";
             }
         }
 
         function sendOrderDirect(id, title, artist) {
-            if(isLocked && !isDJ) { alert("Pedidos encerrados!"); return; }
             const senha = Math.random().toString(36).substring(2, 6).toUpperCase();
             document.getElementById('f_hora').value = new Date().toLocaleTimeString();
             document.getElementById('f_codigo').value = id;
@@ -322,29 +372,25 @@
             document.getElementById('f_artista').value = artist;
             document.getElementById('f_senha').value = senha;
             document.getElementById('karaokeForm').submit();
+            
             let saved = JSON.parse(localStorage.getItem('myKaraokeOrders') || '[]');
-            saved.push({ senha, musica: title });
+            saved.push({ senha });
             localStorage.setItem('myKaraokeOrders', JSON.stringify(saved));
-            const x = document.getElementById("toast");
-            x.className = "show"; setTimeout(() => { x.className = ""; }, 3000);
+            
+            document.getElementById("toast").className = "show";
+            setTimeout(() => { document.getElementById("toast").className = ""; }, 3000);
             confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-            setTimeout(() => { document.getElementById('searchInput').value = ''; document.getElementById('results').innerHTML = ''; loadQueue(); }, 800);
+            
+            document.getElementById('searchInput').value = '';
+            document.getElementById('results').style.display = 'none';
+            setTimeout(loadQueue, 1000);
         }
 
-        async function removeSong(rowIndex, isClient) { 
-            if(confirm(translations[currentLang].cancelPrompt)) { 
-                fetch(`${SCRIPT_URL}?row=${rowIndex}`, {mode: 'no-cors'}).then(() => { setTimeout(loadQueue, 1500); }); 
-            } 
+        async function removeSong(rowIndex) {
+            if(confirm("Remover música?")) {
+                fetch(`${SCRIPT_URL}?row=${rowIndex}`, {mode: 'no-cors'}).then(() => { setTimeout(loadQueue, 1000); });
+            }
         }
-
-        function showWelcome() {
-            const t = translations[currentLang];
-            document.getElementById('modal-title').innerText = t.welcomeT;
-            document.getElementById('modal-text').innerHTML = t.welcomeM;
-            document.querySelector('.btn-ok').innerText = t.btnOk;
-            document.getElementById('welcome-modal').style.display = 'flex';
-        }
-        function closeWelcome() { document.getElementById('welcome-modal').style.display = 'none'; localStorage.setItem('hasVisited', 'true'); }
     </script>
 </body>
 </html>
