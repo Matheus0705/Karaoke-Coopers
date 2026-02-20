@@ -60,7 +60,6 @@
             flex-grow: 1; 
         }
 
-        /* --- AVISO DE SUCESSO (TOAST) --- */
         #toast {
             visibility: hidden;
             min-width: 250px;
@@ -82,7 +81,6 @@
             animation: fadein 0.5s, fadeout 0.5s 2.5s;
         }
 
-        /* --- ESTILO DO AVISO ANTIGO (VERMELHO PULSANTE) --- */
         #copyright-alert {
             background: rgba(255, 0, 0, 0.9); 
             border: 2px solid #ff0000; 
@@ -101,7 +99,6 @@
         }
         @keyframes pulse-alert { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
 
-        /* --- MODAL DE BOAS-VINDAS --- */
         #welcome-modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.9); z-index: 1000;
@@ -114,7 +111,6 @@
         }
         .btn-ok { background: var(--primary); color: white; border: none; padding: 14px 30px; border-radius: 12px; font-weight: bold; margin-top: 20px; cursor: pointer; width: 100%; }
 
-        /* --- CABEÇALHO E FILA --- */
         .header-content { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px; }
         .logo-img { max-width: 60px; height: auto; border-radius: 10px; }
         #app-title { margin: 0; font-size: 1.6em; text-shadow: 2px 2px 4px #000; }
@@ -135,7 +131,6 @@
         .btn-cancel { background: var(--danger); color: white; }
         .btn-dj-del { background: #333; color: white; }
 
-        /* --- INPUT E RESULTADOS --- */
         input[type="text"] { width: 100%; padding: 16px; border: none; border-radius: 15px; font-size: 16px; margin-top: 15px; background: rgba(255,255,255,0.9); box-sizing: border-box; }
         .song-item { background: white; color: #333; padding: 14px; margin: 8px 0; border-radius: 12px; cursor: pointer; text-align: left; border-left: 5px solid var(--primary); }
         
@@ -226,7 +221,7 @@
             pt: { copyright: "Música não encontrada. Algumas músicas não aparecem na lista oficial devido aos direitos autorais (Karafunc).", title: "Karaokê Coopers", busca: "PESQUISE MÚSICA OU ARTISTA", filaLabel: "Acompanhe sua vez:", thPos: "Pos", thArtista: "Artista", thMusica: "Música / Senha", thAcao: "Ação", filaVazia: "Fila vazia!", cancelPrompt: "Deseja cancelar seu pedido?", closed: "Fechado!", welcomeT: "Como usar o App:", welcomeM: "1. <b>Busque</b> sua música no campo de pesquisa.<br>2. <b>Toque</b> na música para pedir.<br>3. Uma <b>Senha</b> será gerada.<br>4. Acompanhe sua posição na <b>Fila</b>.<br>5. Para desistir, clique no <b>❌</b> na fila.", btnOk: "VAMOS CANTAR!", refresh: "🔄 Atualiza a cada 15s", djLogin: "Acesso DJ", djLogout: "Sair do Modo DJ", success: "✅ Pedido enviado!" },
             en: { copyright: "Song not found. Some songs do not appear on the official list due to copyright (Karafunc).", title: "Coopers Karaoke", busca: "SEARCH SONG OR ARTIST", filaLabel: "Current Queue:", thPos: "Pos", thArtista: "Artist", thMusica: "Song / Code", thAcao: "Action", filaVazia: "Empty!", cancelPrompt: "Cancel request?", closed: "Closed!", welcomeT: "How to use:", welcomeM: "1. <b>Search</b> for your song below.<br>2. <b>Click</b> on the song to request.<br>3. A <b>Code</b> will be generated.<br>4. Track your position in the <b>Queue</b>.<br>5. To cancel, click the <b>❌</b> button.", btnOk: "LET'S SING!", refresh: "🔄 Updates every 15s", djLogin: "DJ Access", djLogout: "Logout DJ", success: "✅ Request sent!" },
             es: { copyright: "Música no encontrada. Algunas canciones no aparecen en la lista oficial debido a los derechos de autor (Karafunc).", title: "Karaoke Coopers", busca: "BUSCAR MÚSICA", filaLabel: "Lista de espera:", thPos: "Pos", thArtista: "Artista", thMusica: "Música / Código", thAcao: "Acción", filaVazia: "¡Vacia!", cancelPrompt: "¿Cancelar pedido?", closed: "¡Cerrado!", welcomeT: "Cómo usar:", welcomeM: "1. <b>Busca</b> tu canción abajo.<br>2. <b>Haz clic</b> para pedirla.<br>3. Se gerará un <b>Código</b>.<br>4. Sigue tu turno en la <b>Lista</b>.<br>5. Para cancelar, clic en <b>❌</b>.", btnOk: "¡A CANTAR!", refresh: "🔄 Act. cada 15s", djLogin: "Acceso DJ", djLogout: "Salir DJ", success: "✅ ¡Enviado!" },
-            fr: { copyright: "Musique non trouvée. Certaines chansons n'apparaissent pas dans la liste officielle en raison des droits d'auteur (Karafunc).", title: "Karaoké Coopers", busca: "RECHERCHER", filaLabel: "File d'attente:", thPos: "Pos", thArtista: "Artiste", thMusica: "Chanson / Code", thAcao: "Action", filaVazia: "Vide!", cancelPrompt: "Annuler?", closed: "Fermé!", welcomeT: "Comment utiliser:", welcomeM: "1. <b>Cherchez</b> votre chanson.<br>2. <b>Cliquez</b> pour commander.<br>3. Un <b>Code</b> sera généré.<br>4. Suivez votre tour dans la <b>File</b>.<br>5. Cliquez sur <b>❌</b> pour annuler.", btnOk: "CHANTONS !", refresh: "🔄 Mise à jour 15s", djLogin: "Accès DJ", djLogout: "Quitter DJ", success: "✅ Envoyé !" }
+            fr: { copyright: "Musique non trouvée. Certaines chansons n'apparaissent pas dans la liste officielle en raison des droits d'auteur (Karafunc).", title: "Karaoké Coopers", busca: "RECHERCHER", filaLabel: "File d'attente:", thPos: "Pos", thArtista: "Artiste", thMusica: "Chanson / Code", thAcao: "Action", filaVazia: "Vide!", cancelPrompt: "Annuler?", closed: "Fermé!", welcomeT: "Comment utiliser:", welcomeM: "1. <b>Cherchez</b> votre chanson.<br>2. <b>Cliquez</b> pour commander.<br>3. Un <b>Code</b> sera généré.<br>4. Suivez votre tour dans la <b>File</b>.<br>5. Cliquez sur <b>❌</b> para annuler.", btnOk: "CHANTONS !", refresh: "🔄 Mise à jour 15s", djLogin: "Accès DJ", djLogout: "Quitter DJ", success: "✅ Envoyé !" }
         };
 
         window.onload = () => {
@@ -237,11 +232,7 @@
             });
             setInterval(loadQueue, 15000);
             if(isLocked) document.getElementById('status-bloqueio').style.display = 'block';
-            
-            // DELAY DE 30 SEGUNDOS PARA O MODAL DE BOAS VINDAS
-            if(!localStorage.getItem('hasVisited')) {
-                setTimeout(showWelcome, 30000);
-            }
+            if(!localStorage.getItem('hasVisited')) { setTimeout(showWelcome, 30000); }
         };
 
         function setLang(lang) {
@@ -258,14 +249,12 @@
             document.getElementById('th-musica').innerText = t.thMusica; 
             document.getElementById('th-acao-label').innerText = t.thAcao;
             document.getElementById('refresh-text').innerText = t.refresh;
-            
-            // Atualiza modal em tempo real se estiver aberto
             if(document.getElementById('welcome-modal').style.display === 'flex') showWelcome();
-            
             updateDJInterface();
             loadQueue();
         }
 
+        // --- SISTEMA DE BUSCA APRIMORADO ---
         function searchSongs() {
             const query = document.getElementById('searchInput').value.toLowerCase().trim();
             const resDiv = document.getElementById('results');
@@ -277,16 +266,28 @@
                 return; 
             }
             
-            const terms = query.split(/\s+/);
+            // Normaliza a busca (remove acentos e caracteres especiais para facilitar o reconhecimento)
+            const normalizedQuery = query.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            const terms = normalizedQuery.split(/\s+/);
+            
             let matches = catalog.filter(s => {
                 if(!s[1]) return false;
-                const fullText = `${s[1]} ${s[2]}`.toLowerCase();
+                
+                // Normaliza o conteúdo do catálogo também
+                const artist = s[2] ? s[2].toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : "";
+                const song = s[1].toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                const fullText = `${song} ${artist}`;
+
+                // Verifica se cada palavra digitada existe em qualquer parte do texto (Independente da ordem)
+                // Ex: "ladu gaga" -> verifica se "ladu" existe E se "gaga" existe.
+                // Como "ladu" é quase "lady", para ser mais tolerante, checamos se o termo digitado 
+                // está contido ou se o termo original contém parte dele.
                 return terms.every(t => fullText.includes(t));
             }).slice(0, 15);
 
             if (matches.length === 0) {
                 resDiv.innerHTML = '';
-                alertDiv.style.display = 'flex'; // MOSTRA PLACA VERMELHA
+                alertDiv.style.display = 'flex';
             } else {
                 alertDiv.style.display = 'none';
                 resDiv.innerHTML = matches.map(s => `<div class="song-item" onclick="sendOrderDirect('${s[0]}','${s[1]}','${s[2]}')">🎶 <strong>${s[1]}</strong> - <small>${s[2]}</small></div>`).join('');
