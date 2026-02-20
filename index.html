@@ -9,18 +9,16 @@
 
     <style>
         :root { 
-            --primary: #0077b6; 
-            --neon-blue: #00d4ff;
+            --neon-green: #39ff14;
+            --neon-yellow: #fff200;
             --neon-pink: #ff007f;
             --bg: #000000;
-            --warning: #ffb703;
-            --danger: #ff0000;
             --success: #2ecc71;
-            --highlight: rgba(0, 212, 255, 0.15);
+            --highlight: rgba(57, 255, 20, 0.1);
         }
 
         body { 
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            font-family: 'Segoe UI', Roboto, sans-serif; 
             background: var(--bg); 
             margin: 0; 
             padding: 10px; 
@@ -33,10 +31,10 @@
             margin: auto; 
             background: url('unnamed.jpg') no-repeat center center;
             background-size: cover; 
-            padding: 15px; 
+            padding: 20px; 
             border-radius: 25px; 
             box-shadow: 0 10px 40px rgba(0,0,0,0.8); 
-            min-height: 95vh; 
+            min-height: 90vh; 
             position: relative; 
             overflow: hidden; 
             display: flex; 
@@ -51,128 +49,77 @@
             z-index: 0; 
         }
 
-        .content-wrapper { 
-            position: relative; 
-            z-index: 1; 
-            flex-grow: 1; 
-            display: flex;
-            flex-direction: column;
-        }
+        .content-wrapper { position: relative; z-index: 1; flex-grow: 1; display: flex; flex-direction: column; }
 
-        /* --- CABEÇALHO --- */
+        /* --- HEADER ORGANIZADO --- */
         .header-content {
             display: flex;
             align-items: center;
             justify-content: space-between;
             padding: 10px 5px;
             margin-bottom: 15px;
-            border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+            border-bottom: 1px solid rgba(57, 255, 20, 0.3);
         }
 
-        .brand-area {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+        .brand-area { display: flex; align-items: center; gap: 10px; }
 
         #app-title { 
-            margin: 0; 
-            font-size: 1.4em; 
-            font-weight: 800;
-            letter-spacing: 1px;
-            color: #fff;
-            text-transform: uppercase;
-            text-shadow: 0 0 10px var(--neon-blue), 0 0 20px var(--neon-blue);
+            margin: 0; font-size: 1.3em; font-weight: 800; letter-spacing: 1px; color: #fff; text-transform: uppercase;
+            text-shadow: 0 0 10px var(--neon-green), 0 0 20px var(--neon-green);
         }
 
         .logo-img { 
-            max-width: 45px; 
-            height: auto; 
-            border-radius: 50%;
-            border: 2px solid var(--neon-blue);
-            box-shadow: 0 0 10px var(--neon-blue);
+            max-width: 45px; height: auto; border-radius: 50%; border: 2px solid var(--neon-yellow);
+            box-shadow: 0 0 10px var(--neon-yellow);
         }
 
         .dj-access-btn { 
-            font-size: 10px; 
-            background: rgba(255,255,255,0.05); 
-            border: 1px solid var(--neon-blue); 
-            color: var(--neon-blue); 
-            border-radius: 8px; 
-            padding: 6px 12px; 
-            cursor: pointer;
-            font-weight: bold;
-            transition: 0.3s;
-            opacity: 0.7;
+            font-size: 10px; background: rgba(255,255,255,0.05); border: 1px solid var(--neon-green); 
+            color: var(--neon-green); border-radius: 8px; padding: 6px 12px; cursor: pointer; font-weight: bold; transition: 0.3s;
         }
-        .dj-access-btn.active-dj {
-            border-color: var(--neon-pink);
-            color: var(--neon-pink);
-            box-shadow: 0 0 15px var(--neon-pink);
-            opacity: 1;
-        }
+        .dj-access-btn.active-dj { border-color: var(--neon-pink); color: var(--neon-pink); box-shadow: 0 0 15px var(--neon-pink); }
 
-        /* --- BUSCA E RESULTADOS --- */
+        /* --- IDIOMAS COM BRILHO --- */
+        .lang-bar { display: flex; justify-content: center; gap: 15px; margin-bottom: 15px; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 20px; backdrop-filter: blur(5px); }
+        .lang-item { width: 45px; height: 30px; cursor: pointer; border-radius: 4px; transition: 0.4s; filter: grayscale(100%); }
+        .lang-item.active { filter: grayscale(0%); transform: scale(1.1); box-shadow: 0 0 15px white; }
+
+        /* --- BUSCA E RESULTADOS SOBREPOSTOS --- */
         #searchContainer { position: relative; width: 100%; z-index: 100; margin-bottom: 10px; }
         input[type="text"] { 
             width: 100%; padding: 16px; border: 2px solid transparent; border-radius: 15px; 
             font-size: 16px; background: rgba(255,255,255,0.95); box-sizing: border-box; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-            transition: 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4); transition: 0.3s;
         }
-        input[type="text"]:focus { outline: none; border-color: var(--neon-blue); box-shadow: 0 0 15px var(--neon-blue); }
+        input[type="text"]:focus { outline: none; border-color: var(--neon-yellow); box-shadow: 0 0 15px var(--neon-yellow); }
 
         #results { 
-            position: absolute; top: 100%; left: 0; right: 0; 
-            background: rgba(10, 10, 10, 0.98); 
-            border-radius: 0 0 15px 15px; 
-            max-height: 350px; overflow-y: auto; 
-            z-index: 101; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-            border: 1px solid rgba(0, 212, 255, 0.3);
-            display: none;
+            position: absolute; top: 100%; left: 0; right: 0; background: rgba(10, 10, 10, 0.98); 
+            border-radius: 0 0 15px 15px; max-height: 400px; overflow-y: auto; z-index: 101; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8); border: 1px solid var(--neon-green); display: none;
         }
-        .song-item { 
-            background: rgba(255,255,255,0.05); color: #fff; padding: 14px; margin: 8px; 
-            border-radius: 10px; cursor: pointer; text-align: left; 
-            border-left: 5px solid var(--neon-blue); 
-        }
-        .song-item strong { color: var(--neon-blue); }
+        .song-item { background: rgba(255,255,255,0.05); color: #fff; padding: 14px; margin: 8px; border-radius: 10px; cursor: pointer; text-align: left; border-left: 5px solid var(--neon-green); }
+        .song-item strong { color: var(--neon-yellow); }
+
+        /* --- AVISOS E STATUS --- */
+        #copyright-alert { background: rgba(255, 0, 0, 0.8); border: 1px solid #ff0000; color: #fff; padding: 15px; border-radius: 15px; font-size: 14px; margin-top: 10px; display: none; align-items: center; gap: 10px; }
+        #status-bloqueio { display: none; background: rgba(255, 0, 0, 0.2); color: white; padding: 15px; border-radius: 15px; margin: 15px 0; font-weight: bold; border: 1px solid #ff0000; line-height: 1.4; backdrop-filter: blur(5px); }
 
         /* --- FILA --- */
-        .queue-table { width: 100%; border-collapse: collapse; font-size: 13px; background: rgba(255,255,255,0.95); color: #333; border-radius: 15px; overflow: hidden; }
+        .queue-table { width: 100%; border-collapse: collapse; font-size: 13px; background: rgba(255,255,255,0.98); color: #333; border-radius: 15px; overflow: hidden; margin-top: 10px; }
         .queue-table th { background: #eee; padding: 12px 8px; text-transform: uppercase; font-size: 11px; }
         .queue-table td { padding: 12px 8px; border-bottom: 1px solid #ddd; }
-        .row-highlight { background-color: var(--highlight) !important; font-weight: bold; }
+        .row-highlight { background-color: var(--highlight) !important; font-weight: bold; border-left: 4px solid var(--neon-green); }
 
-        /* --- COMPONENTES --- */
-        #status-bloqueio { 
-            display: none; background: rgba(255, 0, 0, 0.2); color: white; padding: 15px; 
-            border-radius: 15px; margin-bottom: 15px; font-weight: bold; border: 1px solid var(--danger);
-            backdrop-filter: blur(5px);
-        }
-
+        /* --- BOTÃO FLUTUANTE DJ --- */
         #btn-lock-toggle {
-            position: fixed; bottom: 20px; right: 20px; z-index: 2000;
-            background: var(--neon-pink); color: white; border: none;
-            width: 60px; height: 60px; border-radius: 50%;
-            font-size: 24px; cursor: pointer; display: none;
-            box-shadow: 0 0 20px var(--neon-pink);
-            animation: pulse 2s infinite;
+            position: fixed; bottom: 20px; right: 20px; z-index: 2000; background: var(--neon-pink); color: white; border: none;
+            width: 60px; height: 60px; border-radius: 50%; font-size: 24px; cursor: pointer; display: none;
+            box-shadow: 0 0 20px var(--neon-pink); animation: pulse 2s infinite;
         }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
 
-        @keyframes pulse {
-            0% { transform: scale(1); box-shadow: 0 0 10px var(--neon-pink); }
-            50% { transform: scale(1.1); box-shadow: 0 0 25px var(--neon-pink); }
-            100% { transform: scale(1); box-shadow: 0 0 10px var(--neon-pink); }
-        }
-
-        #toast {
-            visibility: hidden; min-width: 200px; background: var(--success); color: #fff;
-            text-align: center; border-radius: 50px; padding: 16px; position: fixed;
-            z-index: 3000; left: 50%; bottom: 30px; transform: translateX(-50%);
-            box-shadow: 0 0 15px var(--success);
-        }
+        #toast { visibility: hidden; min-width: 250px; background: var(--success); color: #fff; text-align: center; border-radius: 50px; padding: 16px; position: fixed; z-index: 3000; left: 50%; bottom: 30px; transform: translateX(-50%); box-shadow: 0 0 15px var(--success); font-weight: bold; }
         #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
 
         @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
@@ -189,23 +136,23 @@
             <header class="header-content">
                 <div class="brand-area">
                     <img src="9d8daa_198ec12882054dceb6d49d760eba30f0~mv2.jpg" class="logo-img" alt="Logo">
-                    <h2 id="app-title">Coopers 🎤</h2>
+                    <h2 id="app-title">Karaokê Coopers 🎤</h2>
                 </div>
                 <button class="dj-access-btn" id="dj-btn" onclick="toggleDJ()">Acesso DJ</button>
             </header>
             
-            <div class="lang-bar" style="display: flex; justify-content: center; gap: 12px; margin-bottom: 15px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 20px;">
-                <img src="portugal-e-brasil-realçam-duas-bandeiras-juntas-d-ilustração-283267433.webp" class="lang-item" onclick="setLang('pt')" id="flag-pt" style="width: 40px; height: 26px; cursor: pointer; border-radius: 4px;">
-                <img src="usa-flag-stars-stripes-uk-260nw-2630619109.webp" class="lang-item" onclick="setLang('en')" id="flag-en" style="width: 40px; height: 26px; cursor: pointer; border-radius: 4px;">
-                <img src="bandeira-da-espanha-balancando-ao-vento_2227-2338.avif" class="lang-item" onclick="setLang('es')" id="flag-es" style="width: 40px; height: 26px; cursor: pointer; border-radius: 4px;">
-                <img src="34921756-nacional-bandeira-do-franca-3d-ilustracao-vetor.jpg" class="lang-item" onclick="setLang('fr')" id="flag-fr" style="width: 40px; height: 26px; cursor: pointer; border-radius: 4px;">
+            <div class="lang-bar">
+                <img src="portugal-e-brasil-realçam-duas-bandeiras-juntas-d-ilustração-283267433.webp" class="lang-item" onclick="setLang('pt')" id="flag-pt">
+                <img src="usa-flag-stars-stripes-uk-260nw-2630619109.webp" class="lang-item" onclick="setLang('en')" id="flag-en">
+                <img src="bandeira-da-espanha-balancando-ao-vento_2227-2338.avif" class="lang-item" onclick="setLang('es')" id="flag-es">
+                <img src="34921756-nacional-bandeira-do-franca-3d-ilustracao-vetor.jpg" class="lang-item" onclick="setLang('fr')" id="flag-fr">
             </div>
 
             <div id="searchContainer">
                 <input type="text" id="searchInput" oninput="searchSongs()" placeholder="BUSCAR MÚSICA OU ARTISTA">
                 <div id="results"></div>
-                <div id="copyright-alert" style="display:none; color: #ff4d4d; font-size: 12px; margin-top: 10px;">
-                    ⚠️ Música não encontrada...
+                <div id="copyright-alert">
+                    <span style="font-size:20px;">⚠️</span> <span id="msg-copyright">Música não encontrada...</span>
                 </div>
             </div>
             
@@ -213,29 +160,27 @@
 
             <div id="queueSection">
                 <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 8px; padding: 0 5px;">
-                    <h4 id="txt-fila-label" style="margin: 0; font-size: 12px; color: var(--neon-blue); text-transform: uppercase;">Acompanhe sua vez:</h4>
+                    <h4 id="txt-fila-label" style="margin: 0; font-size: 12px; color: var(--neon-green); text-transform: uppercase;">Acompanhe sua vez:</h4>
                     <span id="refresh-text" style="font-size: 9px; opacity: 0.5;">🔄 15s</span>
                 </div>
                 <table class="queue-table">
                     <thead>
                         <tr>
-                            <th id="th-pos">Pos</th>
-                            <th id="th-artista">Artista</th>
-                            <th id="th-musica">Música</th>
-                            <th id="th-acao-label">Ação</th>
+                            <th id="th-pos" style="width: 10%">Pos</th>
+                            <th id="th-artista" style="width: 35%">Artista</th>
+                            <th id="th-musica" style="width: 40%">Música</th>
+                            <th id="th-acao-label" style="width: 15%">Ação</th>
                         </tr>
                     </thead>
                     <tbody id="queueBody"></tbody>
                 </table>
             </div>
-
         </div>
     </div>
 
     <button id="btn-lock-toggle" onclick="toggleLock()">🔒</button>
 
     <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
-
     <form id="karaokeForm" action="https://docs.google.com/forms/d/e/1FAIpQLSc2M4LQqNDD79g0o46ImqkwAL6g7EYn74cvxIa2K-6prNBLrQ/formResponse" method="POST" target="hidden_iframe" style="display:none;">
         <input type="hidden" name="entry.1995948109" id="f_hora">
         <input type="hidden" name="entry.105234855" id="f_codigo">
@@ -254,10 +199,10 @@
         let currentLang = 'pt';
 
         const translations = {
-            pt: { title: "Coopers 🎤", busca: "PESQUISE MÚSICA OU ARTISTA", filaLabel: "Acompanhe sua vez:", thPos: "Pos", thArtista: "Artista", thMusica: "Música / Senha", thAcao: "Ação", filaVazia: "Fila vazia!", closed: "🛑 PEDIDOS ENCERRADOS", success: "✅ Enviado!" },
-            en: { title: "Coopers 🎤", busca: "SEARCH SONG OR ARTIST", filaLabel: "Queue:", thPos: "Pos", thArtista: "Artist", thMusica: "Song / Code", thAcao: "Action", filaVazia: "Empty!", closed: "🛑 REQUESTS CLOSED", success: "✅ Sent!" },
-            es: { title: "Coopers 🎤", busca: "BUSCAR MÚSICA", filaLabel: "Lista:", thPos: "Pos", thArtista: "Artista", thMusica: "Música / Código", thAcao: "Acción", filaVazia: "¡Vacia!", closed: "🛑 CERRADO", success: "✅ ¡Enviado!" },
-            fr: { title: "Coopers 🎤", busca: "RECHERCHER", filaLabel: "File:", thPos: "Pos", thArtista: "Artiste", thMusica: "Chanson", thAcao: "Action", filaVazia: "Vide!", closed: "🛑 FERMÉ", success: "✅ Envoyé !" }
+            pt: { copyright: "Música não encontrada...", title: "Karaokê Coopers 🎤", busca: "PESQUISE MÚSICA OU ARTISTA", filaLabel: "Acompanhe sua vez:", thPos: "Pos", thArtista: "Artista", thMusica: "Música / Senha", thAcao: "Ação", filaVazia: "Fila vazia!", closed: "🛑 PEDIDOS ENCERRADOS<br><small>Estamos chegando ao fim da noite! Não estamos aceitando novas músicas.</small>", success: "✅ Pedido enviado!", cancelPrompt: "Deseja cancelar seu pedido?" },
+            en: { copyright: "Song not found...", title: "Coopers Karaoke 🎤", busca: "SEARCH SONG OR ARTIST", filaLabel: "Current Queue:", thPos: "Pos", thArtista: "Artist", thMusica: "Song / Code", thAcao: "Action", filaVazia: "Empty!", closed: "🛑 REQUESTS CLOSED<br><small>The night is ending! We are not accepting new songs.</small>", success: "✅ Order sent!", cancelPrompt: "Cancel order?" },
+            es: { copyright: "Música no encontrada...", title: "Karaoke Coopers 🎤", busca: "BUSCAR MÚSICA", filaLabel: "Lista de espera:", thPos: "Pos", thArtista: "Artista", thMusica: "Música / Código", thAcao: "Acción", filaVazia: "¡Vacia!", closed: "🛑 PEDIDOS CERRADOS<br><small>¡La noche termina! No aceptamos nuevas canciones.</small>", success: "✅ ¡Enviado!", cancelPrompt: "¿Cancelar pedido?" },
+            fr: { copyright: "Musique não trouvée...", title: "Karaoké Coopers 🎤", busca: "RECHERCHER", filaLabel: "File d'attente:", thPos: "Pos", thArtista: "Artiste", thMusica: "Chanson", thAcao: "Action", filaVazia: "Vide!", closed: "🛑 FERMÉ<br><small>La soirée se termine ! Nous n'acceptons plus de titres.</small>", success: "✅ Envoyé !", cancelPrompt: "Annuler?" }
         };
 
         window.onload = () => {
@@ -271,12 +216,17 @@
 
         function setLang(lang) {
             currentLang = lang;
-            document.querySelectorAll('.lang-item').forEach(img => img.style.filter = "grayscale(100%)");
-            document.getElementById('flag-' + lang).style.filter = "grayscale(0%)";
+            document.querySelectorAll('.lang-item').forEach(img => img.classList.remove('active'));
+            document.getElementById('flag-' + lang).classList.add('active');
             const t = translations[lang];
-            document.getElementById('app-title').innerText = t.title;
+            document.getElementById('app-title').innerHTML = t.title;
             document.getElementById('searchInput').placeholder = t.busca;
+            document.getElementById('msg-copyright').innerText = t.copyright;
             document.getElementById('txt-fila-label').innerText = t.filaLabel;
+            document.getElementById('th-pos').innerText = t.thPos;
+            document.getElementById('th-artista').innerText = t.thArtista;
+            document.getElementById('th-musica').innerText = t.thMusica; 
+            document.getElementById('th-acao-label').innerText = t.thAcao;
             loadQueue();
         }
 
@@ -299,7 +249,6 @@
                 }
                 
                 updateDJInterface();
-
                 const rows = text.split('\n').map(r => r.split(','));
                 const myOrders = JSON.parse(localStorage.getItem('myKaraokeOrders') || '[]');
                 const myTokens = myOrders.map(o => o.senha);
@@ -311,21 +260,21 @@
                         const isMySong = myTokens.includes(tokenFila);
                         let rowStyle = isMySong ? 'class="row-highlight"' : "";
                         let actionBtn = isDJ ? `<button onclick="removeSong(${i+1})">🗑️</button>` : (isMySong ? `<button onclick="removeSong(${i+1})">❌</button>` : '');
-                        html += `<tr ${rowStyle}><td>${i+1}º</td><td>${cols[4]}</td><td>${cols[3]} <br><span style="font-size:10px; color:var(--primary)">🔑 ${tokenFila}</span></td><td>${actionBtn}</td></tr>`;
+                        html += `<tr ${rowStyle}><td>${i+1}º</td><td>${cols[4]}</td><td>${cols[3]} <br><span style="font-size:10px; color:var(--neon-green)">🔑 ${tokenFila}</span></td><td>${actionBtn}</td></tr>`;
                     }
                 });
-                document.getElementById('queueBody').innerHTML = html || '<tr><td colspan="4">Fila vazia!</td></tr>';
+                document.getElementById('queueBody').innerHTML = html || `<tr><td colspan="4">${translations[currentLang].filaVazia}</td></tr>`;
             } catch(e) {}
         }
 
         function searchSongs() {
             const query = document.getElementById('searchInput').value.toLowerCase().trim();
             const resDiv = document.getElementById('results');
-            if(query.length < 2) { resDiv.style.display = 'none'; return; }
+            const alertDiv = document.getElementById('copyright-alert');
+            if(query.length < 2) { resDiv.style.display = 'none'; alertDiv.style.display = 'none'; return; }
             
             const norm = (t) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
             const terms = norm(query).split(/\s+/);
-            
             let matches = catalog.filter(s => {
                 if(!s[1]) return false;
                 const full = norm(`${s[1]} ${s[2]}`).toLowerCase();
@@ -333,24 +282,22 @@
             }).slice(0, 15);
             
             if (matches.length > 0) {
+                alertDiv.style.display = 'none';
                 resDiv.style.display = 'block';
                 resDiv.innerHTML = matches.map(s => `<div class="song-item" onclick="sendOrderDirect('${s[0]}','${s[1]}','${s[2]}')">🎶 <strong>${s[1]}</strong><br><small>${s[2]}</small></div>`).join('');
-            } else { resDiv.style.display = 'none'; }
+            } else { resDiv.style.display = 'none'; alertDiv.style.display = 'flex'; }
         }
 
         async function toggleLock() {
             if (!isDJ) return;
-            const action = isLocked ? "abrir" : "bloquear";
-            if(confirm(`Deseja ${action} a entrada?`)) {
-                fetch(`${SCRIPT_URL}?action=toggleLock&status=${!isLocked}`, {mode: 'no-cors'}).then(() => {
-                    setTimeout(loadQueue, 2000);
-                });
+            if(confirm(`Alterar status de entrada?`)) {
+                fetch(`${SCRIPT_URL}?action=toggleLock&status=${!isLocked}`, {mode: 'no-cors'}).then(() => { setTimeout(loadQueue, 2000); });
             }
         }
 
         function toggleDJ() {
-            if (isDJ) { if (confirm("Sair do DJ?")) { isDJ = false; localStorage.setItem('isDJ', 'false'); location.reload(); } }
-            else { const pass = prompt("Senha:"); if (pass === "coopersdj26") { isDJ = true; localStorage.setItem('isDJ', 'true'); updateDJInterface(); } }
+            if (isDJ) { if (confirm("Sair do modo DJ?")) { isDJ = false; localStorage.setItem('isDJ', 'false'); location.reload(); } }
+            else { const pass = prompt("Senha:"); if (pass === "coopersdj26") { isDJ = true; localStorage.setItem('isDJ', 'true'); updateDJInterface(); loadQueue(); } }
         }
 
         function updateDJInterface() {
@@ -377,18 +324,19 @@
             saved.push({ senha });
             localStorage.setItem('myKaraokeOrders', JSON.stringify(saved));
             
+            document.getElementById("toast").innerText = translations[currentLang].success;
             document.getElementById("toast").className = "show";
             setTimeout(() => { document.getElementById("toast").className = ""; }, 3000);
             confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
             
             document.getElementById('searchInput').value = '';
             document.getElementById('results').style.display = 'none';
-            setTimeout(loadQueue, 1000);
+            setTimeout(loadQueue, 1500);
         }
 
         async function removeSong(rowIndex) {
-            if(confirm("Remover música?")) {
-                fetch(`${SCRIPT_URL}?row=${rowIndex}`, {mode: 'no-cors'}).then(() => { setTimeout(loadQueue, 1000); });
+            if(confirm(translations[currentLang].cancelPrompt)) {
+                fetch(`${SCRIPT_URL}?row=${rowIndex}`, {mode: 'no-cors'}).then(() => { setTimeout(loadQueue, 1500); });
             }
         }
     </script>
