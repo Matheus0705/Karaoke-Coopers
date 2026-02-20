@@ -12,10 +12,10 @@
             --primary: #0077b6; 
             --bg: #000000;
             --warning: #ffb703;
-            --danger: #ff0000;
+            --danger: #ff4d4d;
             --gold: #ffca3a;
             --success: #2ecc71;
-            --highlight: rgba(0, 119, 182, 0.1);
+            --highlight: rgba(0, 119, 182, 0.15);
         }
 
         body { 
@@ -49,7 +49,7 @@
             left: 0; 
             width: 100%; 
             height: 100%; 
-            background: rgba(0, 0, 0, 0.5); 
+            background: rgba(0, 0, 0, 0.6); 
             border-radius: 25px; 
             z-index: 0; 
         }
@@ -139,7 +139,7 @@
         .lang-item.active { 
             filter: grayscale(0%); 
             opacity: 1; 
-            transform: scale(1.2); 
+            transform: scale(1.1); 
             border: 2px solid white; 
         }
 
@@ -156,7 +156,7 @@
         }
 
         .queue-table th, .queue-table td { 
-            padding: 12px 10px; 
+            padding: 12px 8px; 
             border-bottom: 1px solid #ddd; 
             text-align: left; 
         }
@@ -213,7 +213,18 @@
             font-weight: bold; 
         }
 
-        .dj-access-btn { margin-top: 25px; font-size: 10px; opacity: 0.3; background: none; border: 1px solid white; color: white; border-radius: 6px; padding: 4px 8px; cursor: pointer; }
+        .dj-access-btn { 
+            margin-top: 25px; 
+            font-size: 11px; 
+            opacity: 0.4; 
+            background: none; 
+            border: 1px solid white; 
+            color: white; 
+            border-radius: 8px; 
+            padding: 6px 12px; 
+            cursor: pointer; 
+            transition: 0.3s;
+        }
     </style>
 </head>
 <body>
@@ -266,7 +277,7 @@
             
             <div id="results"></div>
 
-            <button class="dj-access-btn" onclick="loginDJ()">Acesso DJ</button>
+            <button class="dj-access-btn" id="dj-btn" onclick="toggleDJ()">Acesso DJ</button>
         </div>
 
         <form id="karaokeForm" action="https://docs.google.com/forms/d/e/1FAIpQLSc2M4LQqNDD79g0o46ImqkwAL6g7EYn74cvxIa2K-6prNBLrQ/formResponse" method="POST" target="hidden_iframe" style="display:none;">
@@ -282,31 +293,26 @@
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzShpP_FtohDCryS3EuBxyClFl4AEpc0S2typDFx3mO8M_O5u9Ni2jrtr2L3qrjGgDm/exec"; 
         const SHEET_CSV = "https://docs.google.com/spreadsheets/d/1jL19NPfxuPziBqoVYU8DIPxUtbiqBbKNPgfsyFCIppc/export?format=csv&gid=1924484966";
         
-        let isDJ = false;
+        let isDJ = localStorage.getItem('isDJ') === 'true';
         let isLocked = (localStorage.getItem('karaokeLocked') === 'true');
         let catalog = [];
         let currentLang = 'pt';
 
         const translations = {
-            pt: { 
-                title: "Karaokê Coopers", busca: "PESQUISE MÚSICA OU ARTISTA", filaLabel: "Acompanhe sua vez:", thPos: "Pos", thArtista: "Artista", thMusica: "Música / Senha", thAcao: "Ação", filaVazia: "Fila vazia!", copyright: "Música não encontrada...", cancelPrompt: "Deseja cancelar seu pedido?", closed: "Desculpe, estamos fechados!", welcomeT: "Como usar:", welcomeM: "1. Busque sua música.<br>2. Toque para pedir.<br>3. Acompanhe sua <b>Senha</b> na fila.", btnOk: "VAMOS CANTAR!", refresh: "🔄 A fila atualiza a cada 15s"
-            },
-            en: { 
-                title: "Coopers Karaoke", busca: "SEARCH SONG OR ARTIST", filaLabel: "Current Queue:", thPos: "Pos", thArtista: "Artist", thMusica: "Song / Code", thAcao: "Action", filaVazia: "Empty!", copyright: "Not found...", cancelPrompt: "Cancel request?", closed: "Sorry, we are closed!", welcomeT: "How to use:", welcomeM: "1. Search for a song.<br>2. Click to request.<br>3. Track your <b>Code</b> in the queue.", btnOk: "LET'S SING!", refresh: "🔄 Queue updates every 15s"
-            },
-            es: { 
-                title: "Karaoke Coopers", busca: "BUSCAR MÚSICA", filaLabel: "Lista de espera:", thPos: "Pos", thArtista: "Artista", thMusica: "Música / Código", thAcao: "Acción", filaVazia: "¡Vacia!", copyright: "No encontrada...", cancelPrompt: "¿Cancelar pedido?", closed: "¡Cerrado!", welcomeT: "Cómo usar:", welcomeM: "1. Busca tu canción.<br>2. Haz clic para pedir.<br>3. Sigue tu <b>Código</b> en la lista.", btnOk: "¡A CANTAR!", refresh: "🔄 Actualización cada 15s"
-            },
-            fr: { 
-                title: "Karaoké Coopers", busca: "RECHERCHER", filaLabel: "File d'attente:", thPos: "Pos", thArtista: "Artiste", thMusica: "Chanson / Code", thAcao: "Action", filaVazia: "Vide!", copyright: "Non trouvée...", cancelPrompt: "Annuler?", closed: "Fermé!", welcomeT: "Comment utiliser:", welcomeM: "1. Cherchez une chanson.<br>2. Cliquez para commander.<br>3. Suivez votre <b>Code</b> dans la file.", btnOk: "CHANTONS !", refresh: "🔄 Mise à jour toutes les 15s"
-            }
+            pt: { title: "Karaokê Coopers", busca: "PESQUISE MÚSICA OU ARTISTA", filaLabel: "Acompanhe sua vez:", thPos: "Pos", thArtista: "Artista", thMusica: "Música / Senha", thAcao: "Ação", filaVazia: "Fila vazia!", cancelPrompt: "Deseja cancelar seu pedido?", closed: "Fechado!", welcomeT: "Bem-vindo!", welcomeM: "1. Busque sua música.<br>2. Peça e veja sua <b>Senha</b> na fila.", btnOk: "VAMOS LÁ!", refresh: "🔄 Atualiza a cada 15s", djLogin: "Acesso DJ", djLogout: "Sair do Modo DJ" },
+            en: { title: "Coopers Karaoke", busca: "SEARCH SONG OR ARTIST", filaLabel: "Current Queue:", thPos: "Pos", thArtista: "Artist", thMusica: "Song / Code", thAcao: "Action", filaVazia: "Empty!", cancelPrompt: "Cancel request?", closed: "Closed!", welcomeT: "Welcome!", welcomeM: "1. Search song.<br>2. Request and track <b>Code</b> in queue.", btnOk: "LET'S GO!", refresh: "🔄 Updates every 15s", djLogin: "DJ Access", djLogout: "Logout DJ" },
+            es: { title: "Karaoke Coopers", busca: "BUSCAR MÚSICA", filaLabel: "Lista de espera:", thPos: "Pos", thArtista: "Artista", thMusica: "Música / Código", thAcao: "Acción", filaVazia: "¡Vacia!", cancelPrompt: "¿Cancelar?", closed: "¡Cerrado!", welcomeT: "¡Bienvenido!", welcomeM: "1. Busca música.<br>2. Sigue tu <b>Código</b> en la lista.", btnOk: "¡VAMOS!", refresh: "🔄 Act. cada 15s", djLogin: "Acceso DJ", djLogout: "Salir DJ" },
+            fr: { title: "Karaoké Coopers", busca: "RECHERCHER", filaLabel: "File d'attente:", thPos: "Pos", thArtista: "Artiste", thMusica: "Chanson / Code", thAcao: "Action", filaVazia: "Vide!", cancelPrompt: "Annuler?", closed: "Fermé!", welcomeT: "Bienvenue!", welcomeM: "1. Cherchez.<br>2. Suivez votre <b>Code</b> dans la file.", btnOk: "C'EST PARTI!", refresh: "🔄 Mise à jour 15s", djLogin: "Accès DJ", djLogout: "Quitter DJ" }
         };
 
         window.onload = () => {
             setLang('pt');
+            updateDJInterface();
+            
             fetch('karafuncatalog.csv').then(r => r.text()).then(data => {
                 catalog = data.split('\n').map(line => line.replace(/"/g, '').split(/[;,]/));
             });
+
             setInterval(loadQueue, 15000);
             if(isLocked) document.getElementById('status-bloqueio').style.display = 'block';
             if(!localStorage.getItem('hasVisited')) showWelcome();
@@ -323,10 +329,11 @@
             document.getElementById('txt-fila-label').innerText = t.filaLabel;
             document.getElementById('th-pos').innerText = t.thPos;
             document.getElementById('th-artista').innerText = t.thArtista;
-            document.getElementById('th-musica').innerText = t.thMusica; // Altera título da coluna
+            document.getElementById('th-musica').innerText = t.thMusica; 
             document.getElementById('th-acao-label').innerText = t.thAcao;
             document.getElementById('refresh-text').innerText = t.refresh;
             
+            updateDJInterface();
             loadQueue();
         }
 
@@ -347,7 +354,13 @@
                         
                         let tokenBadge = `<br><span class="badge-token">🔑 ${tokenFila}</span>`;
                         let rowStyle = isMySong ? 'class="row-highlight"' : "";
-                        let actionBtn = isDJ ? `<button class="btn-action btn-dj-del" onclick="removeSong(${i+1})">🗑️</button>` : (isMySong ? `<button class="btn-action btn-cancel" onclick="removeSong(${i+1}, true)">❌</button>` : '');
+                        
+                        let actionBtn = "";
+                        if(isDJ) {
+                            actionBtn = `<button class="btn-action btn-dj-del" onclick="removeSong(${i+1})">🗑️</button>`;
+                        } else if(isMySong) {
+                            actionBtn = `<button class="btn-action btn-cancel" onclick="removeSong(${i+1}, true)">❌</button>`;
+                        }
                         
                         html += `<tr ${rowStyle}>
                                     <td>${i+1}º</td>
@@ -361,31 +374,44 @@
             } catch(e) {}
         }
 
-        function sendOrderDirect(id, title, artist) {
-            if(isLocked && !isDJ) { alert(translations[currentLang].closed); return; }
-            
-            const senha = Math.random().toString(36).substring(2, 6).toUpperCase();
-            document.getElementById('f_hora').value = new Date().toLocaleTimeString();
-            document.getElementById('f_codigo').value = id;
-            document.getElementById('f_musica').value = title;
-            document.getElementById('f_artista').value = artist;
-            document.getElementById('f_senha').value = senha;
-
-            document.getElementById('karaokeForm').submit();
-            let saved = JSON.parse(localStorage.getItem('myKaraokeOrders') || '[]');
-            saved.push({ senha, musica: title });
-            localStorage.setItem('myKaraokeOrders', JSON.stringify(saved));
-            
-            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-            
-            setTimeout(() => { 
-                document.getElementById('searchInput').value = ''; 
-                document.getElementById('results').innerHTML = ''; 
-                loadQueue(); 
-            }, 600);
+        function toggleDJ() {
+            if (isDJ) {
+                if (confirm(currentLang === 'pt' ? "Deseja sair do modo DJ?" : "Exit DJ mode?")) {
+                    isDJ = false;
+                    localStorage.setItem('isDJ', 'false');
+                    updateDJInterface();
+                    loadQueue();
+                }
+            } else {
+                const pass = prompt(currentLang === 'pt' ? "Senha do DJ:" : "DJ Password:");
+                // SENHA ATUALIZADA AQUI:
+                if (pass === "coopersdj26") {
+                    isDJ = true;
+                    localStorage.setItem('isDJ', 'true');
+                    updateDJInterface();
+                    loadQueue();
+                } else if(pass !== null) {
+                    alert("Senha incorreta!");
+                }
+            }
         }
 
-        /* Funções auxiliares mantidas para funcionamento */
+        function updateDJInterface() {
+            const btn = document.getElementById('dj-btn');
+            const t = translations[currentLang];
+            if (isDJ) {
+                btn.innerText = t.djLogout;
+                btn.style.opacity = "1";
+                btn.style.borderColor = "var(--danger)";
+                btn.style.color = "var(--danger)";
+            } else {
+                btn.innerText = t.djLogin;
+                btn.style.opacity = "0.4";
+                btn.style.borderColor = "white";
+                btn.style.color = "white";
+            }
+        }
+
         function searchSongs() {
             const query = document.getElementById('searchInput').value.toLowerCase().trim();
             const resDiv = document.getElementById('results');
@@ -399,6 +425,39 @@
             resDiv.innerHTML = matches.map(s => `<div class="song-item" onclick="sendOrderDirect('${s[0]}','${s[1]}','${s[2]}')">🎶 <strong>${s[1]}</strong> - <small>${s[2]}</small></div>`).join('');
         }
 
+        function sendOrderDirect(id, title, artist) {
+            if(isLocked && !isDJ) { alert(translations[currentLang].closed); return; }
+            const senha = Math.random().toString(36).substring(2, 6).toUpperCase();
+            
+            document.getElementById('f_hora').value = new Date().toLocaleTimeString();
+            document.getElementById('f_codigo').value = id;
+            document.getElementById('f_musica').value = title;
+            document.getElementById('f_artista').value = artist;
+            document.getElementById('f_senha').value = senha;
+
+            document.getElementById('karaokeForm').submit();
+            
+            let saved = JSON.parse(localStorage.getItem('myKaraokeOrders') || '[]');
+            saved.push({ senha, musica: title });
+            localStorage.setItem('myKaraokeOrders', JSON.stringify(saved));
+            
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+            
+            setTimeout(() => { 
+                document.getElementById('searchInput').value = ''; 
+                document.getElementById('results').innerHTML = ''; 
+                loadQueue(); 
+            }, 800);
+        }
+
+        async function removeSong(rowIndex, isClient) { 
+            if(confirm(translations[currentLang].cancelPrompt)) { 
+                fetch(`${SCRIPT_URL}?row=${rowIndex}`).then(() => {
+                    setTimeout(loadQueue, 1500);
+                }); 
+            } 
+        }
+
         function showWelcome() {
             const t = translations[currentLang];
             document.getElementById('modal-title').innerText = t.welcomeT;
@@ -406,9 +465,11 @@
             document.querySelector('.btn-ok').innerText = t.btnOk;
             document.getElementById('welcome-modal').style.display = 'flex';
         }
-        function closeWelcome() { document.getElementById('welcome-modal').style.display = 'none'; localStorage.setItem('hasVisited', 'true'); }
-        function loginDJ() { if(prompt("Senha:") === "admin123") { isDJ = true; loadQueue(); } }
-        async function removeSong(rowIndex, isClient) { if(confirm(translations[currentLang].cancelPrompt)) { fetch(`${SCRIPT_URL}?row=${rowIndex}`).then(() => setTimeout(loadQueue, 1500)); } }
+
+        function closeWelcome() { 
+            document.getElementById('welcome-modal').style.display = 'none'; 
+            localStorage.setItem('hasVisited', 'true'); 
+        }
     </script>
 </body>
 </html>
