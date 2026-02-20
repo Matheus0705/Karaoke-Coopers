@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Karaokê Coopers - Versão Oficial</title>
+    <title>Karaokê Coopers</title>
     
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
 
     <style>
-        /* --- VARIÁVEIS DE CORES E ESTILO --- */
         :root { 
             --primary: #0077b6; 
             --bg: #000000;
@@ -16,21 +15,17 @@
             --danger: #ff0000;
             --gold: #ffca3a;
             --success: #2ecc71;
-            --my-row: rgba(0, 119, 182, 0.2); /* Cor de destaque para sua música na fila */
         }
 
-        /* --- RESET E BASE --- */
         body { 
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            font-family: 'Segoe UI', Arial, sans-serif; 
             background: var(--bg); 
             margin: 0; 
             padding: 10px; 
             text-align: center; 
             color: white; 
-            overflow-x: hidden;
         }
         
-        /* --- CONTAINER PRINCIPAL --- */
         .container { 
             max-width: 500px; 
             margin: auto; 
@@ -38,8 +33,8 @@
             background-size: cover; 
             padding: 20px; 
             border-radius: 25px; 
-            box-shadow: 0 15px 35px rgba(0,0,0,0.7); 
-            min-height: 700px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+            min-height: 650px; 
             position: relative; 
             overflow: hidden; 
             display: flex; 
@@ -53,7 +48,7 @@
             left: 0; 
             width: 100%; 
             height: 100%; 
-            background: rgba(0, 0, 0, 0.55); 
+            background: rgba(0, 0, 0, 0.5); 
             border-radius: 25px; 
             z-index: 0; 
         }
@@ -62,8 +57,6 @@
             position: relative; 
             z-index: 1; 
             flex-grow: 1; 
-            display: flex;
-            flex-direction: column;
         }
 
         /* --- MODAL DE BOAS-VINDAS --- */
@@ -73,246 +66,269 @@
             left: 0; 
             width: 100%; 
             height: 100%;
-            background: rgba(0,0,0,0.92); 
-            z-index: 2000;
+            background: rgba(0,0,0,0.9); 
+            z-index: 1000;
             display: none; 
             align-items: center; 
             justify-content: center; 
             padding: 20px;
-            backdrop-filter: blur(5px);
+            box-sizing: border-box;
         }
 
         .modal-content {
             background: #111; 
             border: 2px solid var(--primary); 
-            padding: 30px;
-            border-radius: 25px; 
+            padding: 25px;
+            border-radius: 20px; 
             max-width: 400px; 
             text-align: center;
-            box-shadow: 0 0 30px var(--primary);
+            box-shadow: 0 0 25px var(--primary);
         }
 
-        .modal-content h3 { color: var(--gold); margin-top: 0; font-size: 1.5em; }
-        .modal-content p { font-size: 15px; line-height: 1.7; color: #ddd; text-align: left; margin-bottom: 20px; }
+        .modal-content h3 { 
+            color: var(--gold); 
+            margin-top: 0; 
+            font-size: 1.4em; 
+        }
+
+        .modal-content p { 
+            font-size: 15px; 
+            line-height: 1.6; 
+            color: #eee; 
+            text-align: left; 
+        }
 
         .btn-ok { 
             background: var(--primary); 
             color: white; 
             border: none; 
-            padding: 15px 35px; 
-            border-radius: 15px; 
+            padding: 14px 30px; 
+            border-radius: 12px; 
             font-weight: bold; 
+            margin-top: 20px; 
             cursor: pointer; 
             width: 100%; 
             font-size: 16px;
             transition: 0.3s;
         }
 
-        /* --- CABEÇALHO E IDIOMAS --- */
+        .btn-ok:hover {
+            background: #0096c7;
+        }
+
+        /* --- HEADER E LINGUAGEM --- */
         .header-content { 
             display: flex; 
             align-items: center; 
             justify-content: center; 
-            gap: 12px; 
-            margin-bottom: 15px; 
+            gap: 10px; 
+            margin-bottom: 10px; 
         }
 
         .logo-img { 
-            max-width: 65px; 
+            max-width: 60px; 
             height: auto; 
-            border-radius: 12px; 
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            border-radius: 10px; 
         }
 
         #app-title { 
             margin: 0; 
-            font-size: 1.7em; 
-            text-shadow: 2px 2px 5px #000; 
-            font-weight: 800;
+            font-size: 1.6em; 
+            text-shadow: 2px 2px 4px #000; 
         }
         
         .lang-bar { 
             display: flex; 
             justify-content: center; 
             gap: 15px; 
-            margin-bottom: 20px; 
+            margin-bottom: 15px; 
             padding: 12px; 
-            background: rgba(255,255,255,0.08); 
-            border-radius: 18px; 
+            background: rgba(255,255,255,0.1); 
+            border-radius: 15px; 
         }
 
         .lang-item { 
-            width: 42px; 
-            height: 28px; 
+            width: 45px; 
+            height: 30px; 
             cursor: pointer; 
             filter: grayscale(100%); 
             opacity: 0.4; 
-            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-            border-radius: 5px; 
+            transition: 0.3s; 
+            border-radius: 4px; 
             border: 2px solid transparent; 
         }
 
         .lang-item.active { 
             filter: grayscale(0%); 
             opacity: 1; 
-            transform: scale(1.25); 
+            transform: scale(1.2); 
             border-color: white; 
-            box-shadow: 0 0 15px rgba(255,255,255,0.4); 
+            box-shadow: 0 0 10px rgba(255,255,255,0.5); 
         }
 
-        /* --- TABELA DE FILA DINÂMICA --- */
+        /* --- ALERTAS E STATUS --- */
+        #copyright-alert {
+            background: rgba(255, 0, 0, 0.9); 
+            border: 2px solid #ff0000; 
+            color: #ffffff;
+            padding: 15px; 
+            border-radius: 15px; 
+            font-size: 14px; 
+            font-weight: bold;
+            margin: 15px 0; 
+            text-align: left; 
+            display: none; 
+            align-items: center; 
+            gap: 12px;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.7); 
+            animation: pulse-alert 2s infinite;
+        }
+
+        @keyframes pulse-alert { 
+            0%, 100% { transform: scale(1); } 
+            50% { transform: scale(1.03); } 
+        }
+
         #status-bloqueio { 
             display: none; 
             background: var(--danger); 
             color: white; 
             padding: 12px; 
             border-radius: 12px; 
-            margin-bottom: 12px; 
+            margin-bottom: 10px; 
             font-weight: bold; 
-            font-size: 14px; 
+            font-size: 13px; 
             border: 2px solid white; 
+            box-shadow: 0 0 10px rgba(255,0,0,0.5); 
         }
 
         .dj-panel { 
             display: none; 
-            background: rgba(255,255,255,0.15); 
+            background: rgba(255,255,255,0.2); 
             padding: 12px; 
             border-radius: 15px; 
             margin-bottom: 15px; 
+            gap: 10px; 
             justify-content: center; 
+            align-items: center; 
         }
 
+        .btn-lock { 
+            background: var(--gold); 
+            color: black; 
+            border: none; 
+            padding: 10px 15px; 
+            border-radius: 10px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            font-size: 12px; 
+            transition: 0.2s; 
+        }
+
+        /* --- TABELA DE FILA --- */
         .queue-table { 
             width: 100%; 
             border-collapse: collapse; 
-            font-size: 12px; 
+            font-size: 13px; 
             background: rgba(255,255,255,0.95); 
-            color: #222; 
-            border-radius: 18px; 
+            color: #333; 
+            border-radius: 15px; 
             overflow: hidden; 
             margin-top: 10px; 
-            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3); 
         }
 
         .queue-table th, .queue-table td { 
             padding: 12px 10px; 
-            border-bottom: 1px solid #eee; 
+            border-bottom: 1px solid #ddd; 
             text-align: left; 
         }
 
         .queue-table th { 
-            background: #e9ecef; 
-            font-weight: 700; 
-            color: #444; 
-            text-transform: uppercase;
-            font-size: 11px;
+            background: #f0f0f0; 
+            font-weight: bold; 
+            color: #555; 
         }
         
-        /* Destaque para a linha do usuário logado */
-        .row-user { 
-            background-color: var(--my-row) !important; 
-            border-left: 5px solid var(--primary);
-        }
-
-        .token-badge { 
-            background: var(--primary); 
-            color: white; 
-            padding: 3px 8px; 
-            border-radius: 6px; 
-            font-size: 10px; 
-            display: inline-block; 
-            margin-top: 5px; 
-            font-weight: bold;
-            letter-spacing: 1px;
-        }
-
         .btn-action { 
             border: none; 
-            padding: 8px; 
-            border-radius: 8px; 
+            padding: 6px 10px; 
+            border-radius: 6px; 
             cursor: pointer; 
             font-weight: bold; 
-            transition: 0.2s;
+            transition: 0.2s; 
         }
 
         .btn-cancel { background: var(--danger); color: white; }
-        .btn-cancel:hover { background: #b30000; }
+        .btn-dj-del { background: #333; color: white; }
 
-        /* --- CAMPO DE BUSCA --- */
+        /* --- INPUT E RESULTADOS --- */
         input[type="text"] { 
             width: 100%; 
-            padding: 18px; 
+            padding: 16px; 
             border: none; 
-            border-radius: 18px; 
+            border-radius: 15px; 
             font-size: 16px; 
-            margin-top: 20px; 
-            background: rgba(255,255,255,0.92); 
+            margin-top: 15px; 
+            background: rgba(255,255,255,0.9); 
             outline: none; 
             box-sizing: border-box; 
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            transition: 0.3s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2); 
         }
 
-        input[type="text"]:focus {
-            box-shadow: 0 0 15px var(--primary);
-            background: #ffffff;
-        }
-
-        /* --- RESULTADOS DA BUSCA --- */
         .song-item { 
             background: white; 
             color: #333; 
-            padding: 16px; 
-            margin: 10px 0; 
-            border-radius: 15px; 
+            padding: 14px; 
+            margin: 8px 0; 
+            border-radius: 12px; 
             cursor: pointer; 
             text-align: left; 
-            border-left: 6px solid var(--primary); 
-            transition: 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            border-left: 5px solid var(--primary); 
+            transition: 0.2s; 
         }
 
-        .song-item:active { transform: scale(0.96); background: #f8f9fa; }
+        .song-item:active { transform: scale(0.97); }
 
-        /* --- AVISO DE COPYRIGHT (NEON PULSANTE) --- */
-        #copyright-alert {
-            background: rgba(255, 0, 0, 0.85); 
-            border: 2px solid #ff0000; 
-            color: #ffffff;
-            padding: 15px; 
-            border-radius: 18px; 
-            font-size: 13px; 
-            margin: 15px 0; 
-            display: none; 
-            align-items: center; 
-            gap: 12px;
-            font-weight: bold;
-            box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
-            animation: pulse-alert 1.5s infinite;
+        .card-info { 
+            background: var(--primary); 
+            color: white; 
+            border-radius: 15px; 
+            padding: 14px; 
+            margin-bottom: 12px; 
+            font-weight: bold; 
+            text-align: left; 
+            position: relative; 
+            border-left: 6px solid #023e8a; 
+            animation: slideIn 0.3s ease-out; 
         }
 
-        @keyframes pulse-alert { 
-            0%, 100% { transform: scale(1); opacity: 1; } 
-            50% { transform: scale(1.03); opacity: 0.8; } 
+        @keyframes slideIn { 
+            from { opacity: 0; transform: translateY(-10px); } 
+            to { opacity: 1; transform: translateY(0); } 
         }
 
-        /* --- BOTÃO DE ACESSO DJ --- */
+        .remove-card-btn { 
+            position: absolute; 
+            right: 12px; 
+            top: 10px; 
+            cursor: pointer; 
+            font-size: 20px; 
+            opacity: 0.7; 
+        }
+        
         .dj-access-btn { 
-            margin-top: 30px; 
-            font-size: 11px; 
-            opacity: 0.4; 
+            margin-top: 25px; 
+            font-size: 10px; 
+            opacity: 0.3; 
             background: none; 
             border: 1px solid white; 
             color: white; 
-            border-radius: 8px; 
+            border-radius: 6px; 
             cursor: pointer; 
-            padding: 6px 12px; 
-            transition: 0.3s;
+            padding: 4px 8px; 
+            transition: 0.3s; 
         }
-
-        .dj-access-btn:hover { opacity: 1; background: rgba(255,255,255,0.1); }
     </style>
 </head>
 <body>
@@ -331,7 +347,7 @@
         <div class="content-wrapper">
             
             <div class="header-content">
-                <img src="9d8daa_198ec12882054dceb6d49d760eba30f0~mv2.jpg" class="logo-img" alt="Logo Coopers">
+                <img src="9d8daa_198ec12882054dceb6d49d760eba30f0~mv2.jpg" class="logo-img" alt="Logo">
                 <h2 id="app-title">🎤 Karaokê Coopers</h2>
             </div>
             
@@ -345,28 +361,30 @@
             <div id="status-bloqueio">🛑 ENTRADA DE MÚSICAS FECHADA</div>
             
             <div class="dj-panel" id="dj-panel">
-                <button style="background:var(--gold); border:none; padding:12px; border-radius:10px; font-weight:bold; cursor:pointer;" id="btn-lock-toggle" onclick="toggleLock()">🔒 Bloquear Pedidos</button>
+                <button class="btn-lock" id="btn-lock-toggle" onclick="toggleLock()">🔒 Bloquear Pedidos</button>
             </div>
 
+            <div id="myOrders"></div>
+
             <div id="queueSection">
-                <h4 id="txt-fila-label" style="text-align: left; font-size: 14px; margin-bottom: 8px; color: #ccc;">Acompanhe sua vez:</h4>
+                <h4 id="txt-fila-label" style="margin-bottom: 8px; text-align: left; font-size: 14px; color: #ddd;">Acompanhe sua vez:</h4>
                 <table class="queue-table">
                     <thead>
                         <tr>
-                            <th style="width: 35px;">Pos</th>
-                            <th id="th-musica">Música / Artista</th>
+                            <th id="th-pos" style="width: 40px;">Pos</th>
+                            <th id="th-artista">Artista</th>
+                            <th id="th-musica">Música</th>
                             <th id="th-acao-label" style="width: 50px;">Ação</th>
                         </tr>
                     </thead>
-                    <tbody id="queueBody">
-                        </tbody>
+                    <tbody id="queueBody"></tbody>
                 </table>
             </div>
 
             <input type="text" id="searchInput" oninput="searchSongs()" placeholder="PESQUISE MÚSICA OU ARTISTA">
             
             <div id="copyright-alert">
-                <span style="font-size:20px;">⚠️</span>
+                <span style="font-size:24px;">⚠️</span>
                 <span id="msg-copyright"></span>
             </div>
 
@@ -387,7 +405,7 @@
     </div>
 
     <script>
-        /* --- CONFIGURAÇÕES DE LINKS --- */
+        // --- CONFIGURAÇÃO INICIAL ---
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzShpP_FtohDCryS3EuBxyClFl4AEpc0S2typDFx3mO8M_O5u9Ni2jrtr2L3qrjGgDm/exec"; 
         const SHEET_CSV = "https://docs.google.com/spreadsheets/d/1jL19NPfxuPziBqoVYU8DIPxUtbiqBbKNPgfsyFCIppc/export?format=csv&gid=1924484966";
         
@@ -396,35 +414,85 @@
         let catalog = [];
         let currentLang = 'pt';
 
-        /* --- DICIONÁRIO MULTILINGUE --- */
+        // --- DICIONÁRIO DE TRADUÇÃO ---
         const translations = {
             pt: { 
-                title: "Karaokê Coopers", busca: "PESQUISE MÚSICA OU ARTISTA", filaLabel: "Sua posição na Fila:", thMusica: "Música / Artista", thAcao: "Ação", tokenLabel: "SENHA:", filaVazia: "Fila vazia!", copyright: "Música não encontrada. Algumas músicas não aparecem por direitos autorais.", cancelPrompt: "Deseja cancelar seu pedido?", 
-                closed: "Pedidos encerrados!", welcomeT: "Bem-vindo!", welcomeM: "1. Busque sua música.<br>2. Peça clicando nela.<br>3. Sua <b>Senha</b> aparecerá na tabela da fila!<br>4. Aguarde ser chamado.", btnOk: "VAMOS LÁ!" 
+                title: "Karaokê Coopers", 
+                busca: "PESQUISE MÚSICA OU ARTISTA", 
+                filaLabel: "Acompanhe sua vez:", 
+                thPos: "Pos", 
+                thArtista: "Artista", 
+                thMusica: "Música", 
+                thAcao: "Ação", 
+                tokenLabel: "SUA SENHA:", 
+                filaVazia: "Fila vazia!", 
+                copyright: "Música não encontrada. Algumas músicas não aparecem na lista oficial devido aos direitos autorais (Karafunc).", 
+                cancelPrompt: "Deseja cancelar seu pedido?", 
+                closed: "Desculpe, estamos perto de fechar, por isso não estamos mais aceitando músicas!",
+                welcomeT: "Como usar o App:", 
+                welcomeM: "1. <b>Busque</b> sua música no campo de pesquisa.<br>2. <b>Toque</b> na música para pedir.<br>3. Uma <b>Senha</b> será gerada.<br>4. Acompanhe sua posição na <b>Fila</b>.<br>5. Para desistir, clique no <b>❌</b> na fila.",
+                btnOk: "VAMOS CANTAR!" 
             },
             en: { 
-                title: "Coopers Karaoke", busca: "SEARCH SONG OR ARTIST", filaLabel: "Queue Position:", thMusica: "Song / Artist", thAcao: "Action", tokenLabel: "CODE:", filaVazia: "Queue is empty!", copyright: "Song not found due to copyright restrictions.", cancelPrompt: "Cancel your request?", 
-                closed: "Orders closed!", welcomeT: "Welcome!", welcomeM: "1. Search for a song.<br>2. Click to request.<br>3. Your <b>Code</b> will show in the queue table!<br>4. Wait for your turn.", btnOk: "LET'S GO!"
+                title: "Coopers Karaoke", 
+                busca: "SEARCH SONG OR ARTIST", 
+                filaLabel: "Current Queue:", 
+                thPos: "Pos", 
+                thArtista: "Artist", 
+                thMusica: "Song", 
+                thAcao: "Action", 
+                tokenLabel: "YOUR CODE:", 
+                filaVazia: "Empty!", 
+                copyright: "Song not found in the official list (Karafunc).", 
+                cancelPrompt: "Cancel your request?", 
+                closed: "Sorry, we are close to closing!", 
+                welcomeT: "How to use:", 
+                welcomeM: "1. <b>Search</b> for your song below.<br>2. <b>Click</b> on the song to request.<br>3. A <b>Code</b> will be generated.<br>4. Track your position in the <b>Queue</b>.<br>5. To cancel, click the <b>❌</b> button.",
+                btnOk: "LET'S SING!"
             },
             es: { 
-                title: "Karaoke Coopers", busca: "BUSCAR MÚSICA", filaLabel: "Tu posición:", thMusica: "Música / Artista", thAcao: "Acción", tokenLabel: "CÓDIGO:", filaVazia: "¡Lista vacía!", copyright: "No encontrada por derechos de autor.", cancelPrompt: "¿Cancelar pedido?", 
-                closed: "¡Cerrado!", welcomeT: "¡Bienvenido!", welcomeM: "1. Busca tu canción.<br>2. Pide haciendo clic.<br>3. ¡Tu <b>Código</b> aparecerá en la lista!<br>4. Espera tu turno.", btnOk: "¡VAMOS!"
+                title: "Karaoke Coopers", 
+                busca: "BUSCAR MÚSICA", 
+                filaLabel: "Lista de espera:", 
+                thPos: "Pos", 
+                thArtista: "Artista", 
+                thMusica: "Música", 
+                thAcao: "Acción", 
+                tokenLabel: "TU CÓDIGO:", 
+                filaVazia: "¡Vacia!", 
+                copyright: "No encontrada (Karafunc).", 
+                cancelPrompt: "¿Cancelar pedido?", 
+                closed: "Lo sentimos, estamos cerca de cerrar!", 
+                welcomeT: "Cómo usar:", 
+                welcomeM: "1. <b>Busca</b> tu canción abajo.<br>2. <b>Haz clic</b> para pedirla.<br>3. Se gerará un <b>Código</b>.<br>4. Sigue tu turno en la <b>Lista</b>.<br>5. Para cancelar, clic en <b>❌</b>.",
+                btnOk: "¡A CANTAR!"
             },
             fr: { 
-                title: "Karaoké Coopers", busca: "RECHERCHER", filaLabel: "Votre position:", thMusica: "Chanson / Artiste", thAcao: "Action", tokenLabel: "CODE:", filaVazia: "File vide!", copyright: "Non trouvée (droits d'auteur).", cancelPrompt: "Annuler?", 
-                closed: "Fermé!", welcomeT: "Bienvenue!", welcomeM: "1. Cherchez une chanson.<br>2. Cliquez pour commander.<br>3. Votre <b>Code</b> sera dans la file!<br>4. Attendez votre tour.", btnOk: "C'EST PARTI!"
+                title: "Karaoké Coopers", 
+                busca: "RECHERCHER", 
+                filaLabel: "File d'attente:", 
+                thPos: "Pos", 
+                thArtista: "Artiste", 
+                thMusica: "Chanson", 
+                thAcao: "Action", 
+                tokenLabel: "VOTRE CODE:", 
+                filaVazia: "Vide!", 
+                copyright: "Non trouvée (Karafunc).", 
+                cancelPrompt: "Annuler?", 
+                closed: "Désolé, nous approchons de la fermeture!", 
+                welcomeT: "Comment utiliser:", 
+                welcomeM: "1. <b>Cherchez</b> votre chanson.<br>2. <b>Cliquez</b> pour commander.<br>3. Un <b>Code</b> sera généré.<br>4. Suivez votre tour dans la <b>File</b>.<br>5. Cliquez sur <b>❌</b> pour annuler.",
+                btnOk: "CHANTONS !"
             }
         };
 
-        /* --- CARREGAMENTO INICIAL --- */
+        // --- FUNÇÕES DE INICIALIZAÇÃO ---
         window.onload = () => {
             setLang('pt');
-            // Carrega catálogo
             fetch('karafuncatalog.csv').then(r => r.text()).then(data => {
                 catalog = data.split('\n').map(line => line.replace(/"/g, '').split(/[;,]/));
             });
-            // Atualização da fila
-            setInterval(loadQueue, 10000);
+            setInterval(loadQueue, 15000);
             if(isLocked) document.getElementById('status-bloqueio').style.display = 'block';
             if(!localStorage.getItem('hasVisited')) showWelcome();
         };
@@ -452,16 +520,22 @@
             document.getElementById('searchInput').placeholder = t.busca;
             document.getElementById('msg-copyright').innerText = t.copyright;
             document.getElementById('txt-fila-label').innerText = t.filaLabel;
+            document.getElementById('th-pos').innerText = t.thPos;
+            document.getElementById('th-artista').innerText = t.thArtista;
             document.getElementById('th-musica').innerText = t.thMusica;
             document.getElementById('th-acao-label').innerText = t.thAcao;
+            
+            if(document.getElementById('welcome-modal').style.display === 'flex') showWelcome();
+            renderMyOrders(); 
             loadQueue();
         }
 
-        /* --- LÓGICA DE DJ --- */
+        // --- LÓGICA DJ ---
         function loginDJ() {
             if(prompt("Senha do DJ:") === "admin123") {
                 isDJ = true;
                 document.getElementById('dj-panel').style.display = 'flex';
+                document.getElementById('btn-lock-toggle').innerText = isLocked ? "🔓 Abrir Entrada" : "🔒 Bloquear Pedidos";
                 loadQueue();
             }
         }
@@ -473,60 +547,41 @@
             document.getElementById('btn-lock-toggle').innerText = isLocked ? "🔓 Abrir Entrada" : "🔒 Bloquear Pedidos";
         }
 
-        /* --- GESTÃO DA FILA --- */
+        // --- FILA E PLANILHA ---
         async function loadQueue() {
             try {
                 const resp = await fetch(SHEET_CSV + "&cache=" + Date.now());
                 const text = await resp.text();
                 const rows = text.split('\n').slice(1);
-                
-                // Pega os pedidos salvos no celular do usuário
                 const myOrders = JSON.parse(localStorage.getItem('myKaraokeOrders') || '[]');
                 const myTokens = myOrders.map(o => o.senha);
                 let html = '';
 
                 rows.forEach((row, i) => {
                     const cols = row.split(',');
-                    // Verifica se a linha tem o código da música (coluna 5 na planilha)
                     if(cols.length > 5 && cols[5].trim() !== "") {
                         const tokenFila = cols[5].trim();
                         const isMySong = myTokens.includes(tokenFila);
-                        
-                        // Define destaque e se mostra a senha
-                        const rowClass = isMySong ? 'class="row-user"' : "";
-                        const showToken = isMySong ? `<br><span class="token-badge">🔑 ${translations[currentLang].tokenLabel} ${tokenFila}</span>` : "";
-
-                        // Botão de ação (Remover para o usuário ou Deletar para o DJ)
-                        let actionBtn = isDJ ? 
-                            `<button class="btn-action" style="background:#333; color:white;" onclick="removeSong(${i+1})">🗑️</button>` : 
-                            (isMySong ? `<button class="btn-action btn-cancel" onclick="removeSong(${i+1}, true)">❌</button>` : '');
-                        
-                        html += `<tr ${rowClass}>
-                                    <td>${i+1}º</td>
-                                    <td><strong>${cols[3]}</strong><br><small>${cols[4]}</small>${showToken}</td>
-                                    <td>${actionBtn}</td>
-                                 </tr>`;
+                        let actionBtn = isDJ ? `<button class="btn-action btn-dj-del" onclick="removeSong(${i+1})">🗑️</button>` : (isMySong ? `<button class="btn-action btn-cancel" onclick="removeSong(${i+1}, true)">❌</button>` : '');
+                        html += `<tr><td>${i+1}º</td><td>${cols[4]}</td><td>${cols[3]}</td><td>${actionBtn}</td></tr>`;
                     }
                 });
-                document.getElementById('queueBody').innerHTML = html || `<tr><td colspan="3" style="text-align:center; padding: 25px; color:#666;">${translations[currentLang].filaVazia}</td></tr>`;
-            } catch(e) {
-                console.error("Erro ao carregar fila.");
-            }
+                document.getElementById('queueBody').innerHTML = html || `<tr><td colspan="4" style="text-align:center; padding: 20px;">${translations[currentLang].filaVazia}</td></tr>`;
+            } catch(e) {}
         }
 
-        function removeSong(rowIndex, isClientAction = false) {
-            const msg = isClientAction ? translations[currentLang].cancelPrompt : "DJ: Remover música da fila?";
+        async function removeSong(rowIndex, isClientAction = false) {
+            const msg = isClientAction ? translations[currentLang].cancelPrompt : "DJ: Remover música?";
             if(!confirm(msg)) return;
             
-            // Método seguro para evitar erro 400 (Bad Request)
-            const img = new Image();
-            img.src = `${SCRIPT_URL}?row=${rowIndex}&t=${Date.now()}`;
-            
-            // Feedback visual imediato e recarga
-            setTimeout(loadQueue, 1500);
+            fetch(`${SCRIPT_URL}?row=${rowIndex}`)
+                .then(() => { 
+                    setTimeout(loadQueue, 1500); 
+                })
+                .catch(() => alert("Erro ao conectar ao servidor."));
         }
 
-        /* --- SISTEMA DE BUSCA --- */
+        // --- BUSCA E CATALOGO ---
         function searchSongs() {
             const query = document.getElementById('searchInput').value.toLowerCase().trim();
             const resDiv = document.getElementById('results');
@@ -539,58 +594,88 @@
             }
             
             const terms = query.split(' ');
-            let matches = catalog.filter(s => {
+            let exactMatch = catalog.filter(s => {
                 if(!s[1]) return false;
                 const combined = `${s[1]} ${s[2]}`.toLowerCase();
                 return terms.every(t => combined.includes(t));
             });
 
-            if(matches.length > 0) {
+            let suggestions = (exactMatch.length === 0) ? catalog.filter(s => {
+                if(!s[1]) return false;
+                const combined = `${s[1]} ${s[2]}`.toLowerCase();
+                return terms.some(t => combined.includes(t));
+            }).slice(0, 10) : [];
+
+            if(exactMatch.length > 0) {
                 alertDiv.style.display = 'none';
-                resDiv.innerHTML = matches.slice(0, 15).map(s => `
-                    <div class="song-item" onclick="sendOrderDirect('${s[0]}','${s[1]}','${s[2]}')">
-                        <span style="font-size:20px;">🎶</span>
-                        <div><strong>${s[1]}</strong><br><small>${s[2]}</small></div>
-                    </div>`).join('');
+                renderResults(exactMatch.slice(0, 15));
+            } else if (suggestions.length > 0) {
+                alertDiv.style.display = 'flex';
+                renderResults(suggestions);
             } else {
                 alertDiv.style.display = 'flex';
                 resDiv.innerHTML = '';
             }
         }
 
-        /* --- ENVIO DO PEDIDO --- */
+        function renderResults(songs) {
+            document.getElementById('results').innerHTML = songs.map(s => `
+                <div class="song-item" onclick="sendOrderDirect('${s[0]}','${s[1]}','${s[2]}')">
+                    🎶 <strong>${s[1]}</strong> - <small>${s[2]}</small>
+                </div>`).join('');
+        }
+
+        // --- ENVIO DE PEDIDO ---
         function sendOrderDirect(id, title, artist) {
             if(isLocked && !isDJ) { 
                 alert(translations[currentLang].closed); 
                 return; 
             }
-
-            // Gera senha única e prepara formulário
+            
+            document.getElementById('hidden_iframe').src = "about:blank";
             const senha = Math.random().toString(36).substring(2, 6).toUpperCase();
+            
             document.getElementById('f_hora').value = new Date().toLocaleTimeString();
             document.getElementById('f_codigo').value = id;
             document.getElementById('f_musica').value = title;
             document.getElementById('f_artista').value = artist;
             document.getElementById('f_senha').value = senha;
 
-            // Envia para o Google Forms via iframe oculto
-            document.getElementById('karaokeForm').submit();
-
-            // Salva localmente para o usuário ver sua senha na fila
-            let saved = JSON.parse(localStorage.getItem('myKaraokeOrders') || '[]');
-            saved.push({ senha, musica: title });
-            localStorage.setItem('myKaraokeOrders', JSON.stringify(saved));
-            
-            // Efeito de sucesso
-            confetti({ particleCount: 120, spread: 70, origin: { y: 0.7 } });
-            
-            // Limpa busca e recarrega fila
-            setTimeout(() => { 
-                document.getElementById('searchInput').value = ''; 
-                document.getElementById('results').innerHTML = ''; 
-                loadQueue(); 
-            }, 800);
+            setTimeout(() => {
+                document.getElementById('karaokeForm').submit();
+                let saved = JSON.parse(localStorage.getItem('myKaraokeOrders') || '[]');
+                saved.push({ senha, musica: title });
+                localStorage.setItem('myKaraokeOrders', JSON.stringify(saved));
+                
+                confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+                
+                setTimeout(() => { 
+                    renderMyOrders(); 
+                    document.getElementById('searchInput').value = ''; 
+                    document.getElementById('results').innerHTML = ''; 
+                    loadQueue(); 
+                }, 600);
+            }, 50);
         }
+
+        function renderMyOrders() {
+            const orders = JSON.parse(localStorage.getItem('myKaraokeOrders') || '[]');
+            document.getElementById('myOrders').innerHTML = orders.map((o, idx) => `
+                <div class="card-info">
+                    <span class="remove-card-btn" onclick="removeMyOrder(${idx})">×</span>
+                    🔑 ${translations[currentLang].tokenLabel} ${o.senha}<br>
+                    <small>${o.musica}</small>
+                </div>`).join('');
+        }
+
+        function removeMyOrder(idx) {
+            let saved = JSON.parse(localStorage.getItem('myKaraokeOrders') || '[]');
+            saved.splice(idx, 1);
+            localStorage.setItem('myKaraokeOrders', JSON.stringify(saved));
+            renderMyOrders();
+            loadQueue();
+        }
+
     </script>
 </body>
 </html>
