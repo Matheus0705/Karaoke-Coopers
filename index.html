@@ -15,7 +15,7 @@
             --danger: #ff0000;
             --gold: #ffca3a;
             --success: #2ecc71;
-            --highlight: rgba(0, 119, 182, 0.15);
+            --highlight: rgba(0, 119, 182, 0.1);
         }
 
         body { 
@@ -60,11 +60,10 @@
             flex-grow: 1; 
         }
 
-        /* --- AVISO DE ATUALIZAÇÃO (REINTEGRADO) --- */
         .refresh-notice {
             font-size: 10px;
-            color: rgba(255,255,255,0.5);
-            margin-bottom: 5px;
+            color: rgba(255,255,255,0.6);
+            margin-bottom: 8px;
             font-style: italic;
         }
 
@@ -81,7 +80,6 @@
             align-items: center; 
             justify-content: center; 
             padding: 20px;
-            box-sizing: border-box;
         }
 
         .modal-content {
@@ -94,9 +92,6 @@
             box-shadow: 0 0 25px var(--primary);
         }
 
-        .modal-content h3 { color: var(--gold); margin-top: 0; font-size: 1.4em; }
-        .modal-content p { font-size: 15px; line-height: 1.6; color: #eee; text-align: left; }
-
         .btn-ok { 
             background: var(--primary); 
             color: white; 
@@ -107,8 +102,6 @@
             margin-top: 20px; 
             cursor: pointer; 
             width: 100%; 
-            font-size: 16px;
-            transition: 0.3s;
         }
 
         /* --- HEADER E LINGUAGEM --- */
@@ -127,7 +120,7 @@
             display: flex; 
             justify-content: center; 
             gap: 15px; 
-            margin-bottom: 15px; 
+            margin-bottom: 10px; 
             padding: 12px; 
             background: rgba(255,255,255,0.1); 
             border-radius: 15px; 
@@ -141,62 +134,16 @@
             opacity: 0.4; 
             transition: 0.3s; 
             border-radius: 4px; 
-            border: 2px solid transparent; 
         }
 
         .lang-item.active { 
             filter: grayscale(0%); 
             opacity: 1; 
             transform: scale(1.2); 
-            border-color: white; 
-            box-shadow: 0 0 10px rgba(255,255,255,0.5); 
-        }
-
-        /* --- ALERTAS E STATUS --- */
-        #copyright-alert {
-            background: rgba(255, 0, 0, 0.9); 
-            border: 2px solid #ff0000; 
-            color: #ffffff;
-            padding: 15px; 
-            border-radius: 15px; 
-            font-size: 14px; 
-            font-weight: bold;
-            margin: 15px 0; 
-            text-align: left; 
-            display: none; 
-            align-items: center; 
-            gap: 12px;
-            box-shadow: 0 0 15px rgba(255, 0, 0, 0.7); 
-            animation: pulse-alert 2s infinite;
-        }
-
-        @keyframes pulse-alert { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
-
-        #status-bloqueio { 
-            display: none; 
-            background: var(--danger); 
-            color: white; 
-            padding: 12px; 
-            border-radius: 12px; 
-            margin-bottom: 10px; 
-            font-weight: bold; 
-            font-size: 13px; 
             border: 2px solid white; 
         }
 
-        .dj-panel { 
-            display: none; 
-            background: rgba(255,255,255,0.2); 
-            padding: 12px; 
-            border-radius: 15px; 
-            margin-bottom: 15px; 
-            gap: 10px; 
-            justify-content: center; 
-        }
-
-        .btn-lock { background: var(--gold); color: black; border: none; padding: 10px 15px; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 12px; }
-
-        /* --- TABELA DE FILA --- */
+        /* --- FILA --- */
         .queue-table { 
             width: 100%; 
             border-collapse: collapse; 
@@ -205,8 +152,7 @@
             color: #333; 
             border-radius: 15px; 
             overflow: hidden; 
-            margin-top: 10px; 
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3); 
+            margin-top: 5px; 
         }
 
         .queue-table th, .queue-table td { 
@@ -217,8 +163,8 @@
 
         .queue-table th { background: #f0f0f0; font-weight: bold; color: #555; }
         
-        /* Destaque para minha música na fila */
         .row-highlight { background-color: var(--highlight) !important; }
+
         .badge-token { 
             background: var(--primary); 
             color: white; 
@@ -226,12 +172,11 @@
             border-radius: 4px; 
             font-size: 10px; 
             font-weight: bold; 
-            display: block; 
+            display: inline-block; 
             margin-top: 4px;
-            width: fit-content;
         }
 
-        .btn-action { border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .btn-action { border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; font-weight: bold; }
         .btn-cancel { background: var(--danger); color: white; }
         .btn-dj-del { background: #333; color: white; }
 
@@ -244,7 +189,6 @@
             font-size: 16px; 
             margin-top: 15px; 
             background: rgba(255,255,255,0.9); 
-            outline: none; 
             box-sizing: border-box; 
         }
 
@@ -258,25 +202,18 @@
             text-align: left; 
             border-left: 5px solid var(--primary); 
         }
-
-        .card-info { 
-            background: var(--primary); 
+        
+        #status-bloqueio { 
+            display: none; 
+            background: var(--danger); 
             color: white; 
-            border-radius: 15px; 
-            padding: 14px; 
-            margin-bottom: 12px; 
+            padding: 12px; 
+            border-radius: 12px; 
+            margin-bottom: 10px; 
             font-weight: bold; 
-            text-align: left; 
-            position: relative; 
-            border-left: 6px solid #023e8a; 
-            animation: slideIn 0.3s ease-out; 
         }
 
-        @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-
-        .remove-card-btn { position: absolute; right: 12px; top: 10px; cursor: pointer; font-size: 20px; opacity: 0.7; }
-        
-        .dj-access-btn { margin-top: 25px; font-size: 10px; opacity: 0.3; background: none; border: 1px solid white; color: white; border-radius: 6px; cursor: pointer; padding: 4px 8px; }
+        .dj-access-btn { margin-top: 25px; font-size: 10px; opacity: 0.3; background: none; border: 1px solid white; color: white; border-radius: 6px; padding: 4px 8px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -309,12 +246,6 @@
             <div class="refresh-notice" id="refresh-text">🔄 A fila atualiza automaticamente a cada 15s</div>
 
             <div id="status-bloqueio">🛑 ENTRADA DE MÚSICAS FECHADA</div>
-            
-            <div class="dj-panel" id="dj-panel">
-                <button class="btn-lock" id="btn-lock-toggle" onclick="toggleLock()">🔒 Bloquear Pedidos</button>
-            </div>
-
-            <div id="myOrders"></div>
 
             <div id="queueSection">
                 <h4 id="txt-fila-label" style="margin-bottom: 8px; text-align: left; font-size: 14px; color: #ddd;">Acompanhe sua vez:</h4>
@@ -323,7 +254,7 @@
                         <tr>
                             <th id="th-pos" style="width: 40px;">Pos</th>
                             <th id="th-artista">Artista</th>
-                            <th id="th-musica">Música</th>
+                            <th id="th-musica">Música / Senha</th>
                             <th id="th-acao-label" style="width: 50px;">Ação</th>
                         </tr>
                     </thead>
@@ -333,15 +264,9 @@
 
             <input type="text" id="searchInput" oninput="searchSongs()" placeholder="PESQUISE MÚSICA OU ARTISTA">
             
-            <div id="copyright-alert">
-                <span style="font-size:24px;">⚠️</span>
-                <span id="msg-copyright"></span>
-            </div>
-
             <div id="results"></div>
 
             <button class="dj-access-btn" onclick="loginDJ()">Acesso DJ</button>
-
         </div>
 
         <form id="karaokeForm" action="https://docs.google.com/forms/d/e/1FAIpQLSc2M4LQqNDD79g0o46ImqkwAL6g7EYn74cvxIa2K-6prNBLrQ/formResponse" method="POST" target="hidden_iframe" style="display:none;">
@@ -351,7 +276,6 @@
             <input type="hidden" name="entry.730937896" id="f_artista">
             <input type="hidden" name="entry.1210617554" id="f_senha">
         </form>
-
     </div>
 
     <script>
@@ -365,16 +289,16 @@
 
         const translations = {
             pt: { 
-                title: "Karaokê Coopers", busca: "PESQUISE MÚSICA OU ARTISTA", filaLabel: "Acompanhe sua vez:", thPos: "Pos", thArtista: "Artista", thMusica: "Música", thAcao: "Ação", tokenLabel: "SUA SENHA:", filaVazia: "Fila vazia!", copyright: "Música não encontrada. Algumas músicas não aparecem na lista oficial devido aos direitos autorais (Karafunc).", cancelPrompt: "Deseja cancelar seu pedido?", closed: "Desculpe, estamos perto de fechar, por isso não estamos mais aceitando músicas!", welcomeT: "Como usar o App:", welcomeM: "1. <b>Busque</b> sua música no campo de pesquisa.<br>2. <b>Toque</b> na música para pedir.<br>3. Uma <b>Senha</b> será gerada.<br>4. Acompanhe sua posição na <b>Fila</b>.<br>5. Para desistir, clique no <b>❌</b> na fila.", btnOk: "VAMOS CANTAR!", refresh: "🔄 A fila atualiza automaticamente a cada 15s"
+                title: "Karaokê Coopers", busca: "PESQUISE MÚSICA OU ARTISTA", filaLabel: "Acompanhe sua vez:", thPos: "Pos", thArtista: "Artista", thMusica: "Música / Senha", thAcao: "Ação", filaVazia: "Fila vazia!", copyright: "Música não encontrada...", cancelPrompt: "Deseja cancelar seu pedido?", closed: "Desculpe, estamos fechados!", welcomeT: "Como usar:", welcomeM: "1. Busque sua música.<br>2. Toque para pedir.<br>3. Acompanhe sua <b>Senha</b> na fila.", btnOk: "VAMOS CANTAR!", refresh: "🔄 A fila atualiza a cada 15s"
             },
             en: { 
-                title: "Coopers Karaoke", busca: "SEARCH SONG OR ARTIST", filaLabel: "Current Queue:", thPos: "Pos", thArtista: "Artist", thMusica: "Song", thAcao: "Action", tokenLabel: "YOUR CODE:", filaVazia: "Empty!", copyright: "Song not found in the official list (Karafunc).", cancelPrompt: "Cancel your request?", closed: "Sorry, we are close to closing!", welcomeT: "How to use:", welcomeM: "1. <b>Search</b> for your song below.<br>2. <b>Click</b> on the song to request.<br>3. A <b>Code</b> will be generated.<br>4. Track your position in the <b>Queue</b>.<br>5. To cancel, click the <b>❌</b> button.", btnOk: "LET'S SING!", refresh: "🔄 Queue updates every 15s"
+                title: "Coopers Karaoke", busca: "SEARCH SONG OR ARTIST", filaLabel: "Current Queue:", thPos: "Pos", thArtista: "Artist", thMusica: "Song / Code", thAcao: "Action", filaVazia: "Empty!", copyright: "Not found...", cancelPrompt: "Cancel request?", closed: "Sorry, we are closed!", welcomeT: "How to use:", welcomeM: "1. Search for a song.<br>2. Click to request.<br>3. Track your <b>Code</b> in the queue.", btnOk: "LET'S SING!", refresh: "🔄 Queue updates every 15s"
             },
             es: { 
-                title: "Karaoke Coopers", busca: "BUSCAR MÚSICA", filaLabel: "Lista de espera:", thPos: "Pos", thArtista: "Artista", thMusica: "Música", thAcao: "Acción", tokenLabel: "TU CÓDIGO:", filaVazia: "¡Vacia!", copyright: "No encontrada (Karafunc).", cancelPrompt: "¿Cancelar pedido?", closed: "Lo sentimos, estamos cerca de cerrar!", welcomeT: "Cómo usar:", welcomeM: "1. <b>Busca</b> tu canción abajo.<br>2. <b>Haz clic</b> para pedirla.<br>3. Se gerará un <b>Código</b>.<br>4. Sigue tu turno en la <b>Lista</b>.<br>5. Para cancelar, clic en <b>❌</b>.", btnOk: "¡A CANTAR!", refresh: "🔄 Actualización cada 15s"
+                title: "Karaoke Coopers", busca: "BUSCAR MÚSICA", filaLabel: "Lista de espera:", thPos: "Pos", thArtista: "Artista", thMusica: "Música / Código", thAcao: "Acción", filaVazia: "¡Vacia!", copyright: "No encontrada...", cancelPrompt: "¿Cancelar pedido?", closed: "¡Cerrado!", welcomeT: "Cómo usar:", welcomeM: "1. Busca tu canción.<br>2. Haz clic para pedir.<br>3. Sigue tu <b>Código</b> en la lista.", btnOk: "¡A CANTAR!", refresh: "🔄 Actualización cada 15s"
             },
             fr: { 
-                title: "Karaoké Coopers", busca: "RECHERCHER", filaLabel: "File d'attente:", thPos: "Pos", thArtista: "Artiste", thMusica: "Chanson", thAcao: "Action", tokenLabel: "VOTRE CODE:", filaVazia: "File vide!", copyright: "Non trouvée (Karafunc).", cancelPrompt: "Annuler?", closed: "Désolé, nous approchons de la fermeture!", welcomeT: "Comment utiliser:", welcomeM: "1. <b>Cherchez</b> votre chanson.<br>2. <b>Cliquez</b> pour commander.<br>3. Un <b>Code</b> sera généré.<br>4. Suivez votre tour dans la <b>File</b>.<br>5. Cliquez sur <b>❌</b> pour annuler.", btnOk: "CHANTONS !", refresh: "🔄 Mise à jour toutes les 15s"
+                title: "Karaoké Coopers", busca: "RECHERCHER", filaLabel: "File d'attente:", thPos: "Pos", thArtista: "Artiste", thMusica: "Chanson / Code", thAcao: "Action", filaVazia: "Vide!", copyright: "Non trouvée...", cancelPrompt: "Annuler?", closed: "Fermé!", welcomeT: "Comment utiliser:", welcomeM: "1. Cherchez une chanson.<br>2. Cliquez para commander.<br>3. Suivez votre <b>Code</b> dans la file.", btnOk: "CHANTONS !", refresh: "🔄 Mise à jour toutes les 15s"
             }
         };
 
@@ -388,19 +312,6 @@
             if(!localStorage.getItem('hasVisited')) showWelcome();
         };
 
-        function showWelcome() {
-            const t = translations[currentLang];
-            document.getElementById('modal-title').innerText = t.welcomeT;
-            document.getElementById('modal-text').innerHTML = t.welcomeM;
-            document.querySelector('.btn-ok').innerText = t.btnOk;
-            document.getElementById('welcome-modal').style.display = 'flex';
-        }
-
-        function closeWelcome() {
-            document.getElementById('welcome-modal').style.display = 'none';
-            localStorage.setItem('hasVisited', 'true');
-        }
-
         function setLang(lang) {
             currentLang = lang;
             document.querySelectorAll('.lang-item').forEach(img => img.classList.remove('active'));
@@ -409,33 +320,14 @@
             const t = translations[lang];
             document.getElementById('app-title').innerText = t.title;
             document.getElementById('searchInput').placeholder = t.busca;
-            document.getElementById('msg-copyright').innerText = t.copyright;
             document.getElementById('txt-fila-label').innerText = t.filaLabel;
             document.getElementById('th-pos').innerText = t.thPos;
             document.getElementById('th-artista').innerText = t.thArtista;
-            document.getElementById('th-musica').innerText = t.thMusica;
+            document.getElementById('th-musica').innerText = t.thMusica; // Altera título da coluna
             document.getElementById('th-acao-label').innerText = t.thAcao;
             document.getElementById('refresh-text').innerText = t.refresh;
             
-            if(document.getElementById('welcome-modal').style.display === 'flex') showWelcome();
-            renderMyOrders(); 
             loadQueue();
-        }
-
-        function loginDJ() {
-            if(prompt("Senha do DJ:") === "admin123") {
-                isDJ = true;
-                document.getElementById('dj-panel').style.display = 'flex';
-                document.getElementById('btn-lock-toggle').innerText = isLocked ? "🔓 Abrir Entrada" : "🔒 Bloquear Pedidos";
-                loadQueue();
-            }
-        }
-
-        function toggleLock() {
-            isLocked = !isLocked;
-            localStorage.setItem('karaokeLocked', isLocked);
-            document.getElementById('status-bloqueio').style.display = isLocked ? 'block' : 'none';
-            document.getElementById('btn-lock-toggle').innerText = isLocked ? "🔓 Abrir Entrada" : "🔒 Bloquear Pedidos";
         }
 
         async function loadQueue() {
@@ -453,10 +345,8 @@
                         const tokenFila = cols[5].trim();
                         const isMySong = myTokens.includes(tokenFila);
                         
-                        // Senha na tabela (badge azul discreto)
-                        let tokenBadge = isMySong ? `<span class="badge-token">🔑 ${tokenFila}</span>` : "";
+                        let tokenBadge = `<br><span class="badge-token">🔑 ${tokenFila}</span>`;
                         let rowStyle = isMySong ? 'class="row-highlight"' : "";
-
                         let actionBtn = isDJ ? `<button class="btn-action btn-dj-del" onclick="removeSong(${i+1})">🗑️</button>` : (isMySong ? `<button class="btn-action btn-cancel" onclick="removeSong(${i+1}, true)">❌</button>` : '');
                         
                         html += `<tr ${rowStyle}>
@@ -471,101 +361,54 @@
             } catch(e) {}
         }
 
-        async function removeSong(rowIndex, isClientAction = false) {
-            const msg = isClientAction ? translations[currentLang].cancelPrompt : "DJ: Remover música?";
-            if(!confirm(msg)) return;
-            
-            fetch(`${SCRIPT_URL}?row=${rowIndex}`)
-                .then(() => { 
-                    setTimeout(loadQueue, 1500); 
-                })
-                .catch(() => alert("Erro ao conectar ao servidor."));
-        }
-
-        function searchSongs() {
-            const query = document.getElementById('searchInput').value.toLowerCase().trim();
-            const resDiv = document.getElementById('results');
-            const alertDiv = document.getElementById('copyright-alert');
-            
-            if(query.length < 2) { 
-                resDiv.innerHTML = ''; 
-                alertDiv.style.display = 'none'; 
-                return; 
-            }
-            
-            const terms = query.split(' ');
-            let exactMatch = catalog.filter(s => {
-                if(!s[1]) return false;
-                const combined = `${s[1]} ${s[2]}`.toLowerCase();
-                return terms.every(t => combined.includes(t));
-            });
-
-            if(exactMatch.length > 0) {
-                alertDiv.style.display = 'none';
-                renderResults(exactMatch.slice(0, 15));
-            } else {
-                alertDiv.style.display = 'flex';
-                resDiv.innerHTML = '';
-            }
-        }
-
-        function renderResults(songs) {
-            document.getElementById('results').innerHTML = songs.map(s => `
-                <div class="song-item" onclick="sendOrderDirect('${s[0]}','${s[1]}','${s[2]}')">
-                    🎶 <strong>${s[1]}</strong> - <small>${s[2]}</small>
-                </div>`).join('');
-        }
-
         function sendOrderDirect(id, title, artist) {
-            if(isLocked && !isDJ) { 
-                alert(translations[currentLang].closed); 
-                return; 
-            }
+            if(isLocked && !isDJ) { alert(translations[currentLang].closed); return; }
             
-            document.getElementById('hidden_iframe').src = "about:blank";
             const senha = Math.random().toString(36).substring(2, 6).toUpperCase();
-            
             document.getElementById('f_hora').value = new Date().toLocaleTimeString();
             document.getElementById('f_codigo').value = id;
             document.getElementById('f_musica').value = title;
             document.getElementById('f_artista').value = artist;
             document.getElementById('f_senha').value = senha;
 
-            setTimeout(() => {
-                document.getElementById('karaokeForm').submit();
-                let saved = JSON.parse(localStorage.getItem('myKaraokeOrders') || '[]');
-                saved.push({ senha, musica: title });
-                localStorage.setItem('myKaraokeOrders', JSON.stringify(saved));
-                
-                confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-                
-                setTimeout(() => { 
-                    renderMyOrders(); 
-                    document.getElementById('searchInput').value = ''; 
-                    document.getElementById('results').innerHTML = ''; 
-                    loadQueue(); 
-                }, 600);
-            }, 50);
-        }
-
-        function renderMyOrders() {
-            const orders = JSON.parse(localStorage.getItem('myKaraokeOrders') || '[]');
-            document.getElementById('myOrders').innerHTML = orders.map((o, idx) => `
-                <div class="card-info">
-                    <span class="remove-card-btn" onclick="removeMyOrder(${idx})">×</span>
-                    🔑 ${translations[currentLang].tokenLabel} ${o.senha}<br>
-                    <small>${o.musica}</small>
-                </div>`).join('');
-        }
-
-        function removeMyOrder(idx) {
+            document.getElementById('karaokeForm').submit();
             let saved = JSON.parse(localStorage.getItem('myKaraokeOrders') || '[]');
-            saved.splice(idx, 1);
+            saved.push({ senha, musica: title });
             localStorage.setItem('myKaraokeOrders', JSON.stringify(saved));
-            renderMyOrders();
-            loadQueue();
+            
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+            
+            setTimeout(() => { 
+                document.getElementById('searchInput').value = ''; 
+                document.getElementById('results').innerHTML = ''; 
+                loadQueue(); 
+            }, 600);
         }
 
+        /* Funções auxiliares mantidas para funcionamento */
+        function searchSongs() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            const resDiv = document.getElementById('results');
+            if(query.length < 2) { resDiv.innerHTML = ''; return; }
+            const terms = query.split(' ');
+            let matches = catalog.filter(s => {
+                if(!s[1]) return false;
+                const combined = `${s[1]} ${s[2]}`.toLowerCase();
+                return terms.every(t => combined.includes(t));
+            }).slice(0, 15);
+            resDiv.innerHTML = matches.map(s => `<div class="song-item" onclick="sendOrderDirect('${s[0]}','${s[1]}','${s[2]}')">🎶 <strong>${s[1]}</strong> - <small>${s[2]}</small></div>`).join('');
+        }
+
+        function showWelcome() {
+            const t = translations[currentLang];
+            document.getElementById('modal-title').innerText = t.welcomeT;
+            document.getElementById('modal-text').innerHTML = t.welcomeM;
+            document.querySelector('.btn-ok').innerText = t.btnOk;
+            document.getElementById('welcome-modal').style.display = 'flex';
+        }
+        function closeWelcome() { document.getElementById('welcome-modal').style.display = 'none'; localStorage.setItem('hasVisited', 'true'); }
+        function loginDJ() { if(prompt("Senha:") === "admin123") { isDJ = true; loadQueue(); } }
+        async function removeSong(rowIndex, isClient) { if(confirm(translations[currentLang].cancelPrompt)) { fetch(`${SCRIPT_URL}?row=${rowIndex}`).then(() => setTimeout(loadQueue, 1500)); } }
     </script>
 </body>
 </html>
