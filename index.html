@@ -76,39 +76,18 @@
             font-weight: bold;
             box-shadow: 0 4px 15px rgba(0,0,0,0.4);
         }
-        #toast.show {
-            visibility: visible;
-            animation: fadein 0.5s, fadeout 0.5s 2.5s;
-        }
+        #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
 
         #copyright-alert {
-            background: rgba(255, 0, 0, 0.9); 
-            border: 2px solid #ff0000; 
-            color: #ffffff;
-            padding: 15px; 
-            border-radius: 15px; 
-            font-size: 14px; 
-            font-weight: bold;
-            margin: 15px 0; 
-            text-align: left; 
-            display: none; 
-            align-items: center; 
-            gap: 12px;
-            box-shadow: 0 0 15px rgba(255, 0, 0, 0.7); 
-            animation: pulse-alert 2s infinite;
+            background: rgba(255, 0, 0, 0.9); border: 2px solid #ff0000; color: #ffffff;
+            padding: 15px; border-radius: 15px; font-size: 14px; font-weight: bold;
+            margin: 15px 0; text-align: left; display: none; align-items: center; gap: 12px;
         }
 
         #status-bloqueio { 
-            display: none; 
-            background: var(--danger); 
-            color: white; 
-            padding: 12px; 
-            border-radius: 12px; 
-            margin-bottom: 10px; 
-            font-weight: bold; 
-            font-size: 13px; 
-            border: 2px solid white; 
-            line-height: 1.4;
+            display: none; background: var(--danger); color: white; padding: 12px; 
+            border-radius: 12px; margin-bottom: 10px; font-weight: bold; font-size: 13px; 
+            border: 2px solid white; line-height: 1.4;
         }
 
         .queue-table { width: 100%; border-collapse: collapse; font-size: 13px; background: rgba(255,255,255,0.95); color: #333; border-radius: 15px; overflow: hidden; margin-top: 5px; }
@@ -206,19 +185,20 @@
     </div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzShpP_FtohDCryS3EuBxyClFl4AEpc0S2typDFx3mO8M_O5u9Ni2jrtr2L3qrjGgDm/exec"; 
+        // NOVO LINK DO SCRIPT INTEGRADO
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyjuLJcHS5USHKCzIjLfcgC7ci2IKD-bLlRQ0qVy_HSV9CWKB5CvvZLy1o1r6MaZjO5/exec"; 
         const SHEET_CSV = "https://docs.google.com/spreadsheets/d/1jL19NPfxuPziBqoVYU8DIPxUtbiqBbKNPgfsyFCIppc/export?format=csv&gid=1924484966";
         
         let isDJ = localStorage.getItem('isDJ') === 'true';
-        let isLocked = false; // Será controlado via Script/Servidor
+        let isLocked = false; 
         let catalog = [];
         let currentLang = 'pt';
 
         const translations = {
-            pt: { copyright: "Música não encontrada. Algumas músicas não aparecem na lista oficial devido aos direitos autorais (Karafunc).", title: "Karaokê Coopers", busca: "PESQUISE MÚSICA OU ARTISTA", filaLabel: "Acompanhe sua vez:", thPos: "Pos", thArtista: "Artista", thMusica: "Música / Senha", thAcao: "Ação", filaVazia: "Fila vazia!", cancelPrompt: "Deseja cancelar seu pedido?", closed: "🛑 PEDIDOS ENCERRADOS<br><small>Estamos chegando ao fim da noite! Para que todos que já pediram consigam cantar, não estamos aceitando novas músicas. Obrigado!</small>", welcomeT: "Como usar o App:", welcomeM: "1. <b>Busque</b> sua música no campo de pesquisa.<br>2. <b>Toque</b> na música para pedir.<br>3. Uma <b>Senha</b> será gerada.<br>4. Acompanhe sua posição na <b>Fila</b>.<br>5. Para desistir, clique no <b>❌</b> na fila.", btnOk: "VAMOS CANTAR!", refresh: "🔄 Atualiza a cada 15s", djLogin: "Acesso DJ", djLogout: "Sair do Modo DJ", success: "✅ Pedido enviado!", lockOn: "🔒 Bloquear Pedidos", lockOff: "🔓 Abrir Entrada" },
-            en: { copyright: "Song not found...", title: "Coopers Karaoke", busca: "SEARCH SONG OR ARTIST", filaLabel: "Current Queue:", thPos: "Pos", thArtista: "Artist", thMusica: "Song / Code", thAcao: "Action", filaVazia: "Empty!", cancelPrompt: "Cancel request?", closed: "🛑 REQUESTS CLOSED<br><small>We are nearing the end of the night! To ensure everyone can sing, we aren't accepting new songs. Thanks!</small>", welcomeT: "How to use:", welcomeM: "1. <b>Search</b>.<br>2. <b>Click</b> to request.<br>3. Get a <b>Code</b>.<br>4. Follow the <b>Queue</b>.", btnOk: "LET'S SING!", refresh: "🔄 Updates 15s", djLogin: "DJ Access", djLogout: "Logout DJ", success: "✅ Sent!", lockOn: "🔒 Lock Requests", lockOff: "🔓 Open Requests" },
-            es: { copyright: "Música no encontrada...", title: "Karaoke Coopers", busca: "BUSCAR MÚSICA", filaLabel: "Lista de espera:", thPos: "Pos", thArtista: "Artista", thMusica: "Música / Código", thAcao: "Acción", filaVazia: "¡Vacia!", cancelPrompt: "¿Cancelar?", closed: "🛑 PEDIDOS CERRADOS<br><small>¡Nos acercamos al final! Para que todos possam cantar, no aceptamos nuevas canciones. ¡Gracias!</small>", welcomeT: "Como usar:", welcomeM: "1. <b>Busca</b>.<br>2. <b>Clic</b>.<br>3. <b>Código</b>.<br>4. <b>Lista</b>.", btnOk: "¡A CANTAR!", refresh: "🔄 Act. 15s", djLogin: "Acceso DJ", djLogout: "Salir DJ", success: "✅ ¡Enviado!", lockOn: "🔒 Bloquear", lockOff: "🔓 Abrir" },
-            fr: { copyright: "Musique não trouvée...", title: "Karaoké Coopers", busca: "RECHERCHER", filaLabel: "File d'attente:", thPos: "Pos", thArtista: "Artiste", thMusica: "Chanson / Code", thAcao: "Action", filaVazia: "Vide!", cancelPrompt: "Annuler?", closed: "🛑 DEMANDES FERMÉES<br><small>Nous approchons de la fin ! Nous n'acceptons plus de novos titres. Merci !</small>", welcomeT: "Comment utiliser:", welcomeM: "1. <b>Cherchez</b>.<br>2. <b>Cliquez</b>.<br>3. <b>Code</b>.<br>4. <b>File</b>.", btnOk: "CHANTONS !", refresh: "🔄 15s", djLogin: "Accès DJ", djLogout: "Quitter DJ", success: "✅ Envoyé !", lockOn: "🔒 Bloquer", lockOff: "🔓 Ouvrir" }
+            pt: { copyright: "Música não encontrada...", title: "Karaokê Coopers", busca: "PESQUISE MÚSICA OU ARTISTA", filaLabel: "Acompanhe sua vez:", thPos: "Pos", thArtista: "Artista", thMusica: "Música / Senha", thAcao: "Ação", filaVazia: "Fila vazia!", cancelPrompt: "Deseja cancelar seu pedido?", closed: "🛑 PEDIDOS ENCERRADOS<br><small>Estamos chegando ao fim da noite! Para que todos que já pediram consigam cantar, não estamos aceitando novas músicas. Obrigado!</small>", btnOk: "VAMOS CANTAR!", refresh: "🔄 Atualiza a cada 15s", djLogin: "Acesso DJ", djLogout: "Sair do Modo DJ", success: "✅ Pedido enviado!", lockOn: "🔒 Bloquear Pedidos", lockOff: "🔓 Abrir Entrada" },
+            en: { copyright: "Song not found...", title: "Coopers Karaoke", busca: "SEARCH SONG OR ARTIST", filaLabel: "Current Queue:", thPos: "Pos", thArtista: "Artist", thMusica: "Song / Code", thAcao: "Action", filaVazia: "Empty!", cancelPrompt: "Cancel request?", closed: "🛑 REQUESTS CLOSED<br><small>We are nearing the end! To ensure everyone can sing, we aren't accepting new songs. Thanks!</small>", btnOk: "LET'S SING!", refresh: "🔄 Updates 15s", djLogin: "DJ Access", djLogout: "Logout DJ", success: "✅ Sent!", lockOn: "🔒 Lock Requests", lockOff: "🔓 Open Requests" },
+            es: { copyright: "Música no encontrada...", title: "Karaoke Coopers", busca: "BUSCAR MÚSICA", filaLabel: "Lista de espera:", thPos: "Pos", thArtista: "Artista", thMusica: "Música / Código", thAcao: "Acción", filaVazia: "¡Vacia!", cancelPrompt: "¿Cancelar?", closed: "🛑 PEDIDOS CERRADOS<br><small>¡Nos acercamos al final! Para que todos possam cantar, no aceptamos nuevas canciones. ¡Gracias!</small>", btnOk: "¡A CANTAR!", refresh: "🔄 Act. 15s", djLogin: "Acceso DJ", djLogout: "Salir DJ", success: "✅ ¡Enviado!", lockOn: "🔒 Bloquear", lockOff: "🔓 Abrir" },
+            fr: { copyright: "Musique não trouvée...", title: "Karaoké Coopers", busca: "RECHERCHER", filaLabel: "File d'attente:", thPos: "Pos", thArtista: "Artiste", thMusica: "Chanson / Code", thAcao: "Action", filaVazia: "Vide!", cancelPrompt: "Annuler?", closed: "🛑 DEMANDES FERMÉES<br><small>Nous approchons de la fin ! Nous n'acceptons plus de novos titres. Merci !</small>", btnOk: "CHANTONS !", refresh: "🔄 15s", djLogin: "Accès DJ", djLogout: "Quitter DJ", success: "✅ Envoyé !", lockOn: "🔒 Bloquer", lockOff: "🔓 Ouvrir" }
         };
 
         window.onload = () => {
@@ -228,7 +208,6 @@
                 catalog = data.split('\n').map(line => line.replace(/"/g, '').split(/[;,]/));
             });
             setInterval(loadQueue, 15000);
-            if(!localStorage.getItem('hasVisited')) { setTimeout(showWelcome, 30000); }
         };
 
         function setLang(lang) {
@@ -245,56 +224,36 @@
             document.getElementById('th-musica').innerText = t.thMusica; 
             document.getElementById('th-acao-label').innerText = t.thAcao;
             document.getElementById('refresh-text').innerText = t.refresh;
-            
-            updateLockMessage();
-            updateDJInterface();
             loadQueue();
-        }
-
-        function updateLockMessage() {
-            const statusDiv = document.getElementById('status-bloqueio');
-            const searchInput = document.getElementById('searchContainer');
-            if (isLocked) {
-                statusDiv.innerHTML = translations[currentLang].closed;
-                statusDiv.style.display = 'block';
-                if (!isDJ) searchInput.style.display = 'none';
-            } else {
-                statusDiv.style.display = 'none';
-                searchInput.style.display = 'block';
-            }
-        }
-
-        function searchSongs() {
-            const query = document.getElementById('searchInput').value.toLowerCase().trim();
-            const resDiv = document.getElementById('results');
-            const alertDiv = document.getElementById('copyright-alert');
-            if(query.length < 2) { resDiv.innerHTML = ''; alertDiv.style.display = 'none'; return; }
-            const norm = (t) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-            const terms = norm(query).split(/\s+/);
-            let matches = catalog.filter(s => {
-                if(!s[1]) return false;
-                const full = norm(`${s[1]} ${s[2]}`).toLowerCase();
-                return terms.some(t => t.length > 2 && full.includes(t)) || terms.every(t => full.includes(t));
-            }).slice(0, 15);
-            if (matches.length === 0) { resDiv.innerHTML = ''; alertDiv.style.display = 'flex'; } 
-            else { alertDiv.style.display = 'none'; resDiv.innerHTML = matches.map(s => `<div class="song-item" onclick="sendOrderDirect('${s[0]}','${s[1]}','${s[2]}')">🎶 <strong>${s[1]}</strong> - <small>${s[2]}</small></div>`).join(''); }
         }
 
         async function loadQueue() {
             try {
                 const resp = await fetch(SHEET_CSV + "&cache=" + Date.now());
                 const text = await resp.text();
-                const rows = text.split('\n').map(r => r.split(','));
                 
-                // VERIFICA BLOQUEIO: Se a primeira linha da planilha contiver "BLOQUEADO" na coluna de Código
-                isLocked = rows.some(r => r.includes("BLOQUEADO"));
-                updateLockMessage();
+                // SINCRONIZA BLOQUEIO: Lê se a planilha tem a palavra "BLOQUEADO"
+                isLocked = text.includes("BLOQUEADO");
+                const statusDiv = document.getElementById('status-bloqueio');
+                const searchCont = document.getElementById('searchContainer');
+                
+                if (isLocked) {
+                    statusDiv.innerHTML = translations[currentLang].closed;
+                    statusDiv.style.display = 'block';
+                    if (!isDJ) searchCont.style.display = 'none';
+                } else {
+                    statusDiv.style.display = 'none';
+                    searchCont.style.display = 'block';
+                }
+                updateDJInterface();
 
+                const rows = text.split('\n').map(r => r.split(','));
                 const myOrders = JSON.parse(localStorage.getItem('myKaraokeOrders') || '[]');
                 const myTokens = myOrders.map(o => o.senha);
                 let html = '';
+                
                 rows.slice(1).forEach((cols, i) => {
-                    if(cols.length > 5 && cols[5].trim() !== "" && cols[1] !== "BLOQUEADO") {
+                    if(cols.length > 5 && cols[5].trim() !== "" && !cols.includes("BLOQUEADO")) {
                         const tokenFila = cols[5].trim();
                         const isMySong = myTokens.includes(tokenFila);
                         let rowStyle = isMySong ? 'class="row-highlight"' : "";
@@ -306,16 +265,38 @@
             } catch(e) {}
         }
 
+        function searchSongs() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            const resDiv = document.getElementById('results');
+            const alertDiv = document.getElementById('copyright-alert');
+            if(query.length < 2) { resDiv.innerHTML = ''; alertDiv.style.display = 'none'; return; }
+            const norm = (t) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            const terms = norm(query).split(/\s+/);
+            
+            let matches = catalog.filter(s => {
+                if(!s[1]) return false;
+                const full = norm(`${s[1]} ${s[2]}`).toLowerCase();
+                // Aumenta a tolerância: Se acertar pelo menos uma palavra grande, ou todas.
+                return terms.some(t => t.length > 3 && full.includes(t)) || terms.every(t => full.includes(t));
+            }).slice(0, 15);
+            
+            if (matches.length === 0) { resDiv.innerHTML = ''; alertDiv.style.display = 'flex'; } 
+            else { alertDiv.style.display = 'none'; resDiv.innerHTML = matches.map(s => `<div class="song-item" onclick="sendOrderDirect('${s[0]}','${s[1]}','${s[2]}')">🎶 <strong>${s[1]}</strong> - <small>${s[2]}</small></div>`).join(''); }
+        }
+
         async function toggleLock() {
             if (!isDJ) return;
-            const action = isLocked ? "ABRIR" : "BLOQUEAR";
+            const action = isLocked ? "abrir" : "bloquear";
             if(confirm(`Deseja ${action} os pedidos para todos os usuários?`)) {
-                // Envia um comando especial para a planilha marcar o bloqueio
-                fetch(`${SCRIPT_URL}?action=toggleLock`).then(() => {
-                    isLocked = !isLocked;
-                    setTimeout(loadQueue, 1000);
+                fetch(`${SCRIPT_URL}?action=toggleLock&status=${!isLocked}`, {mode: 'no-cors'}).then(() => {
+                    setTimeout(loadQueue, 2000);
                 });
             }
+        }
+
+        function toggleDJ() {
+            if (isDJ) { if (confirm("Sair do modo DJ?")) { isDJ = false; localStorage.setItem('isDJ', 'false'); updateDJInterface(); loadQueue(); } }
+            else { const pass = prompt("Senha:"); if (pass === "coopersdj26") { isDJ = true; localStorage.setItem('isDJ', 'true'); updateDJInterface(); loadQueue(); } }
         }
 
         function updateDJInterface() {
@@ -350,14 +331,9 @@
             setTimeout(() => { document.getElementById('searchInput').value = ''; document.getElementById('results').innerHTML = ''; loadQueue(); }, 800);
         }
 
-        function toggleDJ() {
-            if (isDJ) { if (confirm("Sair do modo DJ?")) { isDJ = false; localStorage.setItem('isDJ', 'false'); updateDJInterface(); loadQueue(); } }
-            else { const pass = prompt("Senha:"); if (pass === "coopersdj26") { isDJ = true; localStorage.setItem('isDJ', 'true'); updateDJInterface(); loadQueue(); } }
-        }
-
         async function removeSong(rowIndex, isClient) { 
             if(confirm(translations[currentLang].cancelPrompt)) { 
-                fetch(`${SCRIPT_URL}?row=${rowIndex}`).then(() => { setTimeout(loadQueue, 1500); }); 
+                fetch(`${SCRIPT_URL}?row=${rowIndex}`, {mode: 'no-cors'}).then(() => { setTimeout(loadQueue, 1500); }); 
             } 
         }
 
